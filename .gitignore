@@ -64,3 +64,5 @@ Thumbs.db
 .gradle/
 gradle-app.setting
 !gradle-wrapper.jar
+
+build.gradle
