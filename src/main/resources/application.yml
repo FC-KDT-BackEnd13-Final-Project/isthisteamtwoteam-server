@@ -16,3 +16,9 @@ spring:
       hibernate:
         format_sql: ${JPA_FORMAT_SQL}
         dialect: ${JPA_DIALECT}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
