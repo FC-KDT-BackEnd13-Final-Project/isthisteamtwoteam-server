@@ -2,14 +2,18 @@ package org.etmetmy.bn_server.domain.user.dto.entity;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.user.entity.Company;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 
 @Builder
 @Getter
+@AllArgsConstructor
+
 public class UserDto {
     private String name;
     private String email;
@@ -20,6 +24,8 @@ public class UserDto {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+
+
     public static class Converter{
         //todo : userDto -> user 로 변환하는 컨버터
         public static User toUser(UserDto userDto, Company company){
@@ -29,6 +35,7 @@ public class UserDto {
                     .password(userDto.getPassword())
                     .phone(userDto.getPhone())
                     .company(company)
+                    .role(userDto.getRole())
                     .build();
         }
     }
