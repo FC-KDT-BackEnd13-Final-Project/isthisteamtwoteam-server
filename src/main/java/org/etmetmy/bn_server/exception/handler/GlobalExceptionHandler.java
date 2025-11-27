@@ -10,13 +10,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.View;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private final View error;
+
+    public GlobalExceptionHandler(View error) {
+        this.error = error;
+    }
 
     //todo: 커스텀 예외 모두 처리
     @ExceptionHandler(BusinessException.class)
@@ -24,10 +32,11 @@ public class GlobalExceptionHandler {
             BusinessException e,
             HttpServletRequest request){
 
-        log.error("BusinessException: code={}, message={}, path={}",
+        log.warn("BusinessException: code={}, message={}, path={}, method={}",
                 e.getErrorCode().getCode(),
                 e.getMessage(),
-                request.getRequestURL());
+                request.getRequestURL(),
+                request.getMethod());
 
         ErrorResponse response = ErrorResponse.builder()
                 .code(e.getErrorCode().getCode())
@@ -49,7 +58,11 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException e,
             HttpServletRequest request) {
 
-        log.error("Validation error: {}", e.getMessage());
+        log.warn("Validation failed: path={}, errors={}",
+                request.getRequestURL(),
+                e.getBindingResult().getFieldErrors().stream()
+                        .map(error -> error.getField() + ": "+error.getDefaultMessage())
+                        .collect(Collectors.joining(", ")));
 
         //유효성 검사 실패 필드 정보 추출
         List<ErrorResponse.FieldError> fieldErrors = e.getBindingResult()
@@ -61,7 +74,6 @@ public class GlobalExceptionHandler {
                                 error.getRejectedValue().toString() : "")
                         .reason(error.getDefaultMessage())
                         .build())
-
                 .toList();
 
         ErrorResponse response = ErrorResponse.builder()
@@ -84,7 +96,11 @@ public class GlobalExceptionHandler {
             Exception e,
             HttpServletRequest request) {
 
-        log.error("Unexpected error occurred", e);
+        log.error("Unexpected error occurred, path={}, method={}, errors={}",
+                request.getRequestURL(),
+                request.getMethod(),
+                e.getClass().getSimpleName(),
+                e);
 
         ErrorResponse response = ErrorResponse.builder()
                 .code(ErrorCode.INTERNAL_SERVER_ERROR.getCode())
