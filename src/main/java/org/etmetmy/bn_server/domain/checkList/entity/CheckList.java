@@ -21,4 +21,5 @@ public class CheckList {
 
     @Column(name = "content", length = 255)
     private String content;
+
 }
