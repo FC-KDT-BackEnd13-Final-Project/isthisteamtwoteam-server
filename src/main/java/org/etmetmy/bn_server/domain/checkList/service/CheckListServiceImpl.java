@@ -33,4 +33,9 @@ public class CheckListServiceImpl implements CheckListService {
 
         return CheckListResponse.Converter.from(saved);
     }
+
+    @Override
+    public void delete(Long checkListId) {
+        checkListRepository.deleteById(checkListId);
+    }
 }
