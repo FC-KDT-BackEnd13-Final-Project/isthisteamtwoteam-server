@@ -2,19 +2,18 @@ package org.etmetmy.bn_server.domain.company.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
+import lombok.experimental.SuperBuilder;
+import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
 @Table(name = "company")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Company {
+@SuperBuilder
+public class Company extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,13 +40,4 @@ public class Company {
 
     @Column(name = "business_registration", length = 500)
     private String businessRegistration;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-
 }

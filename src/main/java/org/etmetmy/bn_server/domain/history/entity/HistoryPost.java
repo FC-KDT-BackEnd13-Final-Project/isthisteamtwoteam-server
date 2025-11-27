@@ -2,20 +2,19 @@ package org.etmetmy.bn_server.domain.history.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.user.entity.User;
-
-import java.time.LocalDateTime;
+import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
 @Table(name = "historypost")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class HistoryPost {
+@SuperBuilder
+public class HistoryPost extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,12 +40,6 @@ public class HistoryPost {
     @Column(name = "af_content", nullable = false, columnDefinition = "TEXT")
     private String afContent;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @Column(name = "created_ip", length = 45)
     private String createdIp;
 
@@ -55,9 +48,4 @@ public class HistoryPost {
 
     @Column(name = "is_completed")
     private Boolean isCompleted;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
 }
