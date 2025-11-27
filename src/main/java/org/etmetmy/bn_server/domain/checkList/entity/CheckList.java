@@ -7,17 +7,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "adminchecklist")
+@Table(name = "checklist")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AdminCheckList {
+public class CheckList {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "admin_check_list_id")
-    private Long adminCheckListId;
+    @Column(name = "check_list_id")
+    private Long checkListId;
 
     @Column(name = "content", length = 255)
     private String content;
