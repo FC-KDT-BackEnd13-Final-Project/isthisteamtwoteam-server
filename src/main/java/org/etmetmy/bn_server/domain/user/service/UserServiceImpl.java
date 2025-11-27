@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.entity.Company;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
@@ -23,5 +24,12 @@ public class UserServiceImpl implements UserService{
         Long userId = userRepository.save(newUser).getId();
 
         return userId;
+    }
+
+    @Override
+    public User login(UserLoginDto loginDto) {
+        return userRepository.findByEmail(loginDto.getEmail())
+                .filter(u -> u.getPassword().equals(loginDto.getPassword()))
+                .orElse(null);
     }
 }
