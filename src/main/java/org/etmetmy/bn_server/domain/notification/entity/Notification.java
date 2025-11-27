@@ -2,20 +2,19 @@ package org.etmetmy.bn_server.domain.notification.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.user.entity.User;
-
-import java.time.LocalDateTime;
+import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
 @Table(name = "notification")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Notification {
+@SuperBuilder
+public class Notification extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,15 +28,11 @@ public class Notification {
     @Column(name = "is_read")
     private Boolean isRead;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
     @Column(name = "message", columnDefinition = "TEXT")
     private String message;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
         if (isRead == null) isRead = false;
     }
 }

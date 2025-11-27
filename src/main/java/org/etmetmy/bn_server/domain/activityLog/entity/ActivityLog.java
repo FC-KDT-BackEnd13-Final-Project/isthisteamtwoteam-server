@@ -2,13 +2,12 @@ package org.etmetmy.bn_server.domain.activityLog.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 import org.etmetmy.bn_server.domain.project.entity.Project;
-
-import java.time.LocalDateTime;
+import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
 @Table(name = "activity_log", indexes = {
@@ -19,8 +18,8 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ActivityLog {
+@SuperBuilder
+public class ActivityLog extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,10 +63,6 @@ public class ActivityLog {
     private LocalDateTime createdAt;
 
     @Column(name = "ip_address", length = 45, nullable = false, updatable = false)
-    private String ipAddress;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
+    private String ipAddress;
 }

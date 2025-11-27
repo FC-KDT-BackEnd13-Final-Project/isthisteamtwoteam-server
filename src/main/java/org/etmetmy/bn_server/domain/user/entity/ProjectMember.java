@@ -2,10 +2,11 @@ package org.etmetmy.bn_server.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -14,8 +15,8 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class ProjectMember {
+@SuperBuilder
+public class ProjectMember extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,14 +34,6 @@ public class ProjectMember {
     @Column(name = "role", nullable = false, length = 255)
     private String role;
 
-    @Column(name = "assigned_at")
-    private LocalDateTime assignedAt;
-
     @Column(name = "assigned_by")
     private Long assignedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        assignedAt = LocalDateTime.now();
-    }
 }

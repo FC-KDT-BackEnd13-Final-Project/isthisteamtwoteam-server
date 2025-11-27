@@ -2,9 +2,10 @@ package org.etmetmy.bn_server.domain.history.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -13,8 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class History {
+@SuperBuilder
+public class History extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,14 +40,7 @@ public class History {
     @Column(name = "changed_by")
     private Long changedBy;
 
-    @Column(name = "changed_at")
-    private LocalDateTime changedAt;
-
     @Column(name = "ip_address", length = 45)
     private String ipAddress;
 
-    @PrePersist
-    protected void onCreate() {
-        changedAt = LocalDateTime.now();
-    }
 }
