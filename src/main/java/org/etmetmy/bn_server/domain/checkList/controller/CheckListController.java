@@ -25,5 +25,10 @@ public class CheckListController {
         return checkListService.update(checkListId, request);
     }
 
+    @DeleteMapping("/{checkListId}")
+    public void deleteCheckList(@PathVariable("checkListId") Long checkListId){
+
+        checkListService.delete(checkListId);
+    }
 
 }

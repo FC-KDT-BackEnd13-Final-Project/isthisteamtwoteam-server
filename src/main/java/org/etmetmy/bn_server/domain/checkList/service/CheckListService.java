@@ -8,4 +8,6 @@ public interface CheckListService {
     CheckListResponse save();
 
     CheckListResponse update(Long checkListId, CheckListUpdateRequest request);
+
+    void delete(Long checkListId);
 }
