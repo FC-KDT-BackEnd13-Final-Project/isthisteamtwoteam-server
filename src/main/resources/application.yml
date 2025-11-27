@@ -22,3 +22,12 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui
+
+
+logging:
+  level:
+    root: INFO
+    org.etmetmy.bn_server: DEBUG
+    org.etmetmy.bn_server.exception: ERROR
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
