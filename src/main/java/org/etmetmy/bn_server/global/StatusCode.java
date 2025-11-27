@@ -13,8 +13,11 @@ public enum StatusCode {
     POST_FOUND(HttpStatus.OK, "게시글 조회 완료"),
 
     // 에러 응답
-    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다.");
+    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."),
 
+
+    //Company 에러
+    COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회사입니다.");
     private final HttpStatus status;
     private final String message;
 }
