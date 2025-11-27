@@ -5,13 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.dto.ErrorResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.View;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -20,11 +22,8 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    private final View error;
-
-    public GlobalExceptionHandler(View error) {
-        this.error = error;
-    }
+    @Value("${spring.profiles.active:dev}")
+    private String activeProfile;
 
     //todo: 커스텀 예외 모두 처리
     @ExceptionHandler(BusinessException.class)
@@ -35,7 +34,7 @@ public class GlobalExceptionHandler {
         log.warn("BusinessException: code={}, message={}, path={}, method={}",
                 e.getErrorCode().getCode(),
                 e.getMessage(),
-                request.getRequestURL(),
+                request.getRequestURI(),
                 request.getMethod());
 
         ErrorResponse response = ErrorResponse.builder()
@@ -44,6 +43,7 @@ public class GlobalExceptionHandler {
                 .status(e.getErrorCode().getStatus())
                 .timestamp(LocalDateTime.now())
                 .path(request.getRequestURI())
+                .debugMessage(isDevelopmentMode() ? getStackTrace(e) : null)
                 .build();
 
         return ResponseEntity
@@ -59,7 +59,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         log.warn("Validation failed: path={}, errors={}",
-                request.getRequestURL(),
+                request.getRequestURI(),
                 e.getBindingResult().getFieldErrors().stream()
                         .map(error -> error.getField() + ": "+error.getDefaultMessage())
                         .collect(Collectors.joining(", ")));
@@ -83,6 +83,7 @@ public class GlobalExceptionHandler {
                 .timestamp(LocalDateTime.now())
                 .path(request.getRequestURI())
                 .fieldErrors(fieldErrors)
+                .debugMessage(isDevelopmentMode() ? "Validation errors: " + fieldErrors.size() + " field(s)" : null)
                 .build();
 
         return ResponseEntity
@@ -96,10 +97,10 @@ public class GlobalExceptionHandler {
             Exception e,
             HttpServletRequest request) {
 
-        log.error("Unexpected error occurred, path={}, method={}, errors={}",
-                request.getRequestURL(),
-                request.getMethod(),
+        log.error("Unexpected error: {} at {} [{}]",
                 e.getClass().getSimpleName(),
+                request.getRequestURI(),
+                request.getMethod(),
                 e);
 
         ErrorResponse response = ErrorResponse.builder()
@@ -108,11 +109,30 @@ public class GlobalExceptionHandler {
                 .status(ErrorCode.INTERNAL_SERVER_ERROR.getStatus())
                 .timestamp(LocalDateTime.now())
                 .path(request.getRequestURI())
+                .debugMessage(isDevelopmentMode() ? getStackTrace(e) : null)
                 .build();
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(response);
+    }
+
+    /**
+     * 개발 환경 여부 확인
+     * dev, local, default 프로파일일 때 true 반환
+     */
+    private boolean isDevelopmentMode() {
+        return !activeProfile.equals("prod");
+    }
+
+    /**
+     * 예외 스택 트레이스를 문자열로 변환
+     */
+    private String getStackTrace(Exception e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        e.printStackTrace(pw);
+        return sw.toString();
     }
 }
 
