@@ -22,16 +22,16 @@ public class ProjectCheckList {
     private Long projectCheckListId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_check_list_id", nullable = false)
-    private AdminCheckList adminCheckList;
+    @JoinColumn(name = "check_list_id", nullable = false)
+    private CheckList checkList;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private Project project;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "answerer_id")
+    private User answererId;
 
     @Column(name = "checked")
     private Boolean checked;
