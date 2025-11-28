@@ -7,11 +7,9 @@ import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
-import org.etmetmy.bn_server.domain.user.specification.UserSpecification;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import java.util.List;
 
 @Service
@@ -50,32 +48,24 @@ public class UserService {
 
     // 검색 & 조회 기능
     public List<User> searchMembers(String name, String email, String companyName, String type) {
-        // 1. 초기화 (조건 없음)
-        Specification<User> spec = Specification.where(null);
 
-        // 2. 조건이 있을 때만 하나씩 추가 (동적 쿼리)
-        if (name != null && !name.isBlank()) {
-            spec = spec.and(UserSpecification.likeName(name));
-        }
+        CompanyType companyType = null;
 
-        if (email != null && !email.isBlank()) {
-            spec = spec.and(UserSpecification.likeEmail(email));
-        }
-
-        if (companyName != null && !companyName.isBlank()) {
-            spec = spec.and(UserSpecification.likeCompanyName(companyName));
-        }
-
+        // 1. String 타입의 type 파라미터를 Enum으로 변환
         if (type != null && !type.isBlank()) {
             try {
-                // String -> Enum 변환
-                CompanyType companyType = CompanyType.valueOf(type.toUpperCase());
-                spec = spec.and(UserSpecification.equalCompanyType(companyType));
+                companyType = CompanyType.valueOf(type.toUpperCase());
             } catch (IllegalArgumentException e) {
-                // 잘못된 타입(ABC 등)이 오면 무시
+                // 잘못된 type 값은 무시하고 null로 (쿼리에서 IS NULL 처리됨)
             }
         }
 
-        return userRepository.findAll(spec);
+        // 2. Repository의 @Query 메서드 호출
+        return userRepository.findDynamicMembers(
+                name,
+                email,
+                companyName,
+                companyType // Enum 값 전달
+        );
     }
 }
