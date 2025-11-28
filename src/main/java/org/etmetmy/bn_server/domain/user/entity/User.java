@@ -3,13 +3,11 @@ package org.etmetmy.bn_server.domain.user.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "\"User\"") // PostgreSQL의 예약어 처리
@@ -29,6 +27,7 @@ public class User extends BaseEntity {
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
+    @JsonIgnore
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
