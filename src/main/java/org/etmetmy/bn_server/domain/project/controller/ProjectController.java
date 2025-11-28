@@ -5,6 +5,7 @@ import org.etmetmy.bn_server.domain.project.dto.entityDto.ProjectDTO;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
+import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,10 +29,16 @@ public class ProjectController {
     }
 
     //생성한 프로젝트 저장되어 노출
+    //CommonResponse 적용
     @GetMapping
-    public ResponseEntity<List<ProjectResponse>> getProjects(){
+    public ResponseEntity<CommonResponse<List<ProjectResponse>>> getProjects(){
         List<ProjectResponse> responses = projectService.getAllProjects();
-        return ResponseEntity.ok(responses);
+
+        CommonResponse<List<ProjectResponse>> body = CommonResponse.success(
+                "프로젝트 목록조회 성공",
+                responses
+        );
+        return ResponseEntity.ok(body);
     }
 
     //임시
