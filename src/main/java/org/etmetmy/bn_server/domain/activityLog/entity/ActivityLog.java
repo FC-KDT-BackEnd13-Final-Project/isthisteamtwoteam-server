@@ -59,9 +59,6 @@ public class ActivityLog extends BaseEntity {
     @Column(name = "detail",columnDefinition = "TEXT", updatable = false)
     private String detail;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     @Column(name = "ip_address", length = 45, nullable = false, updatable = false)
 
     private String ipAddress;
