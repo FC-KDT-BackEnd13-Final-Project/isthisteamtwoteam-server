@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @Table(name = "company")
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Company {
 
     @Id
@@ -50,4 +52,7 @@ public class Company {
         createdAt = LocalDateTime.now();
     }
 
+    @Enumerated(EnumType.STRING) // DB에 "DEVELOPER", "CLIENT" 로 저장됨
+    @Column(name = "company_type")
+    private CompanyType type;
 }

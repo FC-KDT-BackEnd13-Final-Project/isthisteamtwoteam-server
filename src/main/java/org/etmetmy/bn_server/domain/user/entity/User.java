@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,7 @@ public class User {
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
+    @JsonIgnore
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
@@ -54,5 +56,12 @@ public class User {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    public void updateInfo(String name, String email, Company company, String role) {
+        this.name = name;
+        this.email = email;
+        this.company = company; // 회사 이동 가능
+        this.role = role;       // 관리자 권한 부여 가능
     }
 }
