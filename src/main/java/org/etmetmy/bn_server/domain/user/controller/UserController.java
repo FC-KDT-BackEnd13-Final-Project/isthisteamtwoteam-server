@@ -11,10 +11,13 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.service.UserService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.web.SessionConst;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController
+@RequestMapping("/api/members")
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @RestController
@@ -38,7 +41,14 @@ public class UserController {
             @Valid @RequestBody UserLoginDto userLoginDto,
             @SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false) User loginUser,
             HttpServletRequest request
+    //회원 정보 수정 (PUT)
+    @PutMapping("/{memberId}")
+    public ResponseEntity<String> updateMember(
+            @PathVariable Long memberId,
+            @RequestBody MemberUpdateRequest request
     ) {
+        userService.updateMember(memberId, request);
+        return ResponseEntity.ok("회원 정보 수정 완료");
         // 이미 로그인된 경우 체크
         if (loginUser != null) {
             return CommonResponse.success("이미 로그인되어 있습니다.", loginUser.getId());
@@ -69,10 +79,16 @@ public class UserController {
         }
         return CommonResponse.success("성공적으로 로그아웃을 완료했습니다.");
 
+    //회원 삭제 (DELETE)
+    @DeleteMapping("/{memberId}")
+    public ResponseEntity<String> deleteMember(@PathVariable Long memberId) {
+        userService.deleteMember(memberId);
+        return ResponseEntity.ok("회원 삭제 완료");
     }
 
     // 회원 조회 & 검색 API
     @GetMapping
+    public ResponseEntity<List<User>> getMembers(
     public CommonResponse<List<User>> getMembers(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String email,
@@ -81,6 +97,7 @@ public class UserController {
     ) {
 
         List<User> members = userService.searchMembers(name, email, companyName, type);
+        return ResponseEntity.ok(members);
         return CommonResponse.success("회원을 성공적으로 조회하였습니다.", members);
     }
 
