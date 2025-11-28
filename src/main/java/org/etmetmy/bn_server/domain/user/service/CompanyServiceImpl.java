@@ -6,14 +6,15 @@ import org.etmetmy.bn_server.domain.user.repository.CompanyRepository;
 import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class CompanyServiceImpl implements CompanyService{
     private final CompanyRepository companyRepository;
     @Override
-    public Company findByCompanyName(String companyName) {
-        Company company = companyRepository.findByCompanyName(companyName);
+    public Optional<Company> findByCompanyName(String companyName) {
+        return companyRepository.findByCompanyName(companyName);
 
-        return company;
     }
 }
