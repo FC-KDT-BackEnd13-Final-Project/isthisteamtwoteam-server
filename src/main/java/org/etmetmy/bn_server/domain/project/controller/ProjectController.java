@@ -28,7 +28,7 @@ public class ProjectController {
 
         Long projectId = projectService.createProject(request, currentUserId);
 
-        return ResponseEntity.ok(CommonResponse.success(POST_CREATED.getMessage(), projectId));
+        return ResponseEntity.ok(CommonResponse.success("프로젝트 생성 성공", projectId));
     }
 
     //생성한 프로젝트 저장되어 노출
@@ -37,11 +37,11 @@ public class ProjectController {
     public ResponseEntity<CommonResponse<List<ProjectResponse>>> getProjects(){
         List<ProjectResponse> responses = projectService.getAllProjects();
 
-        CommonResponse<List<ProjectResponse>> body = CommonResponse.success(
-                "프로젝트 목록조회 성공",
-                responses
-        );
-        return ResponseEntity.ok(CommonResponse.success(POST_FOUND.getMessage(), responses));
+//        CommonResponse<List<ProjectResponse>> body = CommonResponse.success(
+//                "프로젝트 목록조회 성공",
+//                responses
+//        );
+        return ResponseEntity.ok(CommonResponse.success("프로젝트 목록조회 성공", responses));
     }
 
     //임시
