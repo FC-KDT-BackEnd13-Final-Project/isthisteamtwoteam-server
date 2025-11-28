@@ -8,7 +8,10 @@ import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import java.time.LocalDateTime;
 
+@EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "activity_log", indexes = {
         @Index(name = "idx_project_created", columnList = "project_id, created_at"),
@@ -59,10 +62,6 @@ public class ActivityLog extends BaseEntity {
     @Column(name = "detail",columnDefinition = "TEXT", updatable = false)
     private String detail;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     @Column(name = "ip_address", length = 45, nullable = false, updatable = false)
-
     private String ipAddress;
 }
