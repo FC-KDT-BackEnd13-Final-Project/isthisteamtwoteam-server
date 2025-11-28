@@ -9,7 +9,6 @@ import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import java.time.LocalDateTime;
 
 @EntityListeners(AuditingEntityListener.class)
 @Entity
