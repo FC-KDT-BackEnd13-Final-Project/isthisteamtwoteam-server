@@ -2,10 +2,11 @@ package org.etmetmy.bn_server.domain.link.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.file.entity.EntityType;
+import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -14,8 +15,8 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-class Link {
+@SuperBuilder
+class Link extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,9 +28,6 @@ class Link {
 
     @Column(name = "uploaded_by", nullable = false)
     private Long uploadedBy;
-
-    @Column(name = "uploaded_at")
-    private LocalDateTime uploadedAt;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;
@@ -46,7 +44,6 @@ class Link {
 
     @PrePersist
     protected void onCreate() {
-        uploadedAt = LocalDateTime.now();
         if (isDeleted == null) isDeleted = false;
     }
 }

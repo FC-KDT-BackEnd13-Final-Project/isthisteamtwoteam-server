@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
-import org.etmetmy.bn_server.domain.user.dto.MemberSearchCondition;
 import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
@@ -54,29 +53,26 @@ public class UserService {
         // 1. 초기화 (조건 없음)
         Specification<User> spec = Specification.where(null);
 
-        // 2. 이름 조건 추가
+        // 2. 조건이 있을 때만 하나씩 추가 (동적 쿼리)
         if (name != null && !name.isBlank()) {
             spec = spec.and(UserSpecification.likeName(name));
         }
 
-        // 3. 이메일 조건 추가
         if (email != null && !email.isBlank()) {
             spec = spec.and(UserSpecification.likeEmail(email));
         }
 
-        // 4. 회사명 조건 추가
         if (companyName != null && !companyName.isBlank()) {
             spec = spec.and(UserSpecification.likeCompanyName(companyName));
         }
 
-        // 5. 회사 타입 조건 추가 (DEVELOPER or CLIENT)
         if (type != null && !type.isBlank()) {
             try {
-                // 문자로 들어온 "DEVELOPER"를 Enum으로 변환
+                // String -> Enum 변환
                 CompanyType companyType = CompanyType.valueOf(type.toUpperCase());
                 spec = spec.and(UserSpecification.equalCompanyType(companyType));
             } catch (IllegalArgumentException e) {
-                // 이상한 타입이 들어오면 무시
+                // 잘못된 타입(ABC 등)이 오면 무시
             }
         }
 
