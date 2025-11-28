@@ -1,5 +1,4 @@
 package org.etmetmy.bn_server.domain.post.entity;
-
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -43,12 +42,15 @@ public class Post extends BaseEntity {
     @Column(name = "is_completed")
     private Boolean isCompleted;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stage_id", nullable = false)
-    private Stage stage;
+    @Column(name = "stage_id", nullable = false)
+    private Long stageId;
 
     @PrePersist
     protected void onCreate() {
         if (isCompleted == null) isCompleted = false;
+    }
+
+    public void updateStage(Long stageId) {
+        this.stageId = stageId;
     }
 }

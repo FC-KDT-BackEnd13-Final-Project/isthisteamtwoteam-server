@@ -39,4 +39,11 @@ public class Request extends BaseEntity {
 
     @Column(name = "reject_reason", length = 255)
     private String rejectReason;
+
+    public void updateStatus(Long replyUserId, String newStatus, String rejectReason) {
+        this.replitUserId = replyUserId;
+        this.approveStatus = newStatus;
+        this.rejectReason = rejectReason;
+        this.replyTime = LocalDateTime.now();
+    }
 }

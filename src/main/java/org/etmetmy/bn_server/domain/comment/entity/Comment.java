@@ -37,5 +37,5 @@ public class Comment extends BaseEntity {
     private String ip;
 
     @Column(name = "comment_id2")
-    private Long commentId2; // 부모 댓글 ID로 추정
+    private Long commentId2;
 }
