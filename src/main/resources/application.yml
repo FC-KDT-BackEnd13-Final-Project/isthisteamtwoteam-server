@@ -3,19 +3,19 @@ spring:
     name: isThisTeamTwoTeam
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/bnDB
-    username: user
-    password: 12345678
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: ${JPA_SHOW_SQL}
     properties:
       hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: ${JPA_FORMAT_SQL}
+        dialect: ${JPA_DIALECT}
 
 springdoc:
   api-docs:
@@ -31,4 +31,3 @@ logging:
     org.etmetmy.bn_server.exception: ERROR
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-
