@@ -45,6 +45,7 @@ public class UserController {
 
         // 새 세션 생성 및 사용자 정보 저장
         HttpSession session = request.getSession(true);
+        session.setMaxInactiveInterval(3600);
         session.setAttribute(SessionConst.LOGIN_MEMBER, user);
         session.setAttribute(SessionConst.USER_ROLE, user.getRole());  // Role 저장 추가
 
