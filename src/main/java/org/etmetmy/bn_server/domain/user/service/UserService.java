@@ -10,9 +10,11 @@ import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.domain.user.specification.UserSpecification;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.etmetmy.bn_server.domain.company.entity.CompanyType;
+
 import java.util.List;
 
 public interface UserService {
@@ -65,13 +67,11 @@ public class UserService {
             spec = spec.and(UserSpecification.likeName(name));
         }
 
-        CompanyType companyType = null;
         // 3. 이메일 조건 추가
         if (email != null && !email.isBlank()) {
             spec = spec.and(UserSpecification.likeEmail(email));
         }
 
-        // 1. String 타입의 type 파라미터를 Enum으로 변환
         // 4. 회사명 조건 추가
         if (companyName != null && !companyName.isBlank()) {
             spec = spec.and(UserSpecification.likeCompanyName(companyName));
@@ -80,22 +80,14 @@ public class UserService {
         // 5. 회사 타입 조건 추가 (DEVELOPER or CLIENT)
         if (type != null && !type.isBlank()) {
             try {
-                companyType = CompanyType.valueOf(type.toUpperCase());
                 // 문자로 들어온 "DEVELOPER"를 Enum으로 변환
                 CompanyType companyType = CompanyType.valueOf(type.toUpperCase());
                 spec = spec.and(UserSpecification.equalCompanyType(companyType));
             } catch (IllegalArgumentException e) {
-                // 잘못된 type 값은 무시하고 null로 (쿼리에서 IS NULL 처리됨)
                 // 이상한 타입이 들어오면 무시
             }
         }
 
-        // 2. Repository의 @Query 메서드 호출
-        return userRepository.findDynamicMembers(
-                name,
-                email,
-                companyName,
-                companyType // Enum 값 전달
-        );
+        return userRepository.findAll(spec);
     }
 }
