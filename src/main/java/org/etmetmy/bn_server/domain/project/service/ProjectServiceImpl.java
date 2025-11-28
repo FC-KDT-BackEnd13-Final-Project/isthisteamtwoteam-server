@@ -1,8 +1,6 @@
 package org.etmetmy.bn_server.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.company.entity.Company;
-import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.project.dto.entityDto.ProjectDTO;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
