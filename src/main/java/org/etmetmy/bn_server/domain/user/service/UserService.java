@@ -4,6 +4,8 @@ import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.entity.User;
 
+import java.util.Optional;
+
 public interface UserService {
 
     Long joinUser(UserDto userDto);
