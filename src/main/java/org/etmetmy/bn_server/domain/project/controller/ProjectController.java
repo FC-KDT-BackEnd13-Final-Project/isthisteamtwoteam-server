@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/projects")
+@RequestMapping("/admin/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -27,6 +27,7 @@ public class ProjectController {
         return ResponseEntity.status(HttpStatus.CREATED).body(projectId);
     }
 
+    //생성한 프로젝트 저장되어 노출
     @GetMapping
     public ResponseEntity<List<ProjectResponse>> getProjects(){
         List<ProjectResponse> responses = projectService.getAllProjects();
