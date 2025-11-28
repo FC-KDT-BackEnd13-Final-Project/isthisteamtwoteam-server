@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import static org.etmetmy.bn_server.global.StatusCode.POST_CREATED;
+import static org.etmetmy.bn_server.global.StatusCode.POST_FOUND;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/admin/projects")
@@ -20,12 +23,12 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping
-    public ResponseEntity<Long> createProject(@RequestBody ProjectCreateRequest request) {
+    public ResponseEntity<CommonResponse<Long>> createProject(@RequestBody ProjectCreateRequest request) {
         Long currentUserId = getCurrentUserId();   // TODO: Security 연동 시 수정
 
         Long projectId = projectService.createProject(request, currentUserId);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(projectId);
+        return ResponseEntity.ok(CommonResponse.success(POST_CREATED.getMessage(), projectId));
     }
 
     //생성한 프로젝트 저장되어 노출
@@ -38,7 +41,7 @@ public class ProjectController {
                 "프로젝트 목록조회 성공",
                 responses
         );
-        return ResponseEntity.ok(body);
+        return ResponseEntity.ok(CommonResponse.success(POST_FOUND.getMessage(), responses));
     }
 
     //임시
