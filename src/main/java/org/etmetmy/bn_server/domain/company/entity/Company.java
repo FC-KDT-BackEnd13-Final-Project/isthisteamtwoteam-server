@@ -5,8 +5,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
@@ -18,7 +16,6 @@ import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @SuperBuilder
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Company extends BaseEntity {
 
     @Id
