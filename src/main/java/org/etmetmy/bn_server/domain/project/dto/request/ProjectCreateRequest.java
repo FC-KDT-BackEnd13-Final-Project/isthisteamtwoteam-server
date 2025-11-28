@@ -23,15 +23,6 @@ public class ProjectCreateRequest {
     private Long companyId;
     private String content; // null 허용, 빈문자열 "" 가능
 
-
-    //프로젝트 멤버
-    @Getter
-    @NoArgsConstructor
-    public static class ProjectMemberRequest{
-        private Long userId;
-        private String role;
-    }
-
     //내부 converter
     public static class Converter{
 
