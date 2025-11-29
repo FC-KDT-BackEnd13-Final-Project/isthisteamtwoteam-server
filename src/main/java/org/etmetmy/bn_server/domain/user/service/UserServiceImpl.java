@@ -33,16 +33,20 @@ public class UserServiceImpl implements UserService{
 
         // 3. 정보 변경 (dirty checking)
         user.updateInfo(request.getName(), request.getEmail(), company, request.getRole());
+
+        return user.getId();
     }
 
     // 2. 회원 삭제 (Delete)
     @Transactional
-    public void deleteMember(Long memberId) {
+    public Long deleteMember(Long memberId) {
         // 존재 여부 확인 후 삭제
         User user = userRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
+        Long userId = user.getId();
         userRepository.delete(user);
+        return userId;
     }
 
 

@@ -9,10 +9,10 @@ import java.util.List;
 
 public interface UserService {
     @Transactional
-    void updateMember(Long memberId, MemberUpdateRequest request);
+    Long updateMember(Long memberId, MemberUpdateRequest request);
 
     @Transactional
-    void deleteMember(Long memberId);
+    Long deleteMember(Long memberId);
 
     List<User> searchMembers(String name, String email, String companyName, String type);
 }
