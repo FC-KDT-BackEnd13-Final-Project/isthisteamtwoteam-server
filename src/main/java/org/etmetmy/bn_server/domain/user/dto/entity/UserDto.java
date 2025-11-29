@@ -6,14 +6,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.etmetmy.bn_server.domain.user.entity.Company;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 
 @Builder
 @Getter
 @AllArgsConstructor
-
+@NoArgsConstructor
 public class UserDto {
     private String name;
     private String email;

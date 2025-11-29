@@ -1,6 +1,5 @@
 package org.etmetmy.bn_server.domain.user.service;
 
-import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;

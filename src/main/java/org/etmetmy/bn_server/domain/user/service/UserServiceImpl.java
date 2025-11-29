@@ -1,8 +1,6 @@
 package org.etmetmy.bn_server.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.company.entity.Company;
-import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
@@ -11,6 +9,7 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +69,7 @@ public class UserServiceImpl implements UserService{
         }
 
         // 2. Repository의 @Query 메서드 호출
-        return userRepository.findDynamicMembers(
+        return userRepository.findByNamicMembers(
                 name,
                 email,
                 companyName,

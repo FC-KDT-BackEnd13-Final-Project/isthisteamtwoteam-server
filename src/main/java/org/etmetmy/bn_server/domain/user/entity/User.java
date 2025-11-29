@@ -3,11 +3,9 @@ package org.etmetmy.bn_server.domain.user.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity

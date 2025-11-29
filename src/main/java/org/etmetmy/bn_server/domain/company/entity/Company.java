@@ -1,10 +1,10 @@
 package org.etmetmy.bn_server.domain.company.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
