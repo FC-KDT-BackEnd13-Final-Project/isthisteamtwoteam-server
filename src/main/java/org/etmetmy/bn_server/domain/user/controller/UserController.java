@@ -1,10 +1,10 @@
 package org.etmetmy.bn_server.domain.user.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.service.UserService;
+import org.etmetmy.bn_server.domain.user.service.UserServiceImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
