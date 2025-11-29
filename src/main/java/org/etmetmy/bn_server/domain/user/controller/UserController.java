@@ -1,10 +1,11 @@
 package org.etmetmy.bn_server.domain.user.controller;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.service.UserService;
+import org.etmetmy.bn_server.domain.user.service.UserServiceImpl;
+import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,24 +20,25 @@ public class UserController {
 
     //회원 정보 수정 (PUT)
     @PutMapping("/{memberId}")
-    public ResponseEntity<String> updateMember(
+    public CommonResponse<Long> updateMember(
             @PathVariable Long memberId,
             @RequestBody MemberUpdateRequest request
     ) {
-        userService.updateMember(memberId, request);
-        return ResponseEntity.ok("회원 정보 수정 완료");
+        Long userId = userService.updateMember(memberId, request);
+
+        return CommonResponse.success("회원 정보 수정 완료",userId);
     }
 
     //회원 삭제 (DELETE)
     @DeleteMapping("/{memberId}")
-    public ResponseEntity<String> deleteMember(@PathVariable Long memberId) {
-        userService.deleteMember(memberId);
-        return ResponseEntity.ok("회원 삭제 완료");
+    public CommonResponse<Long> deleteMember(@PathVariable Long memberId) {
+        Long userId = userService.deleteMember(memberId);
+        return CommonResponse.success("회원 삭제 완료",userId);
     }
 
     // 회원 조회 & 검색 API
     @GetMapping
-    public ResponseEntity<List<User>> getMembers(
+    public CommonResponse<List<User>> getMembers(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String companyName,
@@ -44,6 +46,6 @@ public class UserController {
     ) {
 
         List<User> members = userService.searchMembers(name, email, companyName, type);
-        return ResponseEntity.ok(members);
+        return CommonResponse.success("회원을 성공적으로 조회하였습니다.", members);
     }
 }
