@@ -1,22 +1,18 @@
 package org.etmetmy.bn_server.domain.post.entity;
-
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.user.entity.User;
-
-import java.time.LocalDateTime;
+import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
 @Table(name = "post")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Post {
+@SuperBuilder
+public class Post extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,34 +39,18 @@ public class Post {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "created_ip", length = 45)
-    private String createdIp;
-
-    @Column(name = "updated_ip", length = 45)
-    private String updatedIp;
-
     @Column(name = "is_completed")
     private Boolean isCompleted;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stage_id", nullable = false)
-    private Stage stage;
+    @Column(name = "stage_id", nullable = false)
+    private Long stageId;
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
         if (isCompleted == null) isCompleted = false;
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    public void updateStage(Long stageId) {
+        this.stageId = stageId;
     }
 }

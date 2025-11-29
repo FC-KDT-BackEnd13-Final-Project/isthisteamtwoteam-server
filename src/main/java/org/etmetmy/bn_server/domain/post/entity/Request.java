@@ -2,9 +2,10 @@ package org.etmetmy.bn_server.domain.post.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
 
@@ -13,8 +14,8 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class Request {
+@SuperBuilder
+public class Request extends BaseEntity {
 
     @Id
     @Column(name = "key", length = 255)
@@ -33,17 +34,16 @@ public class Request {
     @Column(name = "approve_status", length = 255)
     private String approveStatus;
 
-    @Column(name = "request_time")
-    private LocalDateTime requestTime;
-
     @Column(name = "reply_time")
     private LocalDateTime replyTime;
 
     @Column(name = "reject_reason", length = 255)
     private String rejectReason;
 
-    @PrePersist
-    protected void onCreate() {
-        requestTime = LocalDateTime.now();
+    public void updateStatus(Long replyUserId, String newStatus, String rejectReason) {
+        this.replitUserId = replyUserId;
+        this.approveStatus = newStatus;
+        this.rejectReason = rejectReason;
+        this.replyTime = LocalDateTime.now();
     }
 }
