@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.activityLog.controller;
+package org.etmetmy.bn_server.domain.activityLog;
 
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.dto.ActivityLogResponse;
