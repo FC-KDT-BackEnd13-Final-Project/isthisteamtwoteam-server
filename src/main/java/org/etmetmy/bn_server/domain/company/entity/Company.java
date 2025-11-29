@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
@@ -12,6 +13,8 @@ import org.etmetmy.bn_server.global.entity.BaseEntity;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @SuperBuilder
 public class Company extends BaseEntity {
 
@@ -40,4 +43,8 @@ public class Company extends BaseEntity {
 
     @Column(name = "business_registration", length = 500)
     private String businessRegistration;
+
+    @Enumerated(EnumType.STRING) // DB에 "DEVELOPER", "CLIENT" 로 저장됨
+    @Column(name = "company_type")
+    private CompanyType type;
 }
