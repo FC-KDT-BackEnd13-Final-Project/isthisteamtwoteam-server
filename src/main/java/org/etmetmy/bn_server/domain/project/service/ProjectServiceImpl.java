@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.project.dto.entityDto.ProjectDTO;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectMemberRequest;
+import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
@@ -110,4 +111,13 @@ public class ProjectServiceImpl implements ProjectService {
         List<Project> projects = projectRepository.findAll();
         return ProjectDTO.Converter.toResponseList(projects);
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProjectMemberResponse> getProjectMembers(Long projectId) {
+        List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);
+        log.info("[프로젝트 멤버 조회] projectId={}, memberCount={}", projectId, members.size());
+        return ProjectMemberResponse.Converter.from(members);
+    }
+
 }
