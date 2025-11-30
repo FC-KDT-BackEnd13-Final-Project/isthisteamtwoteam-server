@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.user.repository;
 
+import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

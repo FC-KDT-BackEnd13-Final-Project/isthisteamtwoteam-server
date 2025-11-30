@@ -3,6 +3,8 @@ package org.etmetmy.bn_server.domain.checkList.service;
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 
+import java.util.List;
+
 public interface CheckListService {
 
     CheckListResponse save();
@@ -10,4 +12,6 @@ public interface CheckListService {
     CheckListResponse update(Long checkListId, CheckListUpdateRequest request);
 
     void delete(Long checkListId);
-}
+
+
+    }

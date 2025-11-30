@@ -10,23 +10,23 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer{
 
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new UserAuthorizationInterceptor())
-                .order(1)
-                .addPathPatterns("/api/v1/**")
-                .excludePathPatterns(
-                        "/api/v1/login",
-                        "/api/v1/logout",
-                        "/api/v1/home"
-                        );
-
-        registry.addInterceptor(new RoleAuthorizationInterceptor())
-                .order(2)
-                .addPathPatterns(
-                        "/api/v1/users/**",
-                        "/api/v1/developers/**",
-                        "/api/v1/admin/**"
-                );
-    }
+//    @Override
+//    public void addInterceptors(InterceptorRegistry registry) {
+//        registry.addInterceptor(new UserAuthorizationInterceptor())
+//                .order(1)
+//                .addPathPatterns("/api/v1/**")
+//                .excludePathPatterns(
+//                        "/api/v1/login",
+//                        "/api/v1/logout",
+//                        "/api/v1/home"
+//                        );
+//
+//        registry.addInterceptor(new RoleAuthorizationInterceptor())
+//                .order(2)
+//                .addPathPatterns(
+//                        "/api/v1/users/**",
+//                        "/api/v1/developers/**",
+//                        "/api/v1/admin/**"
+//                );
+//    }
 }

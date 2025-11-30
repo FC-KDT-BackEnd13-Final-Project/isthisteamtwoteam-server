@@ -38,4 +38,6 @@ public class CheckListServiceImpl implements CheckListService {
     public void delete(Long checkListId) {
         checkListRepository.deleteById(checkListId);
     }
+
+
 }
