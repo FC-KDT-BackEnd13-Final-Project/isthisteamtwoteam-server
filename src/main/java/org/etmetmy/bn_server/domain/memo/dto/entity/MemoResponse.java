@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.memo.entity.dto.entity;
+package org.etmetmy.bn_server.domain.memo.dto.entity;
 
 import lombok.Builder;
 import lombok.Getter;

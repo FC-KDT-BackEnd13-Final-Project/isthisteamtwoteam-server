@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.memo.entity.repository;
+package org.etmetmy.bn_server.domain.memo.repository;
 
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.springframework.data.jpa.repository.JpaRepository;
