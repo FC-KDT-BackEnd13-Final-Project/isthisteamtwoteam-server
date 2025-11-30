@@ -2,7 +2,7 @@ package org.etmetmy.bn_server.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
-import org.etmetmy.bn_server.domain.user.repository.CompanyRepository;
+import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

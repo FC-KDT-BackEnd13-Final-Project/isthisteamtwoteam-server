@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
@@ -39,6 +40,8 @@ public class User extends BaseEntity {
 
     @Column(name = "phone", length = 20)
     private String phone;
+
+
 
     public void updateInfo(String name, String email, Company company, Role role) {
         this.name = name;

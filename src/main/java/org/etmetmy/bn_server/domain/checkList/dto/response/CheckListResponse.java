@@ -13,6 +13,8 @@ public class CheckListResponse {
 
     private Long id;
     private String content;
+    private Boolean checked;
+
 
     public static class Converter{
 
