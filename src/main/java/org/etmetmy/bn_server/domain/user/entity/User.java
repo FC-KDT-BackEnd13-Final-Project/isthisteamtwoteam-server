@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
@@ -35,15 +34,20 @@ public class User extends BaseEntity {
     private String name;
 
     @Column(name = "role", nullable = false, length = 255)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 
     @Column(name = "phone", length = 20)
     private String phone;
 
-    public void updateInfo(String name, String email, Company company, String role) {
+    public void updateInfo(String name, String email, Company company, Role role) {
         this.name = name;
         this.email = email;
         this.company = company; // 회사 이동 가능
         this.role = role;       // 관리자 권한 부여 가능
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

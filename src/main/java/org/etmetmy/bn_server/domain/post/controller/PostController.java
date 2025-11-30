@@ -10,14 +10,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/users/projects/{projectId}/posts")
+@RequestMapping("/api/v1/users/projects")
 @RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
 
     // 1. 게시글 상세 조회
-    @GetMapping("/{postId}")
+    @GetMapping("/{projectId}/posts/{postId}")
     public ResponseEntity<CommonResponse<PostDetailResponse>> getPostDetail(
             @PathVariable Long projectId,
             @PathVariable Long postId
