@@ -41,6 +41,8 @@ public class User extends BaseEntity {
     @Column(name = "phone", length = 20)
     private String phone;
 
+
+
     public void updateInfo(String name, String email, Company company, Role role) {
         this.name = name;
         this.email = email;
