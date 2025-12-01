@@ -48,6 +48,10 @@ public class CheckListController {
             @RequestParam(defaultValue = "ASC") String direction,
             @RequestParam(required = false) String keyword
     ) {
+        System.out.println("=== CheckList GET 호출 ===");
+        System.out.println("keyword: [" + keyword + "]");
+        System.out.println("page: " + page + ", size: " + size);
+
         // 동적 정렬 생성
         Sort sort = direction.equalsIgnoreCase("DESC")
                 ? Sort.by(sortBy).descending()
@@ -57,9 +61,15 @@ public class CheckListController {
 
         // 검색어가 있으면 검색, 없으면 전체 조회
         Page<CheckListResponse> result;
-        if (keyword != null && !keyword.isEmpty()) {
-            result = checkListService.searchCheckLists(keyword, pageRequest);
+
+        // keyword가 빈 문자열("")로 명시적으로 전달된 경우도 전체 조회로 처리
+        String trimmedKeyword = (keyword != null) ? keyword.trim() : null;
+
+        if (trimmedKeyword != null && !trimmedKeyword.isEmpty()) {
+            System.out.println(">>> 검색 실행: " + trimmedKeyword);
+            result = checkListService.searchCheckLists(trimmedKeyword, pageRequest);
         } else {
+            System.out.println(">>> 전체 조회 실행");
             result = checkListService.getCheckLists(pageRequest);
         }
 
