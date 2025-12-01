@@ -16,4 +16,6 @@ public interface ProjectService {
 
     List<ProjectResponse> getAllProjects();
     List<ProjectMemberResponse> getProjectMembers(Long projectId);
+
+    ProjectResponse getProjectById(Long projectId);
 }

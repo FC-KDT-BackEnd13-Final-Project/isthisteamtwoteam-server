@@ -25,6 +25,8 @@ public class ProjectController {
 
         Long projectId = projectService.createProject(request, currentUserId);
 
+        ProjectResponse response = projectService.getProjectById(projectId);
+
         return CommonResponse.success("프로젝트 생성 성공", projectId);
     }
 

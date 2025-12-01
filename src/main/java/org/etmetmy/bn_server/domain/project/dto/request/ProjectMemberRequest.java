@@ -14,14 +14,12 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 @NoArgsConstructor
 public class ProjectMemberRequest {
     private Long userId;
-    private String role;
 
     public static class Converter{
         public static ProjectMember toEntity(ProjectMemberRequest request, Project project, User user, Long assignedBy){
             return ProjectMember.builder()
                     .project(project)
                     .user(user)
-                    .role(request.getRole())
                     .assignedBy(assignedBy)
                     .build();
         }

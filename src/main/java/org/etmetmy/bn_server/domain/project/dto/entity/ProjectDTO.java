@@ -39,7 +39,7 @@ public class ProjectDTO {
                     .stageId(project.getStage() != null ? project.getStage().getStageId().intValue() : null)
                     .stageName(project.getStage() != null ? project.getStage().getStageName() : null)
                     .memoContent(memo != null ? memo.getContent() : null)
-                    .members(null)
+                    .members(List.of())
                     .createdAt(project.getCreatedAt())
                     .updatedAt(project.getUpdatedAt())
                     .createdBy(project.getCreatedBy())
@@ -51,6 +51,12 @@ public class ProjectDTO {
                     ? project.getMemo().get(0)
                     : null;
 
+            // ProjectMember에서 userId만 추출하여 List<Long>으로 변환
+            List<Long> memberUserIds = members.stream()
+                    .map(pm -> pm.getUser() != null ? pm.getUser().getId() : null)
+                    .filter(userId -> userId != null)
+                    .collect(Collectors.toList());
+
             return ProjectResponse.builder()
                     .projectId(project.getId())
                     .projectName(project.getProjectName())
@@ -59,7 +65,7 @@ public class ProjectDTO {
                     .stageId(project.getStage() != null ? project.getStage().getStageId().intValue() : null)
                     .stageName(project.getStage() != null ? project.getStage().getStageName() : null)
                     .memoContent(memo != null ? memo.getContent() : null)
-                    .members(org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse.Converter.from(members))
+                    .members(memberUserIds)  // userId 리스트로 설정
                     .createdAt(project.getCreatedAt())
                     .updatedAt(project.getUpdatedAt())
                     .createdBy(project.getCreatedBy())
@@ -78,5 +84,4 @@ public class ProjectDTO {
                     .collect(Collectors.toList());
         }
     }
-
 }

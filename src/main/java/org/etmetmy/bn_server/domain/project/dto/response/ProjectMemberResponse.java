@@ -15,7 +15,6 @@ public class ProjectMemberResponse {
     private Long projectMemberId;
     private Long userId;
     private String userName;
-    private String role;
 
     public static class Converter{
         public static ProjectMemberResponse from(ProjectMember projectMember){
@@ -23,7 +22,6 @@ public class ProjectMemberResponse {
                     .projectMemberId(projectMember.getProjectMemberId())
                     .userId(projectMember.getUser() != null ? projectMember.getUser().getId() : null)
                     .userName(projectMember.getUser() != null ? projectMember.getUser().getName() : null)
-                    .role(projectMember.getRole())
                     .build();
         }
 
