@@ -33,11 +33,18 @@ public class MemoController {
     * 프로젝트에서 개인 메모 조회
     * */
     @GetMapping("/{projectId}/users/memos")
-    public CommonResponse<Memo> getUserMemo(
+    public CommonResponse<MemoResponse> getUserMemo(
             @PathVariable Long projectId,
             HttpSession session
     ){
+
         Long userId = SessionUtil.getLoginUserId(session);
-        Memo memo = memoService.getUserMemo();
+        MemoResponse memo = memoService.getUserMemo(userId,projectId);
+
+        if(memo == null){
+            return CommonResponse.success("개인 메모가 존재하지 않습니다.", memo);
+        }else{
+            return CommonResponse.success("개인 메모 조회를 성공적으로 완료했습니다.", memo);
+        }
     }
 }
