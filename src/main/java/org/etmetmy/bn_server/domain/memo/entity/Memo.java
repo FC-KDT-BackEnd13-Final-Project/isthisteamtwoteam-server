@@ -32,4 +32,8 @@ public class Memo extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

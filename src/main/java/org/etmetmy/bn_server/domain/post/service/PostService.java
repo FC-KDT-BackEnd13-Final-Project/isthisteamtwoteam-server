@@ -6,6 +6,8 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.repository.RequestRepository;
+import org.etmetmy.bn_server.global.CustomException;
+import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +29,7 @@ public class PostService {
     // 1. 게시글 상세 조회 (GET)
     public PostDetailResponse getPostDetail(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
 
         // DTO 변환 (StageName 처리는 DTO에서 Long stageId 기반으로 처리되어야 함)
         // DTO 호출 인자를 Post와 User로 단순화함
@@ -39,10 +41,10 @@ public class PostService {
     @Transactional
     public void approvePost(Long postId, Long approvingUserId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
 
         Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(postId, STATUS_PENDING)
-                .orElseThrow(() -> new IllegalStateException("해당 게시글에 승인 대기 중인 요청이 없습니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.REQUEST_PENDING_NOT_FOUND));
 
         // 1. Post의 Stage ID를 APPROVED (99)로 변경
         post.updateStage(STAGE_APPROVED_ID);
@@ -56,10 +58,10 @@ public class PostService {
     @Transactional
     public void rejectPost(Long postId, Long rejectingUserId, String rejectReason) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
 
         Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(postId, STATUS_PENDING)
-                .orElseThrow(() -> new IllegalStateException("해당 게시글에 승인 대기 중인 요청이 없습니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.REQUEST_PENDING_NOT_FOUND));
 
         // 1. Post의 Stage ID를 REJECTED (98)로 변경
         post.updateStage(STAGE_REJECTED_ID);

@@ -11,6 +11,8 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.global.CustomException;
+import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,10 +33,10 @@ public class CommentService {
 
         // Post와 User 엔티티 유효성 검사 및 조회
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
 
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
 
         // IP 주소 추출
         String clientIp = servletRequest.getRemoteAddr();
@@ -55,14 +57,14 @@ public class CommentService {
 
         // 1. Post, User, Parent Comment 유효성 검사
         postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
 
         // 부모 댓글 존재 여부 확인
         commentRepository.findById(parentCommentId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 댓글 ID입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.PARENT_COMMENT_NOT_FOUND));
 
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
 
         // IP 주소
         String clientIp = servletRequest.getRemoteAddr();
@@ -85,7 +87,7 @@ public class CommentService {
 
         // 1. Post 존재 여부 확인 (외래 키 검증)
         postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
 
         // 2. 최상위 댓글 조회
         List<Comment> rootComments = commentRepository.findRootCommentsByPostId(postId);
