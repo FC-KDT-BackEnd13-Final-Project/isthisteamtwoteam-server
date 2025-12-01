@@ -29,5 +29,3 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("companyType") CompanyType companyType // Enum 타입으로 받음
     );
 }
-
-

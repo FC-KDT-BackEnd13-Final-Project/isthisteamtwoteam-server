@@ -2,8 +2,8 @@ package org.etmetmy.bn_server.domain.checkList.service;
 
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
-
-import java.util.List;
+import org.etmetmy.bn_server.global.page.PageRequest;
+import org.springframework.data.domain.Page;
 
 public interface CheckListService {
 
@@ -13,5 +13,7 @@ public interface CheckListService {
 
     void delete(Long checkListId);
 
+    Page<CheckListResponse> getCheckLists(PageRequest pageRequest);
 
-    }
+    Page<CheckListResponse> searchCheckLists(String keyword, PageRequest pageRequest);
+}
