@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.dto.response.MemoResponse;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
+import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
+import org.etmetmy.bn_server.domain.user.entity.ProjectMember;
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.List;
 public class MemoServiceImpl implements MemoService{
 
     private final MemoRepository memoRepository;
+    private final ProjectMemberService projectMemberService;
 
     //todo: 프로젝트 공용 메모 조회
     @Override
@@ -41,7 +44,7 @@ public class MemoServiceImpl implements MemoService{
     //todo : 프로젝트 개인 메모 업데이트
     @Override
     @Transactional
-    public Long updateMemo(Long userId, Long projectId, String content) {
+    public Long updateUserMemo(Long userId, Long projectId, String content) {
         Memo memo = memoRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new CustomException(StatusCode.MEMO_NOT_FOUND));
 
@@ -52,4 +55,23 @@ public class MemoServiceImpl implements MemoService{
 
         return memoId;
     }
+
+    @Override
+    @Transactional
+    public Long updateProjectMemo(Long userId, Long projectId, String content) {
+        boolean hasRole = projectMemberService.hasRoleToProject(userId, projectId);
+
+        if(hasRole){
+            Memo memo = memoRepository.findByUserIdAndProjectId(userId, projectId)
+                    .orElseThrow(() -> new CustomException(StatusCode.MEMO_NOT_FOUND));
+            memo.updateContent(content);
+
+            return memo.getMemoId();
+        }else{
+            return null;
+        }
+
+    }
+
+
 }

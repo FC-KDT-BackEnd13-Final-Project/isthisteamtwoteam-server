@@ -9,5 +9,7 @@ public interface MemoService {
 
     MemoResponse getUserMemo(Long userId, Long projectId);
 
-    Long updateMemo(Long userId, Long projectId, String content);
+    Long updateUserMemo(Long userId, Long projectId, String content);
+
+    Long updateProjectMemo(Long userId, Long projectId, String content);
 }

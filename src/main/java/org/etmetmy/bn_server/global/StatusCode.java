@@ -26,6 +26,8 @@ public enum StatusCode {
     // 댓글 응답
     PARENT_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 부모 댓글 ID입니다."),
 
+    //Project 에서
+    PROJECT_MEMBER_NOT_FIND(HttpStatus.NOT_FOUND, "유저가 프로젝트에 참여하고 있지 않습니다."),
 
     //Company 에러
     COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회사입니다."),

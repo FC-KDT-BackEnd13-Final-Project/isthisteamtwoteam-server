@@ -59,8 +59,24 @@ public class MemoController {
 
     ){
         Long userId = SessionUtil.getLoginUserId(session);
-       Long memoId = memoService.updateMemo(userId, projectId, memoUpdateRequestDto.getContent());
+       Long memoId = memoService.updateUserMemo(userId, projectId, memoUpdateRequestDto.getContent());
 
        return CommonResponse.success("성공적으로 메모를 수정하였습니다.", memoId);
+    }
+
+    /**
+     * 프로젝트에서 공통 메모 업데이트
+     * */
+    @PatchMapping("/{projectId}/users/memos")
+    public CommonResponse<Long> updateProjectMemo(
+            @PathVariable Long projectId,
+            @RequestBody MemoUpdateRequestDto memoUpdateRequestDto,
+            HttpSession session
+
+    ){
+        Long userId = SessionUtil.getLoginUserId(session);
+        Long memoId = memoService.updateProjectMemo(userId, projectId, memoUpdateRequestDto.getContent());
+
+        return CommonResponse.success("성공적으로 메모를 수정하였습니다.", memoId);
     }
 }
