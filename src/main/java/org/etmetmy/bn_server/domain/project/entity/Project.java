@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
+import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDate;
@@ -41,8 +42,10 @@ public class Project extends BaseEntity {
     @Column(name = "created_by")
     private Long createdBy;
 
-    @OneToMany(mappedBy = "project", cascade =  CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stage_id")
+    private Stage stage;
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Memo> memo;
-
-
 }
