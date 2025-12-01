@@ -5,7 +5,6 @@ import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 import org.etmetmy.bn_server.domain.checkList.service.CheckListService;
 import org.etmetmy.bn_server.global.CommonResponse;
-import org.etmetmy.bn_server.global.StatusCode;
 import org.etmetmy.bn_server.global.page.PageRequest;
 import org.etmetmy.bn_server.global.page.PageResponse;
 import org.springframework.data.domain.Page;
@@ -17,27 +16,28 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/admin/checklists")
 public class CheckListController {
 
-    private  final CheckListService checkListService;
+    private final CheckListService checkListService;
 
     // 체크리스트 생성
     @PostMapping
-    public CheckListResponse createCheckList(){
-        return checkListService.save();
+    public CommonResponse<CheckListResponse> createCheckList() {
+        return CommonResponse.success("체크리스트를 생성했습니다", checkListService.save());
     }
 
     // 체크리스트 수정
     @PatchMapping("/{checkListId}")
-    public CheckListResponse update(@PathVariable("checkListId") Long checkListId,
-                                    @RequestBody CheckListUpdateRequest request){
+    public CommonResponse<CheckListResponse> update(@PathVariable("checkListId") Long checkListId,
+                                                    @RequestBody CheckListUpdateRequest request) {
 
-        return checkListService.update(checkListId, request);
+        return CommonResponse.success("체크리스트를 수정했습니다.", checkListService.update(checkListId, request));
     }
 
     // 체크리스트 삭제
     @DeleteMapping("/{checkListId}")
-    public void deleteCheckList(@PathVariable("checkListId") Long checkListId){
+    public CommonResponse<Object> deleteCheckList(@PathVariable("checkListId") Long checkListId) {
 
         checkListService.delete(checkListId);
+        return CommonResponse.success("체크리스트를 삭제했습니다.");
     }
 
     @GetMapping
@@ -57,15 +57,13 @@ public class CheckListController {
 
         // 검색어가 있으면 검색, 없으면 전체 조회
         Page<CheckListResponse> result;
-        if (keyword != null && !keyword.isEmpty()){
+        if (keyword != null && !keyword.isEmpty()) {
             result = checkListService.searchCheckLists(keyword, pageRequest);
-        }
-        else{
+        } else {
             result = checkListService.getCheckLists(pageRequest);
         }
 
         // PageResponse로 변환하여 깔끔한 응답 반환
-        return CommonResponse.success(StatusCode.CHECKLISTS_FOUND.getMessage(), PageResponse.of(result));
+        return CommonResponse.success("성공적으로 페이지를 조회하였습니다.", PageResponse.of(result));
     }
-
 }

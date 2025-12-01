@@ -1,6 +1,8 @@
 package org.etmetmy.bn_server.global.page;
 
 import lombok.Getter;
+import org.etmetmy.bn_server.global.CustomException;
+import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
@@ -17,10 +19,10 @@ public class PageRequest implements Pageable {
 
     protected PageRequest(int page, int size, Sort sort) {
         if (page < 0) {
-            throw new IllegalArgumentException("Page index must not be less than zero");
+            throw new CustomException(StatusCode.NON_INDEX_PAGE);
         }
         if (size < 1) {
-            throw new IllegalArgumentException("Page size must not be less than one");
+            throw new CustomException(StatusCode.NON_SIZE_PAGE);
         }
 
         this.page = page;

@@ -31,11 +31,11 @@ public class UserServiceImpl implements UserService{
     public Long updateMember(Long memberId, MemberUpdateRequest request) {
         // 1. 회원 찾기
         User user = userRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
 
         // 2. 바꿀 회사 찾기
         Company company = companyRepository.findById(request.getCompanyId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회사입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.COMPANY_NOT_FOUND));
 
         // 3. 정보 변경 (dirty checking)
         user.updateInfo(request.getName(), request.getEmail(), company, request.getRole());
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService{
     public Long deleteMember(Long memberId) {
         // 존재 여부 확인 후 삭제
         User user = userRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
 
         Long userId = user.getId();
         userRepository.delete(user);
@@ -64,7 +64,7 @@ public class UserServiceImpl implements UserService{
         if (type != null && !type.isBlank()) {
             try {
                 companyType = CompanyType.valueOf(type.toUpperCase());
-            } catch (IllegalArgumentException e) {
+            } catch (CustomException e) {
                 // 잘못된 type 값은 무시하고 null로 (쿼리에서 IS NULL 처리됨)
             }
         }
