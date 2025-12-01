@@ -18,7 +18,6 @@ import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @SuperBuilder
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Company extends BaseEntity {
 
     @Id
