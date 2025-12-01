@@ -2,8 +2,8 @@ package org.etmetmy.bn_server.domain.memo.controller;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.memo.entity.Memo;
-import org.etmetmy.bn_server.domain.memo.dto.entity.MemoResponse;
+import org.etmetmy.bn_server.domain.memo.dto.request.MemoUpdateRequestDto;
+import org.etmetmy.bn_server.domain.memo.dto.response.MemoResponse;
 import org.etmetmy.bn_server.domain.memo.service.MemoService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
@@ -46,5 +46,18 @@ public class MemoController {
         }else{
             return CommonResponse.success("개인 메모 조회를 성공적으로 완료했습니다.", memo);
         }
+    }
+
+    @PatchMapping("/{projectId}/users/memos")
+    public CommonResponse<Long> updateUserMemo(
+            @PathVariable Long projectId,
+            @RequestBody MemoUpdateRequestDto memoUpdateRequestDto,
+            HttpSession session
+
+    ){
+        Long userId = SessionUtil.getLoginUserId(session);
+       Long memoId = memoService.updateMemo(userId, projectId, memoUpdateRequestDto.getContent());
+
+       return CommonResponse.success("성공적으로 메모를 수정하였습니다.", memoId);
     }
 }
