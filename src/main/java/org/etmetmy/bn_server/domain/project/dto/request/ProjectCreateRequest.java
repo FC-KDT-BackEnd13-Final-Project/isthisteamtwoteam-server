@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.etmetmy.bn_server.domain.company.entity.Company;
+import org.etmetmy.bn_server.domain.memo.entity.Memo;
+import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 
 import java.time.LocalDate;
@@ -21,17 +23,20 @@ public class ProjectCreateRequest {
     private List<ProjectMemberRequest> members;
     private List<Integer> selectedChecklistIds;
     private Long companyId;
-    private String content; // null 허용, 빈문자열 "" 가능
+    private String memo;
+    private String stageName;
 
     //내부 converter
     public static class Converter{
 
-        public static Project toEntity(ProjectCreateRequest request, Long createdBy){
+        public static Project toEntity(ProjectCreateRequest request, Long createdBy, Stage stage, Memo memo){
             return Project.builder()
                     .projectName(request.getProjectName())
                     .startDate(parseDate(request.getStartDate()))
                     .endDate(parseDate(request.getEndDate()))
-                    .companyEntity(null)
+                    .companyEntity(Company.builder().companyId(request.getCompanyId()).build())
+                    .stage(stage)
+                    .memo(memo)
                     .createdBy(createdBy)
                     .build();
         }

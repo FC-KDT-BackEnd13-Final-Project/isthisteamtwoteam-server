@@ -20,12 +20,9 @@ public class ProjectController {
 
     @PostMapping
     public CommonResponse<Long> createProject(HttpSession session, @RequestBody ProjectCreateRequest request) {
-        Long currentUserId = getCurrentUserId();   // TODO: Security 연동 시 수정
-
+        Long currentUserId = (Long) session.getAttribute("userId");
 
         Long projectId = projectService.createProject(request, currentUserId);
-
-        List<ProjectMemberResponse> members = projectService.getProjectMembers(projectId);
 
         return CommonResponse.success("프로젝트 생성 성공", projectId);
     }
@@ -45,10 +42,5 @@ public class ProjectController {
         List<ProjectMemberResponse> responses = projectService.getProjectMembers(projectId);
 
         return CommonResponse.success("프로젝트 멤버 조회 성공", responses);
-    }
-
-    //임시
-    private Long getCurrentUserId() {
-        return 1L;
     }
 }

@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.domain.project.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 
 import java.time.LocalDate;
@@ -17,8 +18,9 @@ public class ProjectResponse {
     private LocalDate startDate;
     private LocalDate endDate;
 
-    private Integer stageId;               // TODO: 단계 도메인 생기면 매핑
-    private String content;                // TODO: 메모 도메인/필드 추가 시 사용
+    private Integer stageId;
+    private String stageName;
+    private String memoContent;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -31,8 +33,9 @@ public class ProjectResponse {
                     .projectName(project.getProjectName())
                     .startDate(project.getStartDate())
                     .endDate(project.getEndDate())
-                    .stageId(null)         // 아직 Project 엔티티에 단계 필드 없음
-                    .content(null)         // 아직 엔티티에 없음
+                    .stageId(project.getStage() != null ? project.getStage().getId() : null)
+                    .stageName(project.getStage() != null ? project.getStage().getName() : null)
+                    .memoContent(project.getMemo() != null ? project.getMemo().getContent() : null)
                     .createdAt(project.getCreatedAt())
                     .updatedAt(project.getUpdatedAt())
                     .createdBy(project.getCreatedBy())

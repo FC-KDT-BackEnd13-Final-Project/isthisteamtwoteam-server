@@ -30,29 +30,14 @@ public class ProjectDTO {
                     .projectName(project.getProjectName())
                     .startDate(project.getStartDate())
                     .endDate(project.getEndDate())
-                    .stageId(null)              // 추후 단계 정보 매핑
-                    .content(null)              // 추후 메모 매핑
+                    .stageId(project.getStageId() != null ? project.getStage().getStageId().intValue() : null)
+                    .stageName(project.getStageName() != null ? project.getStage().getName() : null)
+                    .memoContent(project.getMemoContent() != null ? project.getMemo().getContent() : null)
                     .createdAt(project.getCreatedAt())
                     .updatedAt(project.getUpdatedAt())
                     .createdBy(project.getCreatedBy())
                     .build();
         }
-//        public static ProjectDTO from(Project project) {
-//            if (project == null) {
-//                return null;
-//            }
-//
-//            return ProjectDTO.builder()
-//                    .projectId(project.getProjectId())
-//                    .projectName(project.getProjectName())
-//                    .startDate(project.getStartDate())
-//                    .endDate(project.getEndDate())
-//                    .companyId(project.getCompanyEntity() != null ? project.getCompanyEntity().getCompanyId() : null)
-//                    .createdAt(project.getCreatedAt())
-//                    .updatedAt(project.getUpdatedAt())
-//                    .createdBy(project.getCreatedBy())
-//                    .build();
-//        }
 
         public static List<ProjectResponse> toResponseList(List<Project> projects){
             return projects.stream()
