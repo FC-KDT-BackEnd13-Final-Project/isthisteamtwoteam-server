@@ -68,5 +68,4 @@ public class CheckListController {
         return CommonResponse.success(StatusCode.CHECKLISTS_FOUND.getMessage(), PageResponse.of(result));
     }
 
-
 }

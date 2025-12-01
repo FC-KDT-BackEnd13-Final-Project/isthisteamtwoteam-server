@@ -5,8 +5,6 @@ import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 import org.etmetmy.bn_server.global.page.PageRequest;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
-
 public interface CheckListService {
 
     CheckListResponse save();

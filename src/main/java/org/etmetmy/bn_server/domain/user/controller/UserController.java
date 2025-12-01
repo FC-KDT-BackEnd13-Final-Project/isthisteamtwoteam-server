@@ -68,7 +68,6 @@ public class UserController {
             session.invalidate();
         }
         return CommonResponse.success("성공적으로 로그아웃을 완료했습니다.");
-
     }
 
     // 회원 조회 & 검색 API
@@ -103,7 +102,4 @@ public class UserController {
 
         return CommonResponse.success("회원 정보 수정 완료",userId);
     }
-
-
-
 }

@@ -71,7 +71,7 @@ public class UserServiceImpl implements UserService{
         }
 
         // 2. Repository의 @Query 메서드 호출
-        return userRepository.findByNamicMembers(
+        return userRepository.findDynamicMembers(
                 name,
                 email,
                 companyName,

@@ -59,6 +59,4 @@ public class CheckListServiceImpl implements CheckListService {
         return keywrodCheckListPage.map(CheckListResponse.Converter::from);
     }
 
-
-
 }
