@@ -6,7 +6,6 @@ import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.dto.entity.MemoResponse;
 import org.etmetmy.bn_server.domain.memo.service.MemoService;
 import org.etmetmy.bn_server.global.CommonResponse;
-import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,7 +36,15 @@ public class MemoController {
             @PathVariable Long projectId,
             HttpSession session
     ){
+
+
         Long userId = SessionUtil.getLoginUserId(session);
-        Memo memo = memoService.getUserMemo();
+        Memo memo = memoService.getUserMemo(userId,projectId);
+
+        if(memo == null){
+            return CommonResponse.success("개인 메모가 존재하지 않습니다.", memo);
+        }else{
+            return CommonResponse.success("개인 메모 조회를 성공적으로 완료했습니다.", memo);
+        }
     }
 }
