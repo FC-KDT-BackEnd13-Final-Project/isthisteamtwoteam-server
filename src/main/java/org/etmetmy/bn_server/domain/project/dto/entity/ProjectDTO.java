@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Getter
@@ -26,26 +27,6 @@ public class ProjectDTO {
 
     public static class Converter {
 
-        public static ProjectResponse toResponse(Project project){
-            Memo memo = (project.getMemo() != null && !project.getMemo().isEmpty())
-                    ? project.getMemo().get(0)
-                    : null;
-
-            return ProjectResponse.builder()
-                    .projectId(project.getId())
-                    .projectName(project.getProjectName())
-                    .startDate(project.getStartDate())
-                    .endDate(project.getEndDate())
-                    .stageId(project.getStage() != null ? project.getStage().getStageId().intValue() : null)
-                    .stageName(project.getStage() != null ? project.getStage().getStageName() : null)
-                    .memoContent(memo != null ? memo.getContent() : null)
-                    .members(List.of())
-                    .createdAt(project.getCreatedAt())
-                    .updatedAt(project.getUpdatedAt())
-                    .createdBy(project.getCreatedBy())
-                    .build();
-        }
-
         public static ProjectResponse toResponse(Project project, List<ProjectMember> members){
             Memo memo = (project.getMemo() != null && !project.getMemo().isEmpty())
                     ? project.getMemo().get(0)
@@ -54,7 +35,7 @@ public class ProjectDTO {
             // ProjectMember에서 userId만 추출하여 List<Long>으로 변환
             List<Long> memberUserIds = members.stream()
                     .map(pm -> pm.getUser() != null ? pm.getUser().getId() : null)
-                    .filter(userId -> userId != null)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             return ProjectResponse.builder()
@@ -72,15 +53,12 @@ public class ProjectDTO {
                     .build();
         }
 
-        public static List<ProjectResponse> toResponseList(List<Project> projects){
-            return projects.stream()
-                    .map(Converter::toResponse)
-                    .collect(Collectors.toList());
-        }
-
         public static List<ProjectResponse> toResponseList(List<Project> projects, Map<Long, List<ProjectMember>> membersByProjectId){
             return projects.stream()
-                    .map(project -> Converter.toResponse(project, membersByProjectId.getOrDefault(project.getId(), List.of())))
+                    .map(project -> {
+                        List<ProjectMember> members = membersByProjectId.getOrDefault(project.getId(), List.of());
+                        return Converter.toResponse(project, members);
+                            })
                     .collect(Collectors.toList());
         }
     }

@@ -146,7 +146,7 @@ public class ProjectServiceImpl implements ProjectService{
                 log.info("ProjectID: {} - 멤버 수: {}", projectId, members.size())
         );
 
-        return ProjectDTO.Converter.toResponseList(projects, membersByProjectId);
+        return ProjectResponse.Converter.from(projects, membersByProjectId);
     }
 
     @Transactional(readOnly = true)
@@ -179,7 +179,7 @@ public class ProjectServiceImpl implements ProjectService{
 
         log.info("프로젝트 ID: {}, 멤버 수: {}", projectId, members.size());
 
-        return ProjectDTO.Converter.toResponse(project, members);
+        return ProjectResponse.Converter.from(project, members);
     }
 
     private Stage getStartStage(String stageName) {
@@ -248,13 +248,12 @@ public class ProjectServiceImpl implements ProjectService{
         Map<Long, User> userMap = users.stream()
                 .collect(Collectors.toMap(User::getId, user -> user));
 
-        // 3. 존재하지 않는 사용자 ID 로깅
+        // 3. 존재하지 않는 사용자 ID 체크 및 예외 발생
         List<Long> notFoundUserIds = memberIds.stream()
                 .filter(id -> !userMap.containsKey(id))
                 .toList();
 
         if (!notFoundUserIds.isEmpty()) {
-            log.warn("존재하지 않는 사용자 ID 목록 (무시됨): {}", notFoundUserIds);
         }
 
         // 4. 존재하는 User만 필터링하여 ProjectMember 생성

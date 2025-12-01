@@ -16,11 +16,11 @@ public class ProjectMemberRequest {
     private Long userId;
 
     public static class Converter{
-        public static ProjectMember toEntity(ProjectMemberRequest request, Project project, User user, Long assignedBy){
+        public static ProjectMember toEntity(ProjectMemberRequest request, Project project, User user, Long createdById){
             return ProjectMember.builder()
                     .project(project)
                     .user(user)
-                    .assignedBy(assignedBy)
+                    .assignedBy(createdById)
                     .build();
         }
 

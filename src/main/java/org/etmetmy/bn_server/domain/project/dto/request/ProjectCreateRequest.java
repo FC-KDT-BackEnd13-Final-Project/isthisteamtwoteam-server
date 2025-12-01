@@ -29,32 +29,31 @@ public class ProjectCreateRequest {
     private String endDate;
 
     @JsonProperty("members")
-    @JsonDeserialize(using = MemberListDeserializer.class)
+    //@JsonDeserialize(using = MemberListDeserializer.class)
     private List<Long> members;
     private List<Integer> selectedChecklistIds;
     private Long companyId;
     private String memo;
     private String stage;
 
-    public static class MemberListDeserializer extends JsonDeserializer<List<Long>> {
-        @Override
-        public List<Long> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-            JsonNode node = p.getCodec().readTree(p);
-            List<Long> userIds = new ArrayList<>();
-
-            if (node.isArray()) {
-                for (JsonNode element : node) {
-                    if (element.isObject() && element.has("userId")) {
-                        userIds.add(element.get("userId").asLong());
-                    } else if (element.isNumber()) {
-                        userIds.add(element.asLong());
-                    }
-                }
-            }
-            return userIds;
-
-        }
-    }
+//    public static class MemberListDeserializer extends JsonDeserializer<List<Long>> {
+//        @Override
+//        public List<Long> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+//            JsonNode node = p.getCodec().readTree(p);
+//            List<Long> userIds = new ArrayList<>();
+//
+//            if (node.isArray()) {
+//                for (JsonNode element : node) {
+//                    if (element.isNumber()) {
+//                        userIds.add(element.asLong());
+//                    }else if (element.isObject() && element.has("userId")) {
+//                        userIds.add(element.get("userId").asLong());
+//                }
+//            }
+//            return userIds;
+//
+//        }
+//    }
 
     //내부 converter
     public static class Converter{
