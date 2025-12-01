@@ -7,6 +7,7 @@ import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,13 +17,16 @@ public class MemoServiceImpl implements MemoService{
 
     private final MemoRepository memoRepository;
 
+    //todo: 프로젝트 공용 메모 조회
     @Override
+    @Transactional(readOnly = true)
     public List<MemoResponse> getProjectMemos(Long projectId) {
         List<Memo> memos = memoRepository.findByProjectId(projectId);
         return MemoResponse.Converter.from(memos);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MemoResponse getUserMemo(Long userId,Long projectId) {
         Memo memo = memoRepository.findByUserIdAndProjectId(userId,projectId)
                 .orElse(null);
@@ -36,6 +40,7 @@ public class MemoServiceImpl implements MemoService{
 
     //todo : 프로젝트 개인 메모 업데이트
     @Override
+    @Transactional
     public Long updateMemo(Long userId, Long projectId, String content) {
         Memo memo = memoRepository.findByUserIdAndProjectId(userId, projectId)
                 .orElseThrow(() -> new CustomException(StatusCode.MEMO_NOT_FOUND));

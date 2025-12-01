@@ -48,6 +48,9 @@ public class MemoController {
         }
     }
 
+    /**
+     * 프로젝트에서 개인 메모 업데이트
+     * */
     @PatchMapping("/{projectId}/users/memos")
     public CommonResponse<Long> updateUserMemo(
             @PathVariable Long projectId,
