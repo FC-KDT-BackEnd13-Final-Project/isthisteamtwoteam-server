@@ -8,5 +8,4 @@ import java.util.List;
 public interface MemoService {
     List<MemoResponse> getProjectMemos(Long projectId);
 
-    Memo getUserMemo();
 }

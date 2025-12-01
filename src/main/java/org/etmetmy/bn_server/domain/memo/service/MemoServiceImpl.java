@@ -20,9 +20,5 @@ public class MemoServiceImpl implements MemoService{
         return MemoResponse.Converter.from(memos);
     }
 
-    @Override
-    public Memo getUserMemo() {
-        Memo memo = memoRepository.findByUserId()
-        return null;
-    }
+
 }

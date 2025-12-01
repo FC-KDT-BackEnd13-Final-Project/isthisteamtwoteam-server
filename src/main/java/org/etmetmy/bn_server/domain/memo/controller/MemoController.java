@@ -29,15 +29,4 @@ public class MemoController {
         return CommonResponse.success("프로젝트 메모 조회 완료", response);
     }
 
-    /**
-    * 프로젝트에서 개인 메모 조회
-    * */
-    @GetMapping("/{projectId}/users/memos")
-    public CommonResponse<Memo> getUserMemo(
-            @PathVariable Long projectId,
-            HttpSession session
-    ){
-        Long userId = SessionUtil.getLoginUserId(session);
-        Memo memo = memoService.getUserMemo();
-    }
 }

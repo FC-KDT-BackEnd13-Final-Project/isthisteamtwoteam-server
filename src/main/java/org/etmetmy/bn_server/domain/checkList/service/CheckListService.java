@@ -19,6 +19,3 @@ public interface CheckListService {
 
     Page<CheckListResponse> searchCheckLists(String keyword, PageRequest pageRequest);
 }
-
-
-    }
