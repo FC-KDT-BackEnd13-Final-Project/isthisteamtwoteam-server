@@ -6,9 +6,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.company.entity.Company;
+import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "project")
@@ -21,7 +23,7 @@ public class Project extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "project_id")
-    private Long projectId;
+    private Long id;
 
     @Column(name = "project_name", nullable = false, length = 255)
     private String projectName;
@@ -34,8 +36,13 @@ public class Project extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "company")
-    private Company companyEntity;
+    private Company company;
 
     @Column(name = "created_by")
     private Long createdBy;
+
+    @OneToMany(mappedBy = "project", cascade =  CascadeType.ALL)
+    private List<Memo> memo;
+
+
 }
