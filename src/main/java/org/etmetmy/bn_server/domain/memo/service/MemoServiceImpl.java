@@ -20,5 +20,10 @@ public class MemoServiceImpl implements MemoService{
         return MemoResponse.Converter.from(memos);
     }
 
-
+    @Override
+    public Memo getUserMemo(Long userId,Long projectId) {
+        Memo memo = memoRepository.findByUserIdAndProjectId(userId,projectId)
+                .orElse(null);
+        return memo;
+    }
 }
