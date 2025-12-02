@@ -10,6 +10,9 @@ import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.exception.code.ErrorCode;
+import org.etmetmy.bn_server.exception.custom.BusinessException;
+import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
@@ -29,14 +32,14 @@ public class ProjectServiceImpl implements ProjectService {
 
         // project 조회
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new CustomException(StatusCode.PROJECT_NOT_FOUND));
+                .orElseThrow(ProjectNotFoundException::new);
 
         // 여러 checklistId에 대해 ProjectChecklist 엔티티 생성
         List<ProjectCheckList> projectCheckLists = request.getChecklistIds().stream()
                 .map(checkListId ->{
                     // 각 CheckList 조회
                     CheckList checkList = checkListRepository.findById(checkListId)
-                            .orElseThrow(()-> new CustomException(StatusCode.CHECKLIST_NOT_FOUND));
+                            .orElseThrow(()-> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
 
                     // ProjectCheckList 엔티티 생성
                     return ProjectAddCheckListRequest.Converter.toEntity(project, checkList);
@@ -46,7 +49,7 @@ public class ProjectServiceImpl implements ProjectService {
         // 일괄 저장
         List<ProjectCheckList> savedCheckLists = projectChecklistRepository.saveAll(projectCheckLists);
 
-        // Response 별환 후 반환
+        // Response 변환 후 반환
         return ProjectAddCheckListResponse.Converter.from(savedCheckLists);
     }
 }

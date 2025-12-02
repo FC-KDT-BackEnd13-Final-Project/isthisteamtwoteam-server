@@ -18,9 +18,8 @@ public class ProjectController {
     private final ProjectService projectService;
 
     @PostMapping("/{projectId}/checklists")
-    public CommonResponse<List<ProjectAddCheckListResponse>> addChecklist(@PathVariable Long projectId,
-                                                                          @RequestBody ProjectAddCheckListRequest request) {
+    public CommonResponse<List<ProjectAddCheckListResponse>> addCheckLists(@PathVariable Long projectId,
+                                                                           @RequestBody ProjectAddCheckListRequest request) {
         return CommonResponse.success("체크리스트를 할당했습니다", projectService.checklistAdd(projectId, request));
     }
-
 }
