@@ -8,8 +8,6 @@ import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "projectmember")
 @Getter

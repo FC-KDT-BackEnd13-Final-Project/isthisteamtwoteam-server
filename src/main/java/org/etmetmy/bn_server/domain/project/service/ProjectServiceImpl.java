@@ -5,19 +5,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
-import org.etmetmy.bn_server.domain.project.dto.entity.ProjectDTO;
 import org.etmetmy.bn_server.domain.project.repository.ProjectStageRepository;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectMemberRequest;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
+import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
+import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
+import org.etmetmy.bn_server.domain.project.dto.request.ProjectAddCheckListRequest;
+import org.etmetmy.bn_server.domain.project.dto.response.ProjectAddCheckListResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
+import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
+import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.springframework.http.HttpStatus;
+import org.etmetmy.bn_server.exception.code.ErrorCode;
+import org.etmetmy.bn_server.exception.custom.BusinessException;
+import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -36,6 +44,8 @@ public class ProjectServiceImpl implements ProjectService{
     private final UserRepository userRepository;
     private final ProjectStageRepository projectStageRepository;
     private final MemoRepository memoRepository;
+    private final ProjectCheckListRepository projectChecklistRepository;
+    private final CheckListRepository checkListRepository;
 
     @Override
     @Transactional
@@ -58,6 +68,7 @@ public class ProjectServiceImpl implements ProjectService{
         // 4. 프로젝트 멤버 생성 및 저장
         if (hasMembers(request)) {
             log.info("멤버 목록 존재 - 개수: {}, IDs: {}", request.getMembers().size(), request.getMembers());
+
 
             // List<Long>을 List<ProjectMemberRequest>로 변환 (생성자 사용)
             List<ProjectMemberRequest> memberRequests = request.getMembers().stream()
@@ -296,5 +307,31 @@ public class ProjectServiceImpl implements ProjectService{
 
         return allMembers.stream()
                 .collect(Collectors.groupingBy(pm -> pm.getProject().getId()));
+    }
+
+    @Override
+    public List<ProjectAddCheckListResponse> checklistAdd(Long projectId, ProjectAddCheckListRequest request) {
+
+        // project 조회
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 여러 checklistId에 대해 ProjectChecklist 엔티티 생성
+        List<ProjectCheckList> projectCheckLists = request.getChecklistIds().stream()
+                .map(checkListId ->{
+                    // 각 CheckList 조회
+                    CheckList checkList = checkListRepository.findById(checkListId)
+                            .orElseThrow(()-> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+
+                    // ProjectCheckList 엔티티 생성
+                    return ProjectAddCheckListRequest.Converter.toEntity(project, checkList);
+                })
+                .toList();
+
+        // 일괄 저장
+        List<ProjectCheckList> savedCheckLists = projectChecklistRepository.saveAll(projectCheckLists);
+
+        // Response 변환 후 반환
+        return ProjectAddCheckListResponse.Converter.from(savedCheckLists);
     }
 }

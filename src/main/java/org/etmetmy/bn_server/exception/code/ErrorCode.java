@@ -37,8 +37,10 @@ public enum ErrorCode {
     FILE_NOT_FOUND(404, "F001", "파일을 찾을 수 없습니다"),
     FILE_SIZE_EXCEEDED(400, "F002", "파일 크기가 제한을 초과했습니다"),
     INVALID_FILE_TYPE(400, "F003", "지원하지 않는 파일 형식입니다"),
-    FILE_UPLOAD_FAILED(500, "F004", "파일 업로드에 실패했습니다");
+    FILE_UPLOAD_FAILED(500, "F004", "파일 업로드에 실패했습니다"),
 
+    // 체크리스트 관련 에러
+    CHECKLIST_NOT_FOUND(404,"D001","체크리스트를 찾을 수 없습니다.");
 
     private final int status;
     private final String code;
