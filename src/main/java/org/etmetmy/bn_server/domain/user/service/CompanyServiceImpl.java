@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.service;
+package org.etmetmy.bn_server.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;

@@ -1,14 +1,14 @@
-package org.etmetmy.bn_server.domain.controller;
+package org.etmetmy.bn_server.domain.user.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.dto.MemberUpdateRequest;
-import org.etmetmy.bn_server.domain.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.dto.request.UserLoginDto;
-import org.etmetmy.bn_server.domain.entity.User;
-import org.etmetmy.bn_server.domain.service.UserService;
+import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
+import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
+import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.domain.user.service.UserService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;

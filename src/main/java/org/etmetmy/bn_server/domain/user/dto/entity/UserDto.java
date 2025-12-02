@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.dto.entity;
+package org.etmetmy.bn_server.domain.user.dto.entity;
 
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -7,8 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
-import org.etmetmy.bn_server.domain.entity.Role;
-import org.etmetmy.bn_server.domain.entity.User;
+import org.etmetmy.bn_server.domain.user.entity.Role;
+import org.etmetmy.bn_server.domain.user.entity.User;
 
 @Builder
 @Getter

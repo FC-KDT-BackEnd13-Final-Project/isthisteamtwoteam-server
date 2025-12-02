@@ -1,9 +1,9 @@
-package org.etmetmy.bn_server.domain.service;
+package org.etmetmy.bn_server.domain.user.service;
 
-import org.etmetmy.bn_server.domain.dto.MemberUpdateRequest;
-import org.etmetmy.bn_server.domain.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.dto.request.UserLoginDto;
-import org.etmetmy.bn_server.domain.entity.User;
+import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
+import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;

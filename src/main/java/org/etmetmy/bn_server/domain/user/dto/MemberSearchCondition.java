@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.dto;
+package org.etmetmy.bn_server.domain.user.dto;
 
 import lombok.Data;
 

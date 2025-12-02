@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.etmetmy.bn_server.domain.entity.User;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity

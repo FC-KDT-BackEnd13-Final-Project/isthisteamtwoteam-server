@@ -3,7 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.project.entity.Project;
-import org.etmetmy.bn_server.domain.entity.User;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity

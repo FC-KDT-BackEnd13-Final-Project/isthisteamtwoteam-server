@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.entity;
+package org.etmetmy.bn_server.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

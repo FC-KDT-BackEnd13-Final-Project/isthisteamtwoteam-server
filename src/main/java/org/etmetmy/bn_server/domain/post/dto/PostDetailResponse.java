@@ -3,7 +3,7 @@ package org.etmetmy.bn_server.domain.post.dto;
 import lombok.Builder;
 import lombok.Getter;
 import org.etmetmy.bn_server.domain.post.entity.Post;
-import org.etmetmy.bn_server.domain.entity.User; // User Entity import
+import org.etmetmy.bn_server.domain.user.entity.User; // User Entity import
 import java.time.LocalDateTime;
 
 @Getter

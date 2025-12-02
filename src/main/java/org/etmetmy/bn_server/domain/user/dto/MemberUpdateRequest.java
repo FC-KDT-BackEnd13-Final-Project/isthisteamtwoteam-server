@@ -1,9 +1,9 @@
-package org.etmetmy.bn_server.domain.dto;
+package org.etmetmy.bn_server.domain.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.etmetmy.bn_server.domain.entity.Role;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 
 @Getter
 @NoArgsConstructor

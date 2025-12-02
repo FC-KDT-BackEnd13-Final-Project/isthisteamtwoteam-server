@@ -1,14 +1,14 @@
-package org.etmetmy.bn_server.domain.service;
+package org.etmetmy.bn_server.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
-import org.etmetmy.bn_server.domain.dto.MemberUpdateRequest;
-import org.etmetmy.bn_server.domain.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.dto.request.UserLoginDto;
-import org.etmetmy.bn_server.domain.entity.User;
-import org.etmetmy.bn_server.domain.repository.UserRepository;
+import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
+import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
+import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;

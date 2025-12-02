@@ -1,8 +1,8 @@
-package org.etmetmy.bn_server.domain.specification;
+package org.etmetmy.bn_server.domain.user.specification;
 
 import jakarta.persistence.criteria.JoinType;
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
-import org.etmetmy.bn_server.domain.entity.User;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.data.jpa.domain.Specification;
 
 public class UserSpecification {

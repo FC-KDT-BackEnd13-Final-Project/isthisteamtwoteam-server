@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.entity;
+package org.etmetmy.bn_server.domain.user.entity;
 
 public enum Role {
     ADMIN("관리자", "ROLE_ADMIN",3),
