@@ -4,8 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 
-import java.util.Optional;
-
 @Getter
 @NoArgsConstructor
 public class CheckListUpdateRequest {

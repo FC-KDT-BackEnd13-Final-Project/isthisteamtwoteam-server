@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
-import org.etmetmy.bn_server.domain.user.entity.Role;
+import org.etmetmy.bn_server.domain.entity.Role;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.web.servlet.HandlerInterceptor;
 

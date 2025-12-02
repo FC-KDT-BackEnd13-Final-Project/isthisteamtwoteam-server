@@ -2,9 +2,11 @@ package org.etmetmy.bn_server.domain.user.entity;
 
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
-import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.user.repository.UserRepository;
-import org.etmetmy.bn_server.domain.user.service.UserService;
+import org.etmetmy.bn_server.domain.dto.entity.UserDto;
+import org.etmetmy.bn_server.domain.entity.Role;
+import org.etmetmy.bn_server.domain.entity.User;
+import org.etmetmy.bn_server.domain.repository.UserRepository;
+import org.etmetmy.bn_server.domain.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

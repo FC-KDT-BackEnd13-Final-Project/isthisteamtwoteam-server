@@ -18,13 +18,13 @@ public class CheckListController {
 
     private final CheckListService checkListService;
 
-    // 체크리스트 생성
+    // todo : 체크리스트 생성
     @PostMapping
     public CommonResponse<CheckListResponse> createCheckList() {
         return CommonResponse.success("체크리스트를 생성했습니다", checkListService.save());
     }
 
-    // 체크리스트 수정
+    // todo : 체크리스트 수정
     @PatchMapping("/{checkListId}")
     public CommonResponse<CheckListResponse> update(@PathVariable("checkListId") Long checkListId,
                                                     @RequestBody CheckListUpdateRequest request) {
@@ -32,7 +32,7 @@ public class CheckListController {
         return CommonResponse.success("체크리스트를 수정했습니다.", checkListService.update(checkListId, request));
     }
 
-    // 체크리스트 삭제
+    // todo : 체크리스트 삭제
     @DeleteMapping("/{checkListId}")
     public CommonResponse<Object> deleteCheckList(@PathVariable("checkListId") Long checkListId) {
 
@@ -40,6 +40,7 @@ public class CheckListController {
         return CommonResponse.success("체크리스트를 삭제했습니다.");
     }
 
+    // todo : 체크리스트 조회 및 검색
     @GetMapping
     public CommonResponse<PageResponse<CheckListResponse>> getAllCheckLists(
             @RequestParam(defaultValue = "0") int page,
