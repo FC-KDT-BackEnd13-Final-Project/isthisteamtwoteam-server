@@ -6,6 +6,13 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,25 +41,17 @@ public class ProjectCreateRequest {
     private Long companyId;
     private String memo;
     private String stage;
+    private String projectName;
+    private String startDate;
+    private String endDate;
 
-//    public static class MemberListDeserializer extends JsonDeserializer<List<Long>> {
-//        @Override
-//        public List<Long> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-//            JsonNode node = p.getCodec().readTree(p);
-//            List<Long> userIds = new ArrayList<>();
-//
-//            if (node.isArray()) {
-//                for (JsonNode element : node) {
-//                    if (element.isNumber()) {
-//                        userIds.add(element.asLong());
-//                    }else if (element.isObject() && element.has("userId")) {
-//                        userIds.add(element.get("userId").asLong());
-//                }
-//            }
-//            return userIds;
-//
-//        }
-//    }
+    @JsonProperty("members")
+    //@JsonDeserialize(using = MemberListDeserializer.class)
+    private List<Long> members;
+    private List<Integer> selectedChecklistIds;
+    private Long companyId;
+    private String memo;
+    private String stage;
 
     //내부 converter
     public static class Converter{

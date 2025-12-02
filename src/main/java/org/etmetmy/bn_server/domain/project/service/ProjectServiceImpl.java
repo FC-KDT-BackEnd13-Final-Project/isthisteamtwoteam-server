@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
-import org.etmetmy.bn_server.domain.project.dto.entity.ProjectDTO;
 import org.etmetmy.bn_server.domain.project.repository.ProjectStageRepository;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectMemberRequest;
@@ -27,8 +26,6 @@ import org.springframework.http.HttpStatus;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
-import org.etmetmy.bn_server.global.CustomException;
-import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -49,6 +46,7 @@ public class ProjectServiceImpl implements ProjectService{
     private final MemoRepository memoRepository;
     private final ProjectCheckListRepository projectChecklistRepository;
     private final CheckListRepository checkListRepository;
+
     @Override
     @Transactional
     public Long createProject(ProjectCreateRequest request, Long createdById){
