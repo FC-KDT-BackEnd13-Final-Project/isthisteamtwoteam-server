@@ -59,11 +59,10 @@ public class ProjectServiceImpl implements ProjectService{
         if (hasMembers(request)) {
             log.info("멤버 목록 존재 - 개수: {}, IDs: {}", request.getMembers().size(), request.getMembers());
 
-            // List<Long>을 List<ProjectMemberRequest>로 변환
+            // List<Long>을 List<ProjectMemberRequest>로 변환 (생성자 사용)
             List<ProjectMemberRequest> memberRequests = request.getMembers().stream()
                     .map(userId -> {
-                        ProjectMemberRequest memberRequest = new ProjectMemberRequest();
-                        memberRequest.setUserId(userId);
+                        ProjectMemberRequest memberRequest = new ProjectMemberRequest(userId);
                         log.debug("ProjectMemberRequest 생성 - userId: {}", userId);
                         return memberRequest;
                     })

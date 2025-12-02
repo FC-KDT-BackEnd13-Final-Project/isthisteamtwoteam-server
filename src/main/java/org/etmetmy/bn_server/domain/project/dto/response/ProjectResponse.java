@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
