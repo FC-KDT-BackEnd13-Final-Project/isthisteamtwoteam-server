@@ -28,10 +28,10 @@ public class MemoResponse {
                     .build();
         }
 
-        public static List<MemoResponse> from(List<Memo> memos) {
-            return memos.stream()
-                    .map(Converter::from)
-                    .collect(Collectors.toList());
-        }
+//        public static List<MemoResponse> from(List<Memo> memos) {
+//            return memos.stream()
+//                    .map(Converter::from)
+//                    .collect(Collectors.toList());
+//        }
     }
 }
