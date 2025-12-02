@@ -3,18 +3,18 @@ package org.etmetmy.bn_server.domain.project.controller;
 import jakarta.servlet.http.HttpSession;
 
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
-import org.etmetmy.bn_server.domain.project.dto.request.ProjectMemberRequest;
+import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
-import org.etmetmy.bn_server.domain.project.dto.request.ProjectAddCheckListRequest;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectAddCheckListResponse;
 
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -68,4 +68,33 @@ public class ProjectController {
         return CommonResponse.success("체크리스트를 할당했습니다", projectService.checklistAdd(projectId, request));
 
     }
+
+    // 프로젝트 제목 수정
+    @PatchMapping("/{projectId}/title")
+    public CommonResponse<Map<String, Object>> updateProjectTitle(
+            @PathVariable Long projectId,
+            @RequestBody ProjectTitleUpdateRequest request
+    ) {
+        projectService.updateProjectTitle(projectId, request);
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("project_id", projectId);
+
+        return CommonResponse.success("프로젝트 제목 수정 성공", responseData);
+    }
+
+    // 프로젝트 날짜 수정
+    @PatchMapping("/{projectId}/date")
+    public CommonResponse<Map<String, Object>> updateProjectDate(
+            @PathVariable Long projectId,
+            @RequestBody ProjectDateUpdateRequest request
+    ) {
+        projectService.updateProjectDate(projectId, request);
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("project_id", projectId);
+
+        return CommonResponse.success("프로젝트 날짜 수정 성공", responseData);
+    }
+
 }
