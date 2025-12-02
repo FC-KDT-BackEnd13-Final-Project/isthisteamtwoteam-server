@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FileListDTO {
+public class ActiveFileListDTO {
 
     private Long fileId;
     private String fileTitle;
@@ -28,8 +28,4 @@ public class FileListDTO {
 
     private Long uploadUserId;
     private LocalDateTime uploadedAt;
-
-    private Boolean Deleted;
-    private LocalDateTime deletedAt;
-    private Long deleteUserId;
 }

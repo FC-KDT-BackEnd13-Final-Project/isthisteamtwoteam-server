@@ -9,10 +9,10 @@ import java.util.List;
 
 public interface FileRepository extends JpaRepository<File, Long> {
 
-    @Query(value = "SELECT f.* FROM file f " +
-                   "JOIN post p ON f.post_id = p.post_id " +
-                   "WHERE p.project_id = :projectId " +
-                   "AND f.is_deleted = false",
-           nativeQuery = true)
+    @Query("SELECT f FROM File f " +
+           "JOIN FETCH f.entityType " +
+           "JOIN FETCH f.post p " +
+           "WHERE p.project.id = :projectId " +
+           "AND f.isDeleted = false")
     List<File> findByProjectId(@Param("projectId") Long projectId);
 }
