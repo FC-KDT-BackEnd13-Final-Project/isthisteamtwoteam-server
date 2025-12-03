@@ -1,7 +1,6 @@
 package org.etmetmy.bn_server.global.util;
 
 import jakarta.servlet.http.HttpSession;
-import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;

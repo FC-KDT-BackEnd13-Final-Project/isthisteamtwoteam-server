@@ -29,9 +29,6 @@ public class ProjectMember extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "role", nullable = false, length = 255)
-    private String role;
-
     @Column(name = "assigned_by")
     private Long assignedBy;
 }

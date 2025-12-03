@@ -12,8 +12,9 @@ public enum StatusCode {
     POST_CREATED(HttpStatus.CREATED, "게시글 생성이 잘 되었습니다."),
     POST_FOUND(HttpStatus.OK, "게시글 조회 완료"),
 
-    // CheckList 성공 응답
+    // CheckList 응답
     CHECKLISTS_FOUND(HttpStatus.OK, "체크리스트 조회 완료"),
+    CHECKLIST_NOT_FOUND(HttpStatus.NOT_FOUND,"체크리스트가 없습니다"),
 
     // 페이지 응답
     NON_INDEX_PAGE(HttpStatus.OK, "페이지가 없습니다"),
@@ -26,6 +27,11 @@ public enum StatusCode {
     // 댓글 응답
     PARENT_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 부모 댓글 ID입니다."),
 
+    //Project 에서
+    PROJECT_MEMBER_NOT_FIND(HttpStatus.NOT_FOUND, "유저가 프로젝트에 참여하고 있지 않습니다."),
+  
+    // Project 응답
+    PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND,"존재하지 않는 프로젝트입니다."),
 
     //Company 에러
     COMPANY_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회사입니다."),
