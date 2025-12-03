@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.post.dto;
+package org.etmetmy.bn_server.domain.post.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;

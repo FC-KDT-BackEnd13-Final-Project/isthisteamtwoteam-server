@@ -2,15 +2,15 @@ package org.etmetmy.bn_server.domain.post.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.post.dto.PostApprovalRequest;
-import org.etmetmy.bn_server.domain.post.dto.PostDetailResponse;
+import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
+import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.PublicKey;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/users/projects")
@@ -64,8 +64,17 @@ public class PostController {
      * finished: 완료된 게시글
      * unfinished : 미완료된 게시글
      */
+    /**
+     * 게시글 목록 조회 (필터)
+     */
     @GetMapping("/{projectId}/posts")
-    public void getPostList(@RequestParam(name = "filter") String filter){
-        postService.getPostListByFilter(filter);
+    public CommonResponse<List<PostListResponse>> getPostList(
+            @PathVariable Long projectId,
+            @RequestParam(name = "filter", defaultValue = "all") String filter
+    ) {
+        List<PostListResponse> response = postService.getPostListByProjectIdAndFilter(projectId, filter);
+        return CommonResponse.success("게시글 목록 조회 성공", response);
     }
+
+
 }
