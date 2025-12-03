@@ -28,8 +28,10 @@ public class ActiveFileListDTO {
 
     private String entityTypeName;
 
+    private String postTitle;
     private Long postId;
 
+    private String uploadUserName;
     private Long uploadUserId;
     private LocalDateTime uploadedAt;
 
@@ -43,7 +45,9 @@ public class ActiveFileListDTO {
                     .fileType(file.getFileType())
                     .fileSize(file.getFileSize())
                     .entityTypeName(file.getEntityType().getEntityType())
+                    .postTitle(file.getPost().getTitle())
                     .postId(file.getPost().getPostId())
+                    .uploadUserName(file.getPost().getUser().getName())
                     .uploadUserId(file.getUploadedBy())
                     .uploadedAt(file.getCreatedAt())
                     .build();
