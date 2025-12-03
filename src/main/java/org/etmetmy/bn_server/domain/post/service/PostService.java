@@ -1,72 +1,23 @@
 package org.etmetmy.bn_server.domain.post.service;
 
-import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.post.dto.PostDetailResponse;
-import org.etmetmy.bn_server.domain.post.entity.Post;
-import org.etmetmy.bn_server.domain.post.entity.Request;
-import org.etmetmy.bn_server.domain.post.repository.PostRepository;
-import org.etmetmy.bn_server.domain.post.repository.RequestRepository;
-import org.etmetmy.bn_server.global.CustomException;
-import org.etmetmy.bn_server.global.StatusCode;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 
-@Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true) // 클래스 레벨 트랜잭션 정의
-public class PostService {
+import java.util.List;
 
-    private final PostRepository postRepository;
-    private final RequestRepository requestRepository;
-
-    private static final String STATUS_APPROVED = "승인";
-    private static final String STATUS_REJECTED = "거절";
-    private static final String STATUS_PENDING = "대기";
-    private static final Long STAGE_APPROVED_ID = 99L;
-    private static final Long STAGE_REJECTED_ID = 98L;
+public interface PostService {
+    PostDetailResponse getPostDetail(Long postId);
 
 
-    // 1. 게시글 상세 조회 (GET)
-    public PostDetailResponse getPostDetail(Long postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
-
-        // DTO 변환 (StageName 처리는 DTO에서 Long stageId 기반으로 처리되어야 함)
-        // DTO 호출 인자를 Post와 User로 단순화함
-        return PostDetailResponse.fromEntity(post, post.getUser());
-    }
+    void approvePost(Long postId, Long approvingUserId);
 
 
-    // 2. 게시글 승인
-    @Transactional
-    public void approvePost(Long postId, Long approvingUserId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
+    void rejectPost(Long postId, Long rejectingUserId, String rejectReason);
 
-        Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(postId, STATUS_PENDING)
-                .orElseThrow(() -> new CustomException(StatusCode.REQUEST_PENDING_NOT_FOUND));
+    List<PostListResponse> getPostListByProjectIdAndFilter(Long projectId, String filter);
 
-        // 1. Post의 Stage ID를 APPROVED (99)로 변경
-        post.updateStage(STAGE_APPROVED_ID);
-
-        // 2. Request 상태를 '승인'으로 업데이트
-        currentRequest.updateStatus(approvingUserId, STATUS_APPROVED, null);
-    }
-
-
-    // 3. 게시글 거절
-    @Transactional
-    public void rejectPost(Long postId, Long rejectingUserId, String rejectReason) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
-
-        Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(postId, STATUS_PENDING)
-                .orElseThrow(() -> new CustomException(StatusCode.REQUEST_PENDING_NOT_FOUND));
-
-        // 1. Post의 Stage ID를 REJECTED (98)로 변경
-        post.updateStage(STAGE_REJECTED_ID);
-
-        // 2. Request 상태를 '거절'로 업데이트
-        currentRequest.updateStatus(rejectingUserId, STATUS_REJECTED, rejectReason);
-    }
 }
+
+
+
+

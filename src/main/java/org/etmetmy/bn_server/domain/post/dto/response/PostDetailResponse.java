@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.post.dto;
+package org.etmetmy.bn_server.domain.post.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -23,9 +23,9 @@ public class PostDetailResponse {
 
     public static PostDetailResponse fromEntity(Post post, User author) {
 
-        String calculatedStageName = (post.getStageId() != null)
-                ? "Stage ID: " + post.getStageId() // ID가 있으면 "ID: 99" 등으로 표시
-                : "미정 (Stage ID 없음)";
+        String calculatedStageName = (post.getStage().getStageName() != null)
+                ? post.getStage().getStageName() // ID가 있으면 "ID: 99" 등으로 표시
+                : "미정";
 
         return PostDetailResponse.builder()
                 .postId(post.getPostId())
