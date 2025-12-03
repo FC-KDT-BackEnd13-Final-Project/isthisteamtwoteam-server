@@ -4,7 +4,8 @@ import lombok.*;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
-import org.etmetmy.bn_server.domain.user.entity.ProjectMember;
+import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

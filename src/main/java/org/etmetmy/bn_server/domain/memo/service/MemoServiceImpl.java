@@ -7,13 +7,11 @@ import org.etmetmy.bn_server.domain.memo.dto.response.MemoResponse;
 import org.etmetmy.bn_server.domain.memo.entity.MemoType;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
-import org.etmetmy.bn_server.domain.user.entity.ProjectMember;
+
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

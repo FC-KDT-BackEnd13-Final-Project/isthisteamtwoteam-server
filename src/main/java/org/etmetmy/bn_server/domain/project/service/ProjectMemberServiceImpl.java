@@ -2,11 +2,8 @@ package org.etmetmy.bn_server.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
-import org.etmetmy.bn_server.domain.user.entity.ProjectMember;
-import org.etmetmy.bn_server.global.CustomException;
-import org.etmetmy.bn_server.global.StatusCode;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 
