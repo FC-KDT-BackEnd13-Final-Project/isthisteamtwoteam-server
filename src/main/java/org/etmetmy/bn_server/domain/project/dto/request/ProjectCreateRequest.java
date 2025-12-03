@@ -41,17 +41,7 @@ public class ProjectCreateRequest {
     private Long companyId;
     private String memo;
     private String stage;
-    private String projectName;
-    private String startDate;
-    private String endDate;
 
-    @JsonProperty("members")
-    //@JsonDeserialize(using = MemberListDeserializer.class)
-    private List<Long> members;
-    private List<Integer> selectedChecklistIds;
-    private Long companyId;
-    private String memo;
-    private String stage;
 
     //내부 converter
     public static class Converter{

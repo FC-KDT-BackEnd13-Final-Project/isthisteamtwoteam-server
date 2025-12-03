@@ -6,8 +6,11 @@ import org.etmetmy.bn_server.domain.post.dto.PostApprovalRequest;
 import org.etmetmy.bn_server.domain.post.dto.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.security.PublicKey;
 
 @RestController
 @RequestMapping("/api/v1/users/projects")
@@ -61,7 +64,8 @@ public class PostController {
      * finished: 완료된 게시글
      * unfinished : 미완료된 게시글
      */
-//    */
-//    @GetMapping
-
+    @GetMapping("/{projectId}/posts")
+    public void getPostList(@RequestParam(name = "filter") String filter){
+        postService.getPostListByFilter(filter);
+    }
 }

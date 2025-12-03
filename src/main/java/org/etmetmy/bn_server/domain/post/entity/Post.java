@@ -45,6 +45,11 @@ public class Post extends BaseEntity {
     @Column(name = "stage_id", nullable = false)
     private Long stageId;
 
+    // 프로젝트 내에서의 게시글 번호 추가
+    @Column(name = "post_number", nullable = false)
+    private Long postNumber;
+
+
     @PrePersist
     protected void onCreate() {
         if (isCompleted == null) isCompleted = false;
