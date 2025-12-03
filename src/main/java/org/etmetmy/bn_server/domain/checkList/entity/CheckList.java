@@ -19,7 +19,7 @@ public class CheckList {
     @Column(name = "check_list_id")
     private Long checkListId;
 
-    @Column(name = "content", length = 255)
+    @Column(name = "content", length = 500)
     private String content;
 
 }

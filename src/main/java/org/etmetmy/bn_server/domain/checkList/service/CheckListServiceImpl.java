@@ -6,6 +6,8 @@ import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
+import org.etmetmy.bn_server.global.CustomException;
+import org.etmetmy.bn_server.global.StatusCode;
 import org.etmetmy.bn_server.global.page.PageRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -29,7 +31,8 @@ public class CheckListServiceImpl implements CheckListService {
     @Override
     public CheckListResponse update(Long checkListId, CheckListUpdateRequest request) {
 
-        CheckList checkList = checkListRepository.findById(checkListId).orElse(null);
+        CheckList checkList = checkListRepository.findById(checkListId)
+                .orElseThrow(()-> new CustomException(StatusCode.CHECKLIST_NOT_FOUND));
         CheckList updateEntity =CheckListUpdateRequest.Converter.updateEntity(request, checkList);
         CheckList saved = checkListRepository.save(updateEntity);
 

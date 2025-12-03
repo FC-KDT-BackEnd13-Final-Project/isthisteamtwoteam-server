@@ -8,8 +8,6 @@ import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "projectmember")
 @Getter
@@ -30,9 +28,6 @@ public class ProjectMember extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
-
-    @Column(name = "role", nullable = false, length = 255)
-    private String role;
 
     @Column(name = "assigned_by")
     private Long assignedBy;
