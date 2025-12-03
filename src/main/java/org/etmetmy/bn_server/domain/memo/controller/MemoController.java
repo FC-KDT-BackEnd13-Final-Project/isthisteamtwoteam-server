@@ -21,18 +21,18 @@ public class MemoController {
     /**
      * 프로젝트에서 공통 메모 조회
      * */
-    @GetMapping("/{projectId}/memo")
-    public CommonResponse<List<MemoResponse>> getProjectMemo(
+    @GetMapping("/{projectId}/main/memo")
+    public CommonResponse<MemoResponse> getProjectMemo(
             @PathVariable Long projectId
     ) {
-        List<MemoResponse> response = memoService.getProjectMemos(projectId);
+        MemoResponse response = memoService.getProjectMemos(projectId);
         return CommonResponse.success("프로젝트 메모 조회 완료", response);
     }
 
     /**
     * 프로젝트에서 개인 메모 조회
     * */
-    @GetMapping("/{projectId}/users/memos")
+    @GetMapping("/{projectId}/user/memos")
     public CommonResponse<MemoResponse> getUserMemo(
             @PathVariable Long projectId,
             HttpSession session
@@ -51,16 +51,40 @@ public class MemoController {
     /**
      * 프로젝트에서 개인 메모 업데이트
      * */
-    @PatchMapping("/{projectId}/users/memos")
+    @PatchMapping("/{projectId}/user/memos")
     public CommonResponse<Long> updateUserMemo(
             @PathVariable Long projectId,
             @RequestBody MemoUpdateRequestDto memoUpdateRequestDto,
             HttpSession session
 
-    ){
-        Long userId = SessionUtil.getLoginUserId(session);
-       Long memoId = memoService.updateMemo(userId, projectId, memoUpdateRequestDto.getContent());
+    ){Long userId = SessionUtil.getLoginUserId(session);
+       Long memoId = memoService.updateUserMemo(userId, projectId, memoUpdateRequestDto.getContent());
 
        return CommonResponse.success("성공적으로 메모를 수정하였습니다.", memoId);
+    }
+
+    /**
+     * 프로젝트에서 공통 메모 업데이트
+     * */
+    @PatchMapping("/{projectId}/main/memos")
+    public CommonResponse<Object> updateProjectMemo(
+            @PathVariable Long projectId,
+            @RequestBody MemoUpdateRequestDto memoUpdateRequestDto,
+            HttpSession session
+
+    ){
+        System.out.println("1");
+
+        Long userId = SessionUtil.getLoginUserId(session);
+        System.out.println("2");
+
+        Long memoId = memoService.updateProjectMemo(userId, projectId, memoUpdateRequestDto.getContent());
+        if(memoId != null){
+            return CommonResponse.success("성공적으로 메모를 수정하였습니다.", memoId);
+
+        }else{
+            return  CommonResponse.success("메모를 수정할 수 있는 권한이 없습니다.");
+        }
+
     }
 }

@@ -1,9 +1,13 @@
 package org.etmetmy.bn_server.domain.memo.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.dto.response.MemoResponse;
+import org.etmetmy.bn_server.domain.memo.entity.MemoType;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
+import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
+import org.etmetmy.bn_server.domain.user.entity.ProjectMember;
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
@@ -13,22 +17,25 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MemoServiceImpl implements MemoService{
 
     private final MemoRepository memoRepository;
+    private final ProjectMemberService projectMemberService;
 
     //todo: 프로젝트 공용 메모 조회
     @Override
     @Transactional(readOnly = true)
-    public List<MemoResponse> getProjectMemos(Long projectId) {
-        List<Memo> memos = memoRepository.findByProjectId(projectId);
+    public MemoResponse getProjectMemos(Long projectId) {
+        Memo memos = memoRepository.findByProjectId(projectId, MemoType.MAIN)
+                .orElseThrow(()-> new CustomException(StatusCode.MEMO_NOT_FOUND));
         return MemoResponse.Converter.from(memos);
     }
 
     @Override
     @Transactional(readOnly = true)
     public MemoResponse getUserMemo(Long userId,Long projectId) {
-        Memo memo = memoRepository.findByUserIdAndProjectId(userId,projectId)
+        Memo memo = memoRepository.findByUserIdAndProjectId(userId,projectId, MemoType.USER)
                 .orElse(null);
 
         if (memo == null) {
@@ -41,8 +48,8 @@ public class MemoServiceImpl implements MemoService{
     //todo : 프로젝트 개인 메모 업데이트
     @Override
     @Transactional
-    public Long updateMemo(Long userId, Long projectId, String content) {
-        Memo memo = memoRepository.findByUserIdAndProjectId(userId, projectId)
+    public Long updateUserMemo(Long userId, Long projectId, String content) {
+        Memo memo = memoRepository.findByUserIdAndProjectId(userId, projectId,MemoType.USER)
                 .orElseThrow(() -> new CustomException(StatusCode.MEMO_NOT_FOUND));
 
         // 더티체크 기능 활용
@@ -52,4 +59,30 @@ public class MemoServiceImpl implements MemoService{
 
         return memoId;
     }
+
+    @Override
+    @Transactional
+    public Long updateProjectMemo(Long userId, Long projectId, String content) {
+        System.out.println("실행시작");
+
+        boolean hasRole = projectMemberService.hasRoleToProject(userId, projectId);
+
+        if(hasRole){
+            log.info("메모 조회 전");
+
+            Memo memo = memoRepository.findProjectMemoByProjectId(projectId, MemoType.MAIN)
+                    .orElseThrow(() -> new CustomException(StatusCode.MEMO_NOT_FOUND));
+
+            log.info("업데이트 전");
+            memo.updateContent(content);
+            log.info("업데이트 후");
+
+            return memo.getMemoId();
+        }else{
+            return null;
+        }
+
+    }
+
+
 }
