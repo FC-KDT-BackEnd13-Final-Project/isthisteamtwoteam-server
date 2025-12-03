@@ -21,7 +21,7 @@ public class MemoController {
     /**
      * 프로젝트에서 공통 메모 조회
      * */
-    @GetMapping("/{projectId}/memo")
+    @GetMapping("/{projectId}/main/memo")
     public CommonResponse<MemoResponse> getProjectMemo(
             @PathVariable Long projectId
     ) {
@@ -32,7 +32,7 @@ public class MemoController {
     /**
     * 프로젝트에서 개인 메모 조회
     * */
-    @GetMapping("/{projectId}/users/memos")
+    @GetMapping("/{projectId}/user/memos")
     public CommonResponse<MemoResponse> getUserMemo(
             @PathVariable Long projectId,
             HttpSession session
@@ -51,7 +51,7 @@ public class MemoController {
     /**
      * 프로젝트에서 개인 메모 업데이트
      * */
-    @PatchMapping("/{projectId}/memos")
+    @PatchMapping("/{projectId}/user/memos")
     public CommonResponse<Long> updateUserMemo(
             @PathVariable Long projectId,
             @RequestBody MemoUpdateRequestDto memoUpdateRequestDto,
@@ -66,7 +66,7 @@ public class MemoController {
     /**
      * 프로젝트에서 공통 메모 업데이트
      * */
-    @PatchMapping("/{projectId}/users/memos")
+    @PatchMapping("/{projectId}/main/memos")
     public CommonResponse<Object> updateProjectMemo(
             @PathVariable Long projectId,
             @RequestBody MemoUpdateRequestDto memoUpdateRequestDto,
@@ -83,7 +83,7 @@ public class MemoController {
             return CommonResponse.success("성공적으로 메모를 수정하였습니다.", memoId);
 
         }else{
-            return  CommonResponse.success("성공적으로 메모를 수정할 수 있는 권한이 없습니다.");
+            return  CommonResponse.success("메모를 수정할 수 있는 권한이 없습니다.");
         }
 
     }

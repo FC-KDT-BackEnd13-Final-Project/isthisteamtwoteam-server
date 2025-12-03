@@ -70,7 +70,7 @@ public class MemoServiceImpl implements MemoService{
         if(hasRole){
             log.info("메모 조회 전");
 
-            Memo memo = memoRepository.findProjectMemoByProjectId(userId, projectId, MemoType.MAIN)
+            Memo memo = memoRepository.findProjectMemoByProjectId(projectId, MemoType.MAIN)
                     .orElseThrow(() -> new CustomException(StatusCode.MEMO_NOT_FOUND));
 
             log.info("업데이트 전");

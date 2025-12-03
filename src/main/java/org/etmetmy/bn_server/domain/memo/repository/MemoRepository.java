@@ -20,7 +20,7 @@ public interface MemoRepository extends JpaRepository<Memo,Long> {
     Optional<Memo> findByUserIdAndProjectId(@Param("userId") Long userId, @Param ("projectId") Long projectId , @Param("memoType") MemoType memoType);
 
     @Query("select m from Memo m " +
-            "where m.project.id = :projectId " +
+            "where m.project.id = :projectId and m.memoType = :memoType " +
             "order by m.createdAt desc")
-    Optional<Memo> findProjectMemoByProjectId (@Param("userId") Long userId, @Param ("projectId") Long projectId , @Param("memoType") MemoType memoType);
+    Optional<Memo> findProjectMemoByProjectId (@Param ("projectId") Long projectId , @Param("memoType") MemoType memoType);
 }
