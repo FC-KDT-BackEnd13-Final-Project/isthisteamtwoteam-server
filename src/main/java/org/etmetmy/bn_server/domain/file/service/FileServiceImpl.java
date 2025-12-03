@@ -43,18 +43,6 @@ public class FileServiceImpl implements FileService {
         // 4. 파일 목록 조회
         List<File> files = fileRepository.findByProjectId(projectId);
 
-        return files.stream()
-                .map(file -> ActiveFileListDTO.builder()
-                        .fileId(file.getFileId())
-                        .fileTitle(file.getFileTitle())
-                        .filePath(file.getFilePath())
-                        .fileType(file.getFileType())
-                        .fileSize(file.getFileSize())
-                        .entityTypeName(file.getEntityType().getEntityType())
-                        .postId(file.getPost().getPostId())
-                        .uploadUserId(file.getUploadedBy())
-                        .uploadedAt(file.getCreatedAt())
-                        .build())
-                .collect(Collectors.toList());
+        return ActiveFileListDTO.Converter.from(files);
     }
 }

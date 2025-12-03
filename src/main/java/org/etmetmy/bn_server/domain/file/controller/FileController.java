@@ -5,11 +5,9 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.service.FileService;
+import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.global.CommonResponse;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
