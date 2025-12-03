@@ -42,6 +42,9 @@ public class Post extends BaseEntity {
     @Column(name = "is_completed")
     private Boolean isCompleted;
 
+    @Column(name = "created_ip")
+    private String createdIp;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id", nullable = false)
     private Stage stage;

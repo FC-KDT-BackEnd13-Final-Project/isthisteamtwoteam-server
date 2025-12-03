@@ -12,7 +12,7 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostListResponse {
-    private Long postNumber;       // ← DB에서 가져온 게시글 번호
+    private Long postNumber;
     private Long postId;
     private Long authorId;
     private String authorName;
@@ -21,6 +21,8 @@ public class PostListResponse {
     private Boolean isCompleted;
     private Long stageId;
     private String stageName;
+    private String createdIp;
+    private Long parentId;
 
     public static PostListResponse from(Post post) {
         return PostListResponse.builder()
@@ -33,6 +35,8 @@ public class PostListResponse {
                 .isCompleted(post.getIsCompleted())
                 .stageId(post.getStage().getStageId())
                 .stageName(post.getStage().getStageName())
+                .createdIp(post.getCreatedIp())
+                .parentId(post.getParentPostId())
                 .build();
     }
 }
