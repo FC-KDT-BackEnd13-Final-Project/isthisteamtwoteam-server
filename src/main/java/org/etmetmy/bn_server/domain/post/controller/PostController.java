@@ -16,7 +16,9 @@ public class PostController {
 
     private final PostService postService;
 
-    //todo: 게시글 상세 조회
+    /**
+     * 게시글 상세 조회
+     */
     @GetMapping("/{projectId}/posts/{postId}")
     public ResponseEntity<CommonResponse<PostDetailResponse>> getPostDetail(
             @PathVariable Long projectId,
@@ -26,7 +28,9 @@ public class PostController {
         return ResponseEntity.ok(CommonResponse.success("게시글 조회 성공", response));
     }
 
-    //todo: 게시글 승인 API
+    /**
+     * 게시글 승인 API
+     */
     @PatchMapping("/{postId}/approval")
     public ResponseEntity<CommonResponse<Object>> approvePost(
             @PathVariable Long postId,
@@ -37,7 +41,9 @@ public class PostController {
         return ResponseEntity.ok(CommonResponse.success("게시글 승인 완료"));
     }
 
-    //todo: 게시글 거절 API
+    /**
+     * 게시글 거절 API
+     */
     @PatchMapping("/{postId}/reject")
     public ResponseEntity<CommonResponse<Object>> rejectPost(
             @PathVariable Long postId,
@@ -47,4 +53,15 @@ public class PostController {
         postService.rejectPost(postId, request.getApproverId(), request.getRejectReason());
         return ResponseEntity.ok(CommonResponse.success("게시글 거절 완료"));
     }
+
+
+    /**
+     * 게시글 조회(필터)
+     * all : 전체
+     * finished: 완료된 게시글
+     * unfinished : 미완료된 게시글
+     */
+//    */
+//    @GetMapping
+
 }
