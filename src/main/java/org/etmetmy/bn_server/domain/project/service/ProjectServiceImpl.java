@@ -6,13 +6,10 @@ import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectUpdateResponse;
+import org.etmetmy.bn_server.domain.project.dto.response.*;
 import org.etmetmy.bn_server.domain.project.repository.ProjectStageRepository;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectAddCheckListResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
@@ -30,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
@@ -457,5 +455,91 @@ public class ProjectServiceImpl implements ProjectService{
             return LocalDate.parse(dateStr);
         }
     }
+
+    //프로젝트 삭제(휴지통이동)
+    @Transactional
+    @Override
+    public ProjectTrashResponse deleteProject(Long projectId) {
+        log.info("=== 프로젝트 휴지통 이동 시작 - projectId: {} ===", projectId);
+
+        if (projectId == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "프로젝트 ID가 필요합니다."
+            );
+        }
+
+        // 프로젝트 존재 확인
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "존재하지 않는 프로젝트입니다: " + projectId
+                ));
+
+        // 이미 삭제된 프로젝트인지 확인
+        if (project.getIsDeleted() != null && project.getIsDeleted()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "이미 삭제된 프로젝트입니다: " + projectId
+            );
+        }
+
+        // 휴지통으로 이동 (소프트 삭제)
+        LocalDateTime deletedAt = LocalDateTime.now();
+        int updated = projectRepository.moveToTrash(projectId, deletedAt);
+
+        if (updated == 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "프로젝트 삭제에 실패했습니다."
+            );
+        }
+
+        log.info("프로젝트 휴지통 이동 완료 - projectId: {}, deletedAt: {}", projectId, deletedAt);
+
+        return ProjectTrashResponse.Converter.from(projectId);
+    }
+
+
+    @Transactional
+    @Override
+    public void removeProjectMember(Long projectId, Long userId) {
+        log.info("=== 프로젝트 멤버 삭제 시작 - projectId: {}, userId: {} ===", projectId, userId);
+
+        // 1. 프로젝트 존재 + 삭제 여부 확인
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "존재하지 않는 프로젝트입니다: " + projectId
+                ));
+
+        if (Boolean.TRUE.equals(project.getIsDeleted())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "삭제된 프로젝트의 멤버는 수정할 수 없습니다."
+            );
+        }
+
+        // 2. 사용자 존재 확인 (선택 - 필요 없으면 이 부분은 빼도 됨)
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "존재하지 않는 사용자입니다: " + userId
+                ));
+
+        // 3. 프로젝트-멤버 매핑 삭제
+        long deletedCount = projectMemberRepository.deleteByProject_IdAndUser_Id(projectId, userId);
+
+        if (deletedCount == 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "프로젝트에 해당 멤버가 존재하지 않습니다."
+            );
+        }
+
+        log.info("프로젝트 멤버 삭제 완료 - projectId: {}, userId: {}, deletedCount: {}",
+                projectId, userId, deletedCount);
+    }
+
 
 }

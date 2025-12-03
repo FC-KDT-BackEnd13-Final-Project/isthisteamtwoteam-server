@@ -8,6 +8,9 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
@@ -27,5 +30,14 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     int updateProjectDates(@Param("projectId") Long projectId,
                            @Param("startDate") LocalDate startDate,
                            @Param("endDate") LocalDate endDate);
+
+    //프로젝트 삭제(휴지통이동)
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Project p SET p.isDeleted = TRUE, p.deletedAt = :deletedAt WHERE p.id = :projectId")
+    int moveToTrash(@Param("projectId") Long projectId,
+                    @Param("deletedAt") LocalDateTime deletedAt);
+
+
+
 
 }

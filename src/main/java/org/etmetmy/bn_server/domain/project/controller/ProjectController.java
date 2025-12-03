@@ -4,11 +4,8 @@ import jakarta.servlet.http.HttpSession;
 
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectAddCheckListResponse;
+import org.etmetmy.bn_server.domain.project.dto.response.*;
 
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectUpdateResponse;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.web.bind.annotation.*;
@@ -89,5 +86,23 @@ public class ProjectController {
         ProjectUpdateResponse response = projectService.updateProjectDate(projectId, request);
         return CommonResponse.success("프로젝트 날짜 수정 성공", response);
     }
+
+    //프로젝트 삭제 (휴지통으로 이동)
+    @DeleteMapping("/{projectId}")
+    public CommonResponse<ProjectTrashResponse> deleteProject(@PathVariable Long projectId) {
+        ProjectTrashResponse response = projectService.deleteProject(projectId); // ✅ 인스턴스 사용
+        return CommonResponse.success("프로젝트 휴지통 이동 완료", response);
+    }
+
+    // 프로젝트 멤버 삭제
+    @DeleteMapping("/{projectId}/members/{userId}")
+    public CommonResponse<String> removeProjectMember(
+            @PathVariable Long projectId,
+            @PathVariable Long userId
+    ) {
+        projectService.removeProjectMember(projectId, userId);
+        return CommonResponse.success("프로젝트 멤버 삭제 성공", "프로젝트 멤버가 삭제되었습니다.");
+    }
+
 
 }
