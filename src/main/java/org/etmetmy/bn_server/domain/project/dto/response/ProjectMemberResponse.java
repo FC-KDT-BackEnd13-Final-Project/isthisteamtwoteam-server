@@ -1,7 +1,8 @@
 package org.etmetmy.bn_server.domain.project.dto.response;
 
 import lombok.*;
-import org.etmetmy.bn_server.domain.user.entity.ProjectMember;
+import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
+
 
 import java.util.List;
 import java.util.stream.Collectors;

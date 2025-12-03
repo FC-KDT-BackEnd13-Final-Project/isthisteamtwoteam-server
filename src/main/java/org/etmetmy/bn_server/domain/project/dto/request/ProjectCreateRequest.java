@@ -1,46 +1,20 @@
 package org.etmetmy.bn_server.domain.project.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 
-import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProjectCreateRequest {
-    private String projectName;
-    private String startDate;
-    private String endDate;
-
-    @JsonProperty("members")
-    //@JsonDeserialize(using = MemberListDeserializer.class)
-    private List<Long> members;
-    private List<Integer> selectedChecklistIds;
-    private Long companyId;
-    private String memo;
-    private String stage;
     private String projectName;
     private String startDate;
     private String endDate;

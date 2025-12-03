@@ -662,7 +662,7 @@ WARN  - Validation failed: path=/test/validate, errors=projectName: 프로젝트
 # 예상치 못한 예외
 ERROR - Unexpected error: RuntimeException at /test/unexpected [GET]
 java.lang.RuntimeException: 예상치 못한 에러
-	at org.etmetmy.bn_server.GlobalExceptionHandlerTest$TestController.throwUnexpectedException(GlobalExceptionHandlerTest.java:134)
+	at org.etmetmy.bn_server.exception.GlobalExceptionHandlerTest$TestController.throwUnexpectedException(GlobalExceptionHandlerTest.java:134)
 	...
 ```
 
