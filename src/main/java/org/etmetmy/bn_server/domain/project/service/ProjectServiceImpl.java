@@ -6,6 +6,7 @@ import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
+import org.etmetmy.bn_server.domain.project.dto.response.ProjectUpdateResponse;
 import org.etmetmy.bn_server.domain.project.repository.ProjectStageRepository;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
@@ -335,9 +336,10 @@ public class ProjectServiceImpl implements ProjectService{
         return ProjectAddCheckListResponse.Converter.from(savedCheckLists);
     }
 
+    //프로젝트 제목수정
     @Transactional
     @Override
-    public void updateProjectTitle(Long projectId, ProjectTitleUpdateRequest request) {
+    public ProjectUpdateResponse updateProjectTitle(Long projectId, ProjectTitleUpdateRequest request) {
         log.info("=== 프로젝트 제목 수정 시작 - projectId: {} ===", projectId);
 
         if (projectId == null) {
@@ -355,13 +357,11 @@ public class ProjectServiceImpl implements ProjectService{
             );
         }
 
-        boolean exists = projectRepository.existsById(projectId);
-        if (!exists) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "존재하지 않는 프로젝트입니다: " + projectId
-            );
-        }
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "존재하지 않는 프로젝트입니다: " + projectId
+                ));
 
         int updated = projectRepository.updateProjectTitle(projectId, newTitle);
         if (updated == 0) {
@@ -371,12 +371,22 @@ public class ProjectServiceImpl implements ProjectService{
             );
         }
 
-        log.info("프로젝트 제목 수정 완료 - projectId: {}, title: {}", projectId, newTitle);
+        Project updatedProject = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.INTERNAL_SERVER_ERROR,
+                        "업데이트된 프로젝트 조회 실패"
+                ));
+
+        log.info("프로젝트 제목 수정 완료 - projectId: {}, newTitle: {}, updatedAt: {}",
+                projectId, newTitle, updatedProject.getUpdatedAt());
+
+        return ProjectUpdateResponse.Converter.from(updatedProject);
     }
 
+    //프로젝트 날짜 수정
     @Transactional
     @Override
-    public void updateProjectDate(Long projectId, ProjectDateUpdateRequest request) {
+    public ProjectUpdateResponse updateProjectDate(Long projectId, ProjectDateUpdateRequest request) {
         log.info("=== 프로젝트 날짜 수정 시작 - projectId: {} ===", projectId);
 
         if (projectId == null) {
@@ -393,17 +403,15 @@ public class ProjectServiceImpl implements ProjectService{
             );
         }
 
-        boolean exists = projectRepository.existsById(projectId);
-        if (!exists) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "존재하지 않는 프로젝트입니다: " + projectId
-            );
-        }
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "존재하지 않는 프로젝트입니다: " + projectId
+                ));
 
         try {
-            LocalDate startDate = LocalDate.parse(request.getStartDate());
-            LocalDate endDate = LocalDate.parse(request.getEndDate());
+            LocalDate startDate = parseDate(request.getStartDate());
+            LocalDate endDate = parseDate(request.getEndDate());
 
             if (endDate.isBefore(startDate)) {
                 throw new ResponseStatusException(
@@ -420,13 +428,33 @@ public class ProjectServiceImpl implements ProjectService{
                 );
             }
 
-            log.info("프로젝트 날짜 수정 완료 - projectId: {}, startDate: {}, endDate: {}",
-                    projectId, startDate, endDate);
+            Project updatedProject = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.INTERNAL_SERVER_ERROR,
+                            "업데이트된 프로젝트 조회 실패"
+                    ));
+
+            log.info("프로젝트 날짜 수정 완료 - projectId: {}, startDate: {}, endDate: {}, updatedAt: {}",
+                    projectId, startDate, endDate, updatedProject.getUpdatedAt());
+
+            return ProjectUpdateResponse.Converter.from(updatedProject);
+
         } catch (DateTimeParseException e) {
+            log.error("날짜 파싱 실패 - startDate: {}, endDate: {}",
+                    request.getStartDate(), request.getEndDate(), e);
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "날짜 형식이 올바르지 않습니다. (예: 2024-01-01)"
+                    "날짜 형식이 올바르지 않습니다. (예: 2024-01-01 또는 2025-11-23T14:00:00Z)"
             );
+        }
+    }
+
+    //날짜 형식 변경
+    private  LocalDate parseDate(String dateStr){
+        if (dateStr.contains("T")) {
+            return LocalDate.parse(dateStr.substring(0,10));
+        } else {
+            return LocalDate.parse(dateStr);
         }
     }
 

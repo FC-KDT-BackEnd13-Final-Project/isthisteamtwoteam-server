@@ -8,6 +8,7 @@ import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectAddCheckListResponse;
 
+import org.etmetmy.bn_server.domain.project.dto.response.ProjectUpdateResponse;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.web.bind.annotation.*;
@@ -71,30 +72,22 @@ public class ProjectController {
 
     // 프로젝트 제목 수정
     @PatchMapping("/{projectId}/title")
-    public CommonResponse<Map<String, Object>> updateProjectTitle(
+    public CommonResponse<ProjectUpdateResponse> updateProjectTitle(
             @PathVariable Long projectId,
             @RequestBody ProjectTitleUpdateRequest request
     ) {
-        projectService.updateProjectTitle(projectId, request);
-
-        Map<String, Object> responseData = new HashMap<>();
-        responseData.put("project_id", projectId);
-
-        return CommonResponse.success("프로젝트 제목 수정 성공", responseData);
+        ProjectUpdateResponse response = projectService.updateProjectTitle(projectId, request);
+        return CommonResponse.success("프로젝트 제목 수정 성공", response);
     }
 
     // 프로젝트 날짜 수정
     @PatchMapping("/{projectId}/date")
-    public CommonResponse<Map<String, Object>> updateProjectDate(
+    public CommonResponse<ProjectUpdateResponse> updateProjectDate(
             @PathVariable Long projectId,
             @RequestBody ProjectDateUpdateRequest request
     ) {
-        projectService.updateProjectDate(projectId, request);
-
-        Map<String, Object> responseData = new HashMap<>();
-        responseData.put("project_id", projectId);
-
-        return CommonResponse.success("프로젝트 날짜 수정 성공", responseData);
+        ProjectUpdateResponse response = projectService.updateProjectDate(projectId, request);
+        return CommonResponse.success("프로젝트 날짜 수정 성공", response);
     }
 
 }
