@@ -17,8 +17,8 @@ public enum ErrorCode {
 
     // 게시글 관련 에러
     BOARD_POST_NOT_FOUND(404, "B001", "게시글을 찾을 수 없습니다."),
-    BOARD_COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),  // ← 수정!
-    PARENT_COMMENT_NOT_FOUND(404, "B002_1", "부모 댓글을 찾을 수 없습니다."),  // ← 수정!
+    BOARD_COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),
+    PARENT_COMMENT_NOT_FOUND(404, "B002_1", "부모 댓글을 찾을 수 없습니다."),
     BOARD_PERMISSION_DENIED(403, "B003", "게시글 수정/삭제 권한이 없습니다."),
     BOARD_ALREADY_DELETED(400, "B004", "이미 삭제된 게시글입니다."),
     BOARD_INVALID_FILTER(400,"B005", "유효하지 않은 게시글 필터입니다."),
@@ -47,7 +47,7 @@ public enum ErrorCode {
 
     // 프로젝트 관련 에러
     PROJECT_NOT_FOUND(404, "P001", "프로젝트를 찾을 수 없습니다."),
-    PROJECT_ALREADY_EXISTS(409, "P002", "이미 존재하는 프로젝트입니다."),  // ← 수정!
+    PROJECT_ALREADY_EXISTS(409, "P002", "이미 존재하는 프로젝트입니다."),
     PROJECT_PERMISSION_DENIED(403, "P003", "프로젝트 접근 권한이 없습니다."),
     PROJECT_CANNOT_DELETE(400, "P004", "진행 중인 프로젝트는 삭제할 수 없습니다."),
     PROJECT_NAME_DUPLICATE(409, "P005", "중복된 프로젝트명입니다."),
