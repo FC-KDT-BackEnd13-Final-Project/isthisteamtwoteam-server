@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.user.repository;
 
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
+import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,4 +29,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("companyName") String companyName,
             @Param("companyType") CompanyType companyType // Enum 타입으로 받음
     );
+    @Query("SELECT new org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse(u.profileImg, u.name) " +
+            "FROM User u " +
+            "WHERE u.id = :userId")
+    Optional<UserProfileImgNameResponse> findProfileImgAndNameByUserId(@Param("userId") Long userId);
 }

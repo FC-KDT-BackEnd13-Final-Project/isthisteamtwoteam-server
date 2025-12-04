@@ -4,9 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
-import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
+import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
@@ -32,7 +34,7 @@ public class UserServiceImpl implements UserService{
     public Long updateMember(Long memberId, MemberUpdateRequest request) {
         // 1. 회원 찾기
         User user = userRepository.findById(memberId)
-                .orElseThrow(UserNotFoundException::new);
+                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
 
         // 2. 바꿀 회사 찾기
         Company company = companyRepository.findById(request.getCompanyId())
@@ -58,6 +60,7 @@ public class UserServiceImpl implements UserService{
 
 
     // 검색 & 조회 기능
+    @Override
     public List<User> searchMembers(String name, String email, String companyName, String type) {
         CompanyType companyType = null;
 
@@ -80,6 +83,8 @@ public class UserServiceImpl implements UserService{
     }
 
     // UserService
+    @Override
+    @Transactional
     public User login(UserLoginDto loginDto) {
         User user = userRepository.findByEmail(loginDto.getEmail())
                 .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
@@ -90,6 +95,15 @@ public class UserServiceImpl implements UserService{
 
         return user;
     }
+
+    //
+    @Override
+    public UserProfileImgNameResponse getProfileImgName(Long userId) {
+        UserProfileImgNameResponse profileImgAndNameByUserId = userRepository.findProfileImgAndNameByUserId(userId)
+                .orElseThrow(UserNotFoundException::new);
+        return profileImgAndNameByUserId;
+    }
+
     @Override
     public Long joinUser(UserDto userDto) {
         Company company = companyService.findByCompanyName(userDto.getCompany())
