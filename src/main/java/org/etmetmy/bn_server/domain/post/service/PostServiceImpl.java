@@ -1,27 +1,41 @@
 package org.etmetmy.bn_server.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.file.entity.EntityType;
+import org.etmetmy.bn_server.domain.file.entity.File;
+import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.Request;
+import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.repository.RequestRepository;
+import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true) // 클래스 레벨 트랜잭션 정의
+@Transactional(readOnly = true)
 public class PostServiceImpl implements  PostService {
 
     private final PostRepository postRepository;
     private final RequestRepository requestRepository;
+    private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
+    private final FileRepository fileRepository;
 
     private static final String STATUS_APPROVED = "승인";
     private static final String STATUS_REJECTED = "거절";
@@ -100,4 +114,59 @@ public class PostServiceImpl implements  PostService {
         }
     }
 
+    /**
+     * 게시글 작성 API
+     */
+    @Transactional
+    public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
+
+        // 1. 필요한 엔티티 조회
+        User user = userRepository.getReferenceById(loginUserId);
+        Project project = projectRepository.getReferenceById(projectId);
+        Stage stage = Stage.builder().stageId(requestDto.getStageId()).build();
+
+        // 2. 프로젝트 내 게시글 번호 생성
+        Long postNumber = postRepository.findMaxPostNumberByProjectId(projectId)
+                .map(max -> max + 1)
+                .orElse(1L);
+
+        // 3. Post 엔티티 생성 및 저장
+        Post post = Post.createPost(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
+        Post savedPost = postRepository.save(post);
+
+        // 4. 파일 처리
+        List<File> savedFiles = new ArrayList<>();
+        if (requestDto.getFileUrls() != null && !requestDto.getFileUrls().isEmpty()) {
+            for (String fileUrl : requestDto.getFileUrls()) {
+                File file = File.builder()
+                        .entityType(EntityType.builder().entityTypeId(1L).build())
+                        .post(savedPost)
+                        .fileTitle(extractFileName(fileUrl))
+                        .filePath(fileUrl)
+                        .fileSize(0L)
+                        .fileType(extractFileType(fileUrl))
+                        .uploadedBy(loginUserId)
+                        .isDeleted(false)
+                        .build();
+                savedFiles.add(file);
+            }
+            fileRepository.saveAll(savedFiles);
+        }
+
+        // 5. 응답 반환
+        return PostCreateResponse.Converter.from(savedPost, savedFiles, requestDto.getLinkUrls());
+    }
+
+
+     // URL 에서 파일명 추출
+    private String extractFileName(String url) {
+        int lastSlash = url.lastIndexOf('/');
+        return lastSlash >= 0 ? url.substring(lastSlash + 1) : "unknown";
+    }
+
+    // URL 에서 파일 확장자 추출
+    private String extractFileType(String url) {
+        int lastDot = url.lastIndexOf('.');
+        return lastDot >= 0 ? url.substring(lastDot + 1).toLowerCase() : "unknown";
+    }
 }

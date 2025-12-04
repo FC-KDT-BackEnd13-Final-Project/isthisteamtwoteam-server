@@ -2,9 +2,13 @@ package org.etmetmy.bn_server.domain.post.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "post")
@@ -53,6 +57,9 @@ public class Post extends BaseEntity {
     @Column(name = "post_number", nullable = false)
     private Long postNumber;
 
+    //파일 목록
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<File> files = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
@@ -61,5 +68,21 @@ public class Post extends BaseEntity {
 
     public void updateStage(Long stageId) {
         this.stage = stage;
+    }
+
+    /**
+     * 게시글 생성 정적 팩토리 메서드
+     */
+    public static Post createPost(Project project, User user, String title, String content, Stage stage, Long postNumber) {
+        return Post.builder()
+                .project(project)
+                .user(user)
+                .authorId(user.getId())
+                .title(title)
+                .content(content)
+                .stage(stage)
+                .postNumber(postNumber)
+                .isCompleted(false)
+                .build();
     }
 }

@@ -1,12 +1,18 @@
 package org.etmetmy.bn_server.domain.post.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +24,21 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+
+    /**
+     * 게시글 작성 API
+     */
+    @PostMapping("/{projectId}/posts")
+    public CommonResponse<PostCreateResponse> createPost(
+            @PathVariable Long projectId,
+            @Valid @RequestBody PostCreateRequest requestDto,
+            HttpSession session){
+
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+        PostCreateResponse response = postService.createPost(projectId, requestDto, loginUserId);
+        return CommonResponse.success("게시글 작성 성공", response);
+    }
 
     /**
      * 게시글 상세 조회

@@ -47,4 +47,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "order by p.postNumber desc ")
     List<Post> findUncompletedByProjectId(@Param("projectId") Long projectId);
 
+    /**
+     * 프로젝트 내 최대 게시글 번호 조회
+     */
+    @Query("SELECT MAX(p.postNumber) FROM Post p WHERE p.project.id = :projectId")
+    Optional<Long> findMaxPostNumberByProjectId(@Param("projectId") Long projectId);
+
 }

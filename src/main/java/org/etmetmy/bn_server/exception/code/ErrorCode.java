@@ -40,7 +40,10 @@ public enum ErrorCode {
     FILE_UPLOAD_FAILED(500, "F004", "파일 업로드에 실패했습니다"),
 
     // 체크리스트 관련 에러
-    CHECKLIST_NOT_FOUND(404,"D001","체크리스트를 찾을 수 없습니다.");
+    CHECKLIST_NOT_FOUND(404,"D001","체크리스트를 찾을 수 없습니다."),
+
+    //단계 관련 에러
+    STAGE_NOT_FOUND(404, "S001", "단계를 찾을 수 없습니다.");
 
     private final int status;
     private final String code;
