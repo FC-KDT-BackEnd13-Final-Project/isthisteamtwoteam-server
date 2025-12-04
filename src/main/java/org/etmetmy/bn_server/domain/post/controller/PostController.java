@@ -57,7 +57,6 @@ public class PostController {
         return ResponseEntity.ok(CommonResponse.success("게시글 거절 완료"));
     }
 
-
     /**
      * 게시글 조회(필터)
      * all : 전체
@@ -87,5 +86,4 @@ public class PostController {
             return CommonResponse.success("게시글 목록 조회 성공", response);
         }
     }
-
 }
