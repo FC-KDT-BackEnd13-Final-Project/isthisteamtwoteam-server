@@ -34,8 +34,7 @@ public class UserServiceImpl implements UserService{
     public Long updateMember(Long memberId, MemberUpdateRequest request) {
         // 1. 회원 찾기
         User user = userRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
-
+                .orElseThrow(UserNotFoundException::new);
         // 2. 바꿀 회사 찾기
         Company company = companyRepository.findById(request.getCompanyId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
