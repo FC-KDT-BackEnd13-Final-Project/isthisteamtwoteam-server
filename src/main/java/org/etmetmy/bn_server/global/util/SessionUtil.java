@@ -2,8 +2,8 @@ package org.etmetmy.bn_server.global.util;
 
 import jakarta.servlet.http.HttpSession;
 import org.etmetmy.bn_server.domain.user.entity.User;
-import org.etmetmy.bn_server.global.CustomException;
-import org.etmetmy.bn_server.global.StatusCode;
+import org.etmetmy.bn_server.exception.code.ErrorCode;
+import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.web.SessionConst;
 
 /**
@@ -28,7 +28,7 @@ public class SessionUtil {
     public static User getLoginUserOrThrow(HttpSession session) {
         User loginUser = getLoginUser(session);
         if (loginUser == null) {
-            throw new CustomException(StatusCode.USER_NOT_LOGIN);
+            throw new BusinessException(ErrorCode.USER_NOT_LOGIN);
         }
         return loginUser;
     }

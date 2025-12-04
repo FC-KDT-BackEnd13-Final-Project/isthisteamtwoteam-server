@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.exception.code;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @Getter
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public enum ErrorCode {
     // 게시글 관련 에러
     BOARD_POST_NOT_FOUND(404, "B001", "게시글을 찾을 수 없습니다."),
     BOARD_COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),  // ← 수정!
+    PARENT_COMMENT_NOT_FOUND(404, "B002_1", "부모 댓글을 찾을 수 없습니다."),  // ← 수정!
     BOARD_PERMISSION_DENIED(403, "B003", "게시글 수정/삭제 권한이 없습니다."),
     BOARD_ALREADY_DELETED(400, "B004", "이미 삭제된 게시글입니다."),
     BOARD_INVALID_FILTER(400,"B005", "유효하지 않은 게시글 필터입니다."),
@@ -49,6 +51,7 @@ public enum ErrorCode {
     PROJECT_PERMISSION_DENIED(403, "P003", "프로젝트 접근 권한이 없습니다."),
     PROJECT_CANNOT_DELETE(400, "P004", "진행 중인 프로젝트는 삭제할 수 없습니다."),
     PROJECT_NAME_DUPLICATE(409, "P005", "중복된 프로젝트명입니다."),
+    PROJECT_AND_USER_NOT_FOUND(404,"P006","프로젝트와 맞는 사람이 없습니다."),
 
     // 승인 관련 에러
     REQUEST_PENDING_NOT_FOUND(404,"R001","해당 게시글에 승인 대기 중인 요청이 없습니다."),
@@ -56,7 +59,14 @@ public enum ErrorCode {
     // 유저 관련 에러
     USER_NOT_FOUND(404, "U001", "사용자를 찾을 수 없습니다."),
     DUPLICATE_EMAIL(409, "U002", "이미 사용 중인 이메일입니다."),
-    USER_ALREADY_DELETED(400, "U003", "이미 탈퇴한 사용자입니다.");
+    USER_ALREADY_DELETED(400, "U003", "이미 탈퇴한 사용자입니다."),
+    USER_NOT_LOGIN(401,"Y004", "로그인이 필요합니다."),
+
+    // 페이지 응답
+    NON_INDEX_PAGE(404, "P007","페이지가 없습니다"),
+    NON_SIZE_PAGE(404,"P008","데이터가 없습니다."),
+    //memo 에러
+    MEMO_NOT_FOUND(404,"M001","존재하지 않는 메모입니다.");
 
     private final int status;
     private final String code;
