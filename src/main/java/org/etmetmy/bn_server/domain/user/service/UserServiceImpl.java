@@ -10,9 +10,9 @@ import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.exception.code.ErrorCode;
+import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
-import org.etmetmy.bn_server.global.CustomException;
-import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService{
 
         // 2. 바꿀 회사 찾기
         Company company = companyRepository.findById(request.getCompanyId())
-                .orElseThrow(() -> new CustomException(StatusCode.COMPANY_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
 
         // 3. 정보 변경 (dirty checking)
         user.updateInfo(request.getName(), request.getEmail(), company, request.getRole());
@@ -51,7 +51,7 @@ public class UserServiceImpl implements UserService{
     public Long deleteMember(Long memberId) {
         // 존재 여부 확인 후 삭제
         User user = userRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
+                .orElseThrow(UserNotFoundException::new);
 
         Long userId = user.getId();
         userRepository.delete(user);
@@ -68,7 +68,7 @@ public class UserServiceImpl implements UserService{
         if (type != null && !type.isBlank()) {
             try {
                 companyType = CompanyType.valueOf(type.toUpperCase());
-            } catch (CustomException e) {
+            } catch (BusinessException e) {
                 // 잘못된 type 값은 무시하고 null로 (쿼리에서 IS NULL 처리됨)
             }
         }
@@ -87,10 +87,10 @@ public class UserServiceImpl implements UserService{
     @Transactional
     public User login(UserLoginDto loginDto) {
         User user = userRepository.findByEmail(loginDto.getEmail())
-                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
+                .orElseThrow(UserNotFoundException::new);
 
         if (!passwordEncoder.matches(loginDto.getPassword(), user.getPassword())) {
-            throw new CustomException(StatusCode.PASSWORD_NOT_MATCH);
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
         }
 
         return user;
@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService{
     @Override
     public Long joinUser(UserDto userDto) {
         Company company = companyService.findByCompanyName(userDto.getCompany())
-                .orElseThrow(() -> new CustomException(StatusCode.COMPANY_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
 
         User newUser = UserDto.Converter.toUser(userDto,company);
 
