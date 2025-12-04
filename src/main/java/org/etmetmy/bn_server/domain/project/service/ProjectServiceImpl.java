@@ -129,7 +129,7 @@ public class ProjectServiceImpl implements ProjectService{
         }
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 프로젝트입니다: " + projectId));
+                .orElseThrow(ProjectNotFoundException::new);
 
         List<ProjectMember> projectMembers = createProjectMembers(members, project, createdById);
 
@@ -184,7 +184,7 @@ public class ProjectServiceImpl implements ProjectService{
         log.info("=== 단일 프로젝트 조회 - projectId: {} ===", projectId);
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 프로젝트입니다: " + projectId));
+                .orElseThrow(ProjectNotFoundException::new);
 
         List<ProjectMember> members = projectMemberRepository.findByProject_Id(projectId);
 
@@ -205,7 +205,7 @@ public class ProjectServiceImpl implements ProjectService{
         String normalized = stageName != null ? stageName.trim() : null;
 
         if (normalized == null || normalized.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "프로젝트 단계가 지정되지 않았습니다.");
+            throw new InvalidInputException("프로젝트 단계가 지정되지 않았습니다.");
         }
         return normalized;
     }
