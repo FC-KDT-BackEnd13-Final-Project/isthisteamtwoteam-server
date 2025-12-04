@@ -27,6 +27,9 @@ public enum StatusCode {
     // 댓글 응답
     PARENT_COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 부모 댓글 ID입니다."),
 
+    //Project 에서
+    PROJECT_MEMBER_NOT_FIND(HttpStatus.NOT_FOUND, "유저가 프로젝트에 참여하고 있지 않습니다."),
+  
     // Project 응답
     PROJECT_NOT_FOUND(HttpStatus.NOT_FOUND,"존재하지 않는 프로젝트입니다."),
 
@@ -36,6 +39,8 @@ public enum StatusCode {
     //memo 에러
     MEMO_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 메모입니다."),
 
+    //게시글 조회 에러
+    INVALID_FILTER(HttpStatus.BAD_REQUEST, "유효하지 않은 게시글 필터입니다."),
     //User 에서
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
     PASSWORD_NOT_MATCH(HttpStatus.UNAUTHORIZED, "비밀번호가 일치하지 않습니다."),

@@ -42,8 +42,17 @@ public class Post extends BaseEntity {
     @Column(name = "is_completed")
     private Boolean isCompleted;
 
-    @Column(name = "stage_id", nullable = false)
-    private Long stageId;
+    @Column(name = "created_ip")
+    private String createdIp;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stage_id", nullable = false)
+    private Stage stage;
+
+    // 프로젝트 내에서의 게시글 번호 추가
+    @Column(name = "post_number", nullable = false)
+    private Long postNumber;
+
 
     @PrePersist
     protected void onCreate() {
@@ -51,6 +60,6 @@ public class Post extends BaseEntity {
     }
 
     public void updateStage(Long stageId) {
-        this.stageId = stageId;
+        this.stage = stage;
     }
 }

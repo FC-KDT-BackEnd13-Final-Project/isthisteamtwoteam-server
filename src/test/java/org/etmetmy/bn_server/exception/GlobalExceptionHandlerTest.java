@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server;
+package org.etmetmy.bn_server.exception;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
