@@ -11,8 +11,10 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
-import org.etmetmy.bn_server.global.CustomException;
-import org.etmetmy.bn_server.global.StatusCode;
+import org.etmetmy.bn_server.exception.code.ErrorCode;
+import org.etmetmy.bn_server.exception.custom.BoardNotFoundException;
+import org.etmetmy.bn_server.exception.custom.BusinessException;
+import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,10 +35,10 @@ public class CommentService {
 
         // Post와 User 엔티티 유효성 검사 및 조회
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
+                .orElseThrow(BoardNotFoundException::new);
 
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
+                .orElseThrow(UserNotFoundException::new);
 
         // IP 주소 추출
         String clientIp = servletRequest.getRemoteAddr();
@@ -57,14 +59,14 @@ public class CommentService {
 
         // 1. Post, User, Parent Comment 유효성 검사
         postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
+                .orElseThrow(BoardNotFoundException::new);
 
         // 부모 댓글 존재 여부 확인
         commentRepository.findById(parentCommentId)
-                .orElseThrow(() -> new CustomException(StatusCode.PARENT_COMMENT_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PARENT_COMMENT_NOT_FOUND));
 
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
+                .orElseThrow(UserNotFoundException::new);
 
         // IP 주소
         String clientIp = servletRequest.getRemoteAddr();
@@ -87,7 +89,7 @@ public class CommentService {
 
         // 1. Post 존재 여부 확인 (외래 키 검증)
         postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
+                .orElseThrow(BoardNotFoundException::new);
 
         // 2. 최상위 댓글 조회
         List<Comment> rootComments = commentRepository.findRootCommentsByPostId(postId);

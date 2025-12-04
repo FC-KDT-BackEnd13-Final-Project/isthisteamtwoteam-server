@@ -16,7 +16,8 @@ public enum ErrorCode {
 
     // 게시글 관련 에러
     BOARD_POST_NOT_FOUND(404, "B001", "게시글을 찾을 수 없습니다."),
-    BOARD_COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),  // ← 수정!
+    BOARD_COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),
+    PARENT_COMMENT_NOT_FOUND(404, "B002_1", "부모 댓글을 찾을 수 없습니다."),
     BOARD_PERMISSION_DENIED(403, "B003", "게시글 수정/삭제 권한이 없습니다."),
     BOARD_ALREADY_DELETED(400, "B004", "이미 삭제된 게시글입니다."),
     BOARD_INVALID_FILTER(400,"B005", "유효하지 않은 게시글 필터입니다."),
@@ -41,6 +42,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(404, "U001", "사용자를 찾을 수 없습니다."),
     DUPLICATE_EMAIL(409, "U002", "이미 사용 중인 이메일입니다."),
     USER_ALREADY_DELETED(400, "U003", "이미 탈퇴한 사용자입니다."),
+    USER_NOT_LOGIN(401,"Y004", "로그인이 필요합니다."),
 
     FILE_NOT_FOUND(404, "F001", "파일을 찾을 수 없습니다"),
     FILE_SIZE_EXCEEDED(400, "F002", "파일 크기가 제한을 초과했습니다"),
@@ -51,7 +53,14 @@ public enum ErrorCode {
     CHECKLIST_NOT_FOUND(404,"D001","체크리스트를 찾을 수 없습니다."),
 
     //단계 관련 에러
-    STAGE_NOT_FOUND(404, "S001", "단계를 찾을 수 없습니다.");
+    STAGE_NOT_FOUND(404, "S001", "단계를 찾을 수 없습니다."),
+
+    // 페이지 응답
+    NON_INDEX_PAGE(404, "P007","페이지가 없습니다"),
+    NON_SIZE_PAGE(404,"P008","데이터가 없습니다."),
+
+    //memo 에러
+    MEMO_NOT_FOUND(404,"M001","존재하지 않는 메모입니다.");
 
     private final int status;
     private final String code;
