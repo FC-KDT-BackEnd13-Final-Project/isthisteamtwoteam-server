@@ -34,6 +34,8 @@ public enum ErrorCode {
     PROJECT_PERMISSION_DENIED(403, "P003", "프로젝트 접근 권한이 없습니다."),
     PROJECT_CANNOT_DELETE(400, "P004", "진행 중인 프로젝트는 삭제할 수 없습니다."),
     PROJECT_NAME_DUPLICATE(409, "P005", "중복된 프로젝트명입니다."),
+    PROJECT_AND_USER_NOT_FOUND(404,"PU001", "사용자가 해당 프로젝트에 속해있지 않습니다."),
+
 
     // 승인 관련 에러
     REQUEST_PENDING_NOT_FOUND(404,"R001","해당 게시글에 승인 대기 중인 요청이 없습니다."),
@@ -60,7 +62,10 @@ public enum ErrorCode {
     NON_SIZE_PAGE(404,"P008","데이터가 없습니다."),
 
     //memo 에러
-    MEMO_NOT_FOUND(404,"M001","존재하지 않는 메모입니다.");
+    MEMO_NOT_FOUND(404,"M001","존재하지 않는 메모입니다."),
+
+    //회사 에러
+    COMPANY_NOT_FOUND(404,"CMP001", "회사 정보가 존재하지 않습니다.");
 
     private final int status;
     private final String code;
