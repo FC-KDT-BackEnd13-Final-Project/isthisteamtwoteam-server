@@ -66,20 +66,4 @@ public class Post extends BaseEntity {
     public void updateStage(Long stageId) {
         this.stage = stage;
     }
-
-    /**
-     * 게시글 생성 정적 팩토리 메서드
-     */
-    public static Post createPost(Project project, User user, String title, String content, Stage stage, Long postNumber) {
-        return Post.builder()
-                .project(project)
-                .user(user)
-                .parentPostId(user.getId())
-                .title(title)
-                .content(content)
-                .stage(stage)
-                .postNumber(postNumber)
-                .isCompleted(false)
-                .build();
-    }
 }

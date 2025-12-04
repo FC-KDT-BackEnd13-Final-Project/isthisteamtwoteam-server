@@ -7,6 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.etmetmy.bn_server.domain.user.entity.User;
 
 import java.util.List;
 
@@ -32,4 +36,16 @@ public class PostCreateRequest {
     // 링크 URL 목록 (선택 사항)
     private List<String> linkUrls;
 
+    public static Post toEntity(Project project, User user, String title, String content, Stage stage, Long postNumber) {
+        return Post.builder()
+                .project(project)
+                .user(user)
+                .parentPostId(null) //일반 게시글은 부모 없음
+                .title(title)
+                .content(content)
+                .stage(stage)
+                .postNumber(postNumber)
+                .isCompleted(false)
+                .build();
+    }
 }

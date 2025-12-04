@@ -156,7 +156,7 @@ public class PostServiceImpl implements PostService {
                 .orElse(1L);
 
         // 3. Post 엔티티 생성 및 저장
-        Post post = Post.createPost(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
+        Post post = PostCreateRequest.toEntity(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
         Post savedPost = postRepository.save(post);
 
         // 4. 파일 처리
