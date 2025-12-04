@@ -10,9 +10,7 @@ import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -68,12 +66,12 @@ public class ProjectController {
     }
 
     // 프로젝트 제목 수정
-    @PatchMapping("/{projectId}/title")
-    public CommonResponse<ProjectUpdateResponse> updateProjectTitle(
+    @PatchMapping("/{projectId}/projectName")
+    public CommonResponse<ProjectUpdateResponse> updateProjectName(
             @PathVariable Long projectId,
-            @RequestBody ProjectTitleUpdateRequest request
+            @RequestBody ProjectNameUpdateRequest request
     ) {
-        ProjectUpdateResponse response = projectService.updateProjectTitle(projectId, request);
+        ProjectUpdateResponse response = projectService.updateProjectName(projectId, request);
         return CommonResponse.success("프로젝트 제목 수정 성공", response);
     }
 

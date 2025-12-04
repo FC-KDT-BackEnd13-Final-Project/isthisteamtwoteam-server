@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProjectTitleUpdateRequest {
+public class ProjectNameUpdateRequest {
     private String projectName;
 
 
     public static class Converter {
         // 필요시 변환 로직 추가 가능
-        public static ProjectTitleUpdateRequest from(String projectName) {
-            return new ProjectTitleUpdateRequest(projectName);
+        public static ProjectNameUpdateRequest from(String projectName) {
+            return new ProjectNameUpdateRequest(projectName);
         }
     }
 

@@ -20,13 +20,11 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -339,22 +337,22 @@ public class ProjectServiceImpl implements ProjectService{
     //프로젝트 제목수정
     @Transactional
     @Override
-    public ProjectUpdateResponse updateProjectTitle(Long projectId, ProjectTitleUpdateRequest request) {
+    public ProjectUpdateResponse updateProjectName(Long projectId, ProjectNameUpdateRequest request) {
         log.info("=== 프로젝트 제목 수정 시작 - projectId: {} ===", projectId);
 
         if (projectId == null) {
             throw new InvalidInputException("프로젝트 ID가 필요합니다.");
         }
 
-        String newTitle = request.getProjectName();
-        if (newTitle == null || newTitle.isBlank()) {
+        String newProjectName = request.getProjectName();
+        if (newProjectName == null || newProjectName.isBlank()) {
             throw new InvalidInputException("프로젝트 제목은 비워둘 수 없습니다.");
         }
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        int updated = projectRepository.updateProjectTitle(projectId, newTitle);
+        int updated = projectRepository.updateProjectName(projectId, newProjectName);
         if (updated == 0) {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 제목 수정에 실패했습니다.");
         }
@@ -362,8 +360,8 @@ public class ProjectServiceImpl implements ProjectService{
         Project updatedProject = projectRepository.findById(projectId)
                 .orElseThrow((ProjectNotFoundException::new));
 
-        log.info("프로젝트 제목 수정 완료 - projectId: {}, newTitle: {}, updatedAt: {}",
-                projectId, newTitle, updatedProject.getUpdatedAt());
+        log.info("프로젝트 제목 수정 완료 - projectId: {}, newProjectName: {}, updatedAt: {}",
+                projectId, newProjectName, updatedProject.getUpdatedAt());
 
         return ProjectUpdateResponse.Converter.from(updatedProject);
     }

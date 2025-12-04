@@ -23,7 +23,7 @@ public interface ProjectService {
     List<ProjectAddCheckListResponse> checklistAdd(Long projectId, ProjectAddCheckListRequest request);
 
     // 프로젝트 제목 수정
-    ProjectUpdateResponse updateProjectTitle(Long projectId, ProjectTitleUpdateRequest request);
+    ProjectUpdateResponse updateProjectName(Long projectId, ProjectNameUpdateRequest request);
 
     // 프로젝트 날짜 수정
     ProjectUpdateResponse updateProjectDate(Long projectId, ProjectDateUpdateRequest request);
