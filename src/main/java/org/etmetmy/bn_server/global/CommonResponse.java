@@ -8,22 +8,22 @@ import lombok.Getter;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CommonResponse<T> {
     private final Boolean success;
-    private final T data;
+    private final T response;
     private final String message;
 
     @Builder
-    private CommonResponse(Boolean success, T data, String message) {
+    private CommonResponse(Boolean success, T response, String message) {
         this.success = success;
-        this.data = data;
+        this.response = response;
         this.message = message;
     }
 
     // 성공 + 데이터 + 메시지
-    public static <T> CommonResponse<T> success(String message, T data) {
+    public static <T> CommonResponse<T> success(String message, T response) {
         return CommonResponse.<T>builder()
                 .success(true)
                 .message(message)
-                .data(data)
+                .response(response)
                 .build();
     }
 
