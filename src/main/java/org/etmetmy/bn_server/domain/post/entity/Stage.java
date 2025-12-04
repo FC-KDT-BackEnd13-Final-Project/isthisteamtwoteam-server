@@ -17,7 +17,7 @@ public class Stage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "stage_id")
-    private Long stageId;
+    private Long id;
 
     @Column(name = "stage_name", length = 255)
     private String stageName;

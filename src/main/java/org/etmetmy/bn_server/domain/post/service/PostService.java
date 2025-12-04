@@ -16,6 +16,7 @@ public interface PostService {
 
     List<PostListResponse> getPostListByProjectIdAndFilter(Long projectId, String filter);
 
+    List<PostListResponse> getPostListByStage(Long projectId, String stage);
 }
 
 

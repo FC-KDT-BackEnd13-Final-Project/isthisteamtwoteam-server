@@ -30,9 +30,6 @@ public class Post extends BaseEntity {
     @Column(name = "parent_post_id")
     private Long parentPostId;
 
-    @Column(name = "author_id", nullable = false)
-    private Long authorId;
-
     @Column(name = "title", nullable = false, length = 500)
     private String title;
 

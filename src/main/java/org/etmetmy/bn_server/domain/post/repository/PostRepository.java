@@ -47,4 +47,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "order by p.postNumber desc ")
     List<Post> findUncompletedByProjectId(@Param("projectId") Long projectId);
 
+    @Query("select p from Post p " +
+            "join fetch p.user u " +
+            "join fetch p.stage s " +
+            "where p.project.id = :projectId " +
+            "and p.stage.id = :stageId " +
+            "order by p.postNumber desc")
+    List<Post> findByProjectIdAndStageId(@Param("projectId") Long projectId, @Param("stageId") Long stageId);
 }

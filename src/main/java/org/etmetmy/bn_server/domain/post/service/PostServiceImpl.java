@@ -5,10 +5,13 @@ import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.Request;
+import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.repository.RequestRepository;
-import org.etmetmy.bn_server.global.CustomException;
-import org.etmetmy.bn_server.global.StatusCode;
+import org.etmetmy.bn_server.domain.post.repository.StageRepository;
+import org.etmetmy.bn_server.exception.code.ErrorCode;
+import org.etmetmy.bn_server.exception.custom.BoardNotFoundException;
+import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +21,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true) // 클래스 레벨 트랜잭션 정의
-public class PostServiceImpl implements  PostService {
+public class PostServiceImpl implements PostService {
 
     private final PostRepository postRepository;
     private final RequestRepository requestRepository;
+    private final StageRepository stageRepository;
 
     private static final String STATUS_APPROVED = "승인";
     private static final String STATUS_REJECTED = "거절";
@@ -33,7 +37,7 @@ public class PostServiceImpl implements  PostService {
     // 1. 게시글 상세 조회 (GET)
     public PostDetailResponse getPostDetail(Long postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
+                .orElseThrow(BoardNotFoundException::new);
 
         // DTO 변환 (StageName 처리는 DTO에서 Long stageId 기반으로 처리되어야 함)
         // DTO 호출 인자를 Post와 User로 단순화함
@@ -45,13 +49,13 @@ public class PostServiceImpl implements  PostService {
     @Transactional
     public void approvePost(Long postId, Long approvingUserId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
+                .orElseThrow(BoardNotFoundException::new);
 
         Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(postId, STATUS_PENDING)
-                .orElseThrow(() -> new CustomException(StatusCode.REQUEST_PENDING_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
         // 1. Post의 Stage ID를 APPROVED (99)로 변경
-        post.updateStage(STAGE_APPROVED_ID);
+        //post.updateStage(STAGE_APPROVED_ID);
 
         // 2. Request 상태를 '승인'으로 업데이트
         currentRequest.updateStatus(approvingUserId, STATUS_APPROVED, null);
@@ -62,10 +66,10 @@ public class PostServiceImpl implements  PostService {
     @Transactional
     public void rejectPost(Long postId, Long rejectingUserId, String rejectReason) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new CustomException(StatusCode.POST_NOT_FOUND));
+                .orElseThrow(BoardNotFoundException::new);
 
         Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(postId, STATUS_PENDING)
-                .orElseThrow(() -> new CustomException(StatusCode.REQUEST_PENDING_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
         // 1. Post의 Stage ID를 REJECTED (98)로 변경
         post.updateStage(STAGE_REJECTED_ID);
@@ -84,6 +88,28 @@ public class PostServiceImpl implements  PostService {
 
     }
 
+    @Override
+    public List<PostListResponse> getPostListByStage(Long projectId, String stage) {
+
+        // 필터에 따라 게시글 조회
+        List<Post> posts = getPostsByStageFilter(projectId, stage);
+        return posts.stream()
+                .map(PostListResponse::from)
+                .toList();
+    }
+
+
+    private List<Post> getPostsByStageFilter(Long projectId, String stage) {
+
+        if (stage.equals("all")) {
+            return postRepository.findAllByProjectId(projectId);
+        }
+        Stage stageEntity = stageRepository.findByStageName(stage)
+                .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
+
+        return postRepository.findByProjectIdAndStageId(projectId, stageEntity.getId());
+    }
+
     /**
      * 필터에 따라 게시글 조회
      */
@@ -96,7 +122,7 @@ public class PostServiceImpl implements  PostService {
             case "unfinished":
                 return postRepository.findUncompletedByProjectId(projectId);
             default:
-                throw new CustomException(StatusCode.INVALID_FILTER);
+                throw new BusinessException(ErrorCode.BOARD_INVALID_FILTER);
         }
     }
 

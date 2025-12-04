@@ -14,7 +14,6 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 public class PostListResponse {
     private Long postNumber;
     private Long postId;
-    private Long authorId;
     private String authorName;
     private String title;
     private String content;
@@ -28,12 +27,11 @@ public class PostListResponse {
         return PostListResponse.builder()
                 .postNumber(post.getPostNumber())  // ← Post 엔티티에서 가져오기
                 .postId(post.getPostId())
-                .authorId(post.getAuthorId())
                 .authorName(post.getUser().getName())
                 .title(post.getTitle())
                 .content(post.getContent())
                 .isCompleted(post.getIsCompleted())
-                .stageId(post.getStage().getStageId())
+                .stageId(post.getStage().getId())
                 .stageName(post.getStage().getStageName())
                 .createdIp(post.getCreatedIp())
                 .parentId(post.getParentPostId())
