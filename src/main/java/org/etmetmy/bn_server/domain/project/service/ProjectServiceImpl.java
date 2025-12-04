@@ -5,16 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.project.dto.request.*;
+import org.etmetmy.bn_server.domain.project.dto.response.*;
 import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.project.repository.ProjectStageRepository;
-import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
-import org.etmetmy.bn_server.domain.project.dto.request.ProjectMemberRequest;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
-import org.etmetmy.bn_server.domain.project.dto.request.ProjectAddCheckListRequest;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectAddCheckListResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
@@ -22,6 +18,8 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepositor
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.exception.custom.InvalidInputException;
+import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
@@ -30,6 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -334,4 +335,153 @@ public class ProjectServiceImpl implements ProjectService{
         // Response 변환 후 반환
         return ProjectAddCheckListResponse.Converter.from(savedCheckLists);
     }
+
+    //프로젝트 제목수정
+    @Transactional
+    @Override
+    public ProjectUpdateResponse updateProjectTitle(Long projectId, ProjectTitleUpdateRequest request) {
+        log.info("=== 프로젝트 제목 수정 시작 - projectId: {} ===", projectId);
+
+        if (projectId == null) {
+            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
+        }
+
+        String newTitle = request.getProjectName();
+        if (newTitle == null || newTitle.isBlank()) {
+            throw new InvalidInputException("프로젝트 제목은 비워둘 수 없습니다.");
+        }
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        int updated = projectRepository.updateProjectTitle(projectId, newTitle);
+        if (updated == 0) {
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 제목 수정에 실패했습니다.");
+        }
+
+        Project updatedProject = projectRepository.findById(projectId)
+                .orElseThrow((ProjectNotFoundException::new));
+
+        log.info("프로젝트 제목 수정 완료 - projectId: {}, newTitle: {}, updatedAt: {}",
+                projectId, newTitle, updatedProject.getUpdatedAt());
+
+        return ProjectUpdateResponse.Converter.from(updatedProject);
+    }
+
+    //프로젝트 날짜 수정
+    @Transactional
+    @Override
+    public ProjectUpdateResponse updateProjectDate(Long projectId, ProjectDateUpdateRequest request) {
+        log.info("=== 프로젝트 날짜 수정 시작 - projectId: {} ===", projectId);
+
+        if (projectId == null) {
+            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
+        }
+
+        if (request.getStartDate() == null || request.getEndDate() == null) {
+            throw new InvalidInputException("시작일과 종료일은 모두 필수입니다.");
+        }
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        try {
+            LocalDate startDate = parseDate(request.getStartDate());
+            LocalDate endDate = parseDate(request.getEndDate());
+
+            if (endDate.isBefore(startDate)) {
+                throw new InvalidInputException("종료일은 시작일보다 이를 수 없습니다.");
+            }
+
+            int updated = projectRepository.updateProjectDates(projectId, startDate, endDate);
+            if (updated == 0) {
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 날짜 수정에 실패했습니다.");
+            }
+
+            Project updatedProject = projectRepository.findById(projectId)
+                    .orElseThrow(ProjectNotFoundException::new);
+
+            log.info("프로젝트 날짜 수정 완료 - projectId: {}, startDate: {}, endDate: {}, updatedAt: {}",
+                    projectId, startDate, endDate, updatedProject.getUpdatedAt());
+
+            return ProjectUpdateResponse.Converter.from(updatedProject);
+
+        } catch (DateTimeParseException e) {
+            log.error("날짜 파싱 실패 - startDate: {}, endDate: {}",
+                    request.getStartDate(), request.getEndDate(), e);
+            throw new InvalidInputException("날짜 형식이 올바르지 않습니다. (예: 2024-01-01 또는 2025-11-23T14:00:00Z)");
+        }
+    }
+
+    //날짜 형식 변경
+    private  LocalDate parseDate(String dateStr){
+        if (dateStr.contains("T")) {
+            return LocalDate.parse(dateStr.substring(0,10));
+        } else {
+            return LocalDate.parse(dateStr);
+        }
+    }
+
+    //프로젝트 삭제(휴지통이동)
+    @Transactional
+    @Override
+    public ProjectTrashResponse deleteProject(Long projectId) {
+        log.info("=== 프로젝트 휴지통 이동 시작 - projectId: {} ===", projectId);
+
+        if (projectId == null) {
+            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
+        }
+
+        // 프로젝트 존재 확인
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 이미 삭제된 프로젝트인지 확인
+        if (project.getIsDeleted() != null && project.getIsDeleted()) {
+            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "이미 삭제된 프로젝트입니다.");
+        }
+
+        // 휴지통으로 이동 (소프트 삭제)
+        LocalDateTime deletedAt = LocalDateTime.now();
+        int updated = projectRepository.moveToTrash(projectId, deletedAt);
+
+        if (updated == 0) {
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 삭제에 실패했습니다.");
+        }
+
+        log.info("프로젝트 휴지통 이동 완료 - projectId: {}, deletedAt: {}", projectId, deletedAt);
+
+        return ProjectTrashResponse.Converter.from(projectId);
+    }
+
+
+    @Transactional
+    @Override
+    public void removeProjectMember(Long projectId, Long userId) {
+        log.info("=== 프로젝트 멤버 삭제 시작 - projectId: {}, userId: {} ===", projectId, userId);
+
+        // 1. 프로젝트 존재 + 삭제 여부 확인
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        if (Boolean.TRUE.equals(project.getIsDeleted())) {
+            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "삭제된 프로젝트의 멤버는 수정할 수 없습니다.");
+        }
+
+        // 2. 사용자 존재 확인 (선택 - 필요 없으면 이 부분은 빼도 됨)
+        userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 3. 프로젝트-멤버 매핑 삭제
+        long deletedCount = projectMemberRepository.deleteByProject_IdAndUser_Id(projectId, userId);
+
+        if (deletedCount == 0) {
+            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "프로젝트에 해당 멤버가 존재하지 않습니다.");
+        }
+
+        log.info("프로젝트 멤버 삭제 완료 - projectId: {}, userId: {}, deletedCount: {}",
+                projectId, userId, deletedCount);
+    }
+
+
 }
