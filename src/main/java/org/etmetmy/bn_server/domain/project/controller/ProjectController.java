@@ -96,12 +96,12 @@ public class ProjectController {
 
     // 프로젝트 멤버 삭제
     @DeleteMapping("/{projectId}/members/{userId}")
-    public CommonResponse<String> removeProjectMember(
+    public CommonResponse<Long> removeProjectMember(
             @PathVariable Long projectId,
             @PathVariable Long userId
     ) {
         projectService.removeProjectMember(projectId, userId);
-        return CommonResponse.success("프로젝트 멤버 삭제 성공", "프로젝트 멤버가 삭제되었습니다.");
+        return CommonResponse.success("프로젝트 멤버 삭제 성공", projectId);
     }
 
 

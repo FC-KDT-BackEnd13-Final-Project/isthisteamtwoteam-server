@@ -18,6 +18,8 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.exception.custom.InvalidInputException;
+import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
@@ -127,7 +129,7 @@ public class ProjectServiceImpl implements ProjectService{
         }
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 프로젝트입니다: " + projectId));
+                .orElseThrow(ProjectNotFoundException::new);
 
         List<ProjectMember> projectMembers = createProjectMembers(members, project, createdById);
 
@@ -182,7 +184,7 @@ public class ProjectServiceImpl implements ProjectService{
         log.info("=== 단일 프로젝트 조회 - projectId: {} ===", projectId);
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 프로젝트입니다: " + projectId));
+                .orElseThrow(ProjectNotFoundException::new);
 
         List<ProjectMember> members = projectMemberRepository.findByProject_Id(projectId);
 
@@ -203,7 +205,7 @@ public class ProjectServiceImpl implements ProjectService{
         String normalized = stageName != null ? stageName.trim() : null;
 
         if (normalized == null || normalized.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "프로젝트 단계가 지정되지 않았습니다.");
+            throw new InvalidInputException("프로젝트 단계가 지정되지 않았습니다.");
         }
         return normalized;
     }
@@ -341,39 +343,24 @@ public class ProjectServiceImpl implements ProjectService{
         log.info("=== 프로젝트 제목 수정 시작 - projectId: {} ===", projectId);
 
         if (projectId == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "프로젝트 ID가 필요합니다."
-            );
+            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
         }
 
         String newTitle = request.getProjectName();
         if (newTitle == null || newTitle.isBlank()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "프로젝트 제목은 비워둘 수 없습니다."
-            );
+            throw new InvalidInputException("프로젝트 제목은 비워둘 수 없습니다.");
         }
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "존재하지 않는 프로젝트입니다: " + projectId
-                ));
+                .orElseThrow(ProjectNotFoundException::new);
 
         int updated = projectRepository.updateProjectTitle(projectId, newTitle);
         if (updated == 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "프로젝트 제목 수정에 실패했습니다."
-            );
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 제목 수정에 실패했습니다.");
         }
 
         Project updatedProject = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "업데이트된 프로젝트 조회 실패"
-                ));
+                .orElseThrow((ProjectNotFoundException::new));
 
         log.info("프로젝트 제목 수정 완료 - projectId: {}, newTitle: {}, updatedAt: {}",
                 projectId, newTitle, updatedProject.getUpdatedAt());
@@ -388,49 +375,31 @@ public class ProjectServiceImpl implements ProjectService{
         log.info("=== 프로젝트 날짜 수정 시작 - projectId: {} ===", projectId);
 
         if (projectId == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "프로젝트 ID가 필요합니다."
-            );
+            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
         }
 
         if (request.getStartDate() == null || request.getEndDate() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "시작일과 종료일은 모두 필수입니다."
-            );
+            throw new InvalidInputException("시작일과 종료일은 모두 필수입니다.");
         }
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "존재하지 않는 프로젝트입니다: " + projectId
-                ));
+                .orElseThrow(ProjectNotFoundException::new);
 
         try {
             LocalDate startDate = parseDate(request.getStartDate());
             LocalDate endDate = parseDate(request.getEndDate());
 
             if (endDate.isBefore(startDate)) {
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "종료일은 시작일보다 이를 수 없습니다."
-                );
+                throw new InvalidInputException("종료일은 시작일보다 이를 수 없습니다.");
             }
 
             int updated = projectRepository.updateProjectDates(projectId, startDate, endDate);
             if (updated == 0) {
-                throw new ResponseStatusException(
-                        HttpStatus.INTERNAL_SERVER_ERROR,
-                        "프로젝트 날짜 수정에 실패했습니다."
-                );
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 날짜 수정에 실패했습니다.");
             }
 
             Project updatedProject = projectRepository.findById(projectId)
-                    .orElseThrow(() -> new ResponseStatusException(
-                            HttpStatus.INTERNAL_SERVER_ERROR,
-                            "업데이트된 프로젝트 조회 실패"
-                    ));
+                    .orElseThrow(ProjectNotFoundException::new);
 
             log.info("프로젝트 날짜 수정 완료 - projectId: {}, startDate: {}, endDate: {}, updatedAt: {}",
                     projectId, startDate, endDate, updatedProject.getUpdatedAt());
@@ -440,10 +409,7 @@ public class ProjectServiceImpl implements ProjectService{
         } catch (DateTimeParseException e) {
             log.error("날짜 파싱 실패 - startDate: {}, endDate: {}",
                     request.getStartDate(), request.getEndDate(), e);
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "날짜 형식이 올바르지 않습니다. (예: 2024-01-01 또는 2025-11-23T14:00:00Z)"
-            );
+            throw new InvalidInputException("날짜 형식이 올바르지 않습니다. (예: 2024-01-01 또는 2025-11-23T14:00:00Z)");
         }
     }
 
@@ -463,25 +429,16 @@ public class ProjectServiceImpl implements ProjectService{
         log.info("=== 프로젝트 휴지통 이동 시작 - projectId: {} ===", projectId);
 
         if (projectId == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "프로젝트 ID가 필요합니다."
-            );
+            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
         }
 
         // 프로젝트 존재 확인
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "존재하지 않는 프로젝트입니다: " + projectId
-                ));
+                .orElseThrow(ProjectNotFoundException::new);
 
         // 이미 삭제된 프로젝트인지 확인
         if (project.getIsDeleted() != null && project.getIsDeleted()) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "이미 삭제된 프로젝트입니다: " + projectId
-            );
+            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "이미 삭제된 프로젝트입니다.");
         }
 
         // 휴지통으로 이동 (소프트 삭제)
@@ -489,10 +446,7 @@ public class ProjectServiceImpl implements ProjectService{
         int updated = projectRepository.moveToTrash(projectId, deletedAt);
 
         if (updated == 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "프로젝트 삭제에 실패했습니다."
-            );
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 삭제에 실패했습니다.");
         }
 
         log.info("프로젝트 휴지통 이동 완료 - projectId: {}, deletedAt: {}", projectId, deletedAt);
@@ -508,33 +462,21 @@ public class ProjectServiceImpl implements ProjectService{
 
         // 1. 프로젝트 존재 + 삭제 여부 확인
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "존재하지 않는 프로젝트입니다: " + projectId
-                ));
+                .orElseThrow(ProjectNotFoundException::new);
 
         if (Boolean.TRUE.equals(project.getIsDeleted())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "삭제된 프로젝트의 멤버는 수정할 수 없습니다."
-            );
+            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "삭제된 프로젝트의 멤버는 수정할 수 없습니다.");
         }
 
         // 2. 사용자 존재 확인 (선택 - 필요 없으면 이 부분은 빼도 됨)
         userRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "존재하지 않는 사용자입니다: " + userId
-                ));
+                .orElseThrow(UserNotFoundException::new);
 
         // 3. 프로젝트-멤버 매핑 삭제
         long deletedCount = projectMemberRepository.deleteByProject_IdAndUser_Id(projectId, userId);
 
         if (deletedCount == 0) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "프로젝트에 해당 멤버가 존재하지 않습니다."
-            );
+            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "프로젝트에 해당 멤버가 존재하지 않습니다.");
         }
 
         log.info("프로젝트 멤버 삭제 완료 - projectId: {}, userId: {}, deletedCount: {}",
