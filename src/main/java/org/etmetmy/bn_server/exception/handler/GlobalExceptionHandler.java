@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.dto.ErrorResponse;
-import org.etmetmy.bn_server.global.CustomException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

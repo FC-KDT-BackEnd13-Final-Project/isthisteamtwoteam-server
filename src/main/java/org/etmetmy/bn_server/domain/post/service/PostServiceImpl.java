@@ -125,5 +125,4 @@ public class PostServiceImpl implements PostService {
                 throw new BusinessException(ErrorCode.BOARD_INVALID_FILTER);
         }
     }
-
 }
