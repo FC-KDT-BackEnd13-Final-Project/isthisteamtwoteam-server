@@ -9,6 +9,7 @@ import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.global.CustomException;
 import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService{
     public Long updateMember(Long memberId, MemberUpdateRequest request) {
         // 1. 회원 찾기
         User user = userRepository.findById(memberId)
-                .orElseThrow(() -> new CustomException(StatusCode.USER_NOT_FOUND));
+                .orElseThrow(UserNotFoundException::new);
 
         // 2. 바꿀 회사 찾기
         Company company = companyRepository.findById(request.getCompanyId())

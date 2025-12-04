@@ -1,32 +1,28 @@
 package org.etmetmy.bn_server.domain.post.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.EntityManager;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
-import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.post.repository.PostRepository;
+import org.etmetmy.bn_server.domain.post.repository.StageRepository;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
-import org.etmetmy.bn_server.web.SessionConst;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,32 +32,41 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class PostControllerTest {
 
     @Autowired
-    private MockMvc mockMvc;
+    ObjectMapper objectMapper;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    MockMvc mockMvc;
 
     @Autowired
-    private CompanyRepository companyRepository;
+    CompanyRepository companyRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    UserRepository userRepository;
 
     @Autowired
-    private ProjectRepository projectRepository;
+    ProjectRepository projectRepository;
 
     @Autowired
-    private EntityManager entityManager;
+    StageRepository stageRepository;
 
-    private MockHttpSession session;
-    private Long testProjectId;
-    private Long testStageId;
-    private User testUser;
+    @Autowired
+    PostRepository postRepository;
+
+    Company testCompany;
+    User testUser;
+    Project testProject;
+    Stage stage1;
+    Stage stage2;
+    Stage stage3;
+    Post completedPost;
+    Post uncompletedPost;
+    Post stage1Post;
+    Post stage2Post;
 
     @BeforeEach
     void setUp() {
-        // 1. Company 생성
-        Company testCompany = Company.builder()
+        // 1. 회사 생성
+        testCompany = Company.builder()
                 .companyName("테스트컴퍼니")
                 .companyAddress("서울시 강남구")
                 .companyCeo("홍길동")
@@ -69,10 +74,10 @@ public class PostControllerTest {
                 .build();
         companyRepository.saveAndFlush(testCompany);
 
-        // 2. User 생성
+        // 2. 사용자 생성
         testUser = User.builder()
                 .name("테스트유저")
-                .email("test@example.com")
+                .email("test@test.com")
                 .password("password123")
                 .phone("010-1111-2222")
                 .company(testCompany)
@@ -80,280 +85,230 @@ public class PostControllerTest {
                 .build();
         userRepository.saveAndFlush(testUser);
 
-        // 3. Project 생성
-        Project testProject = Project.builder()
-                .projectName("테스트 프로젝트")
-                .startDate(LocalDate.now())
-                .endDate(LocalDate.now().plusMonths(3))
+        // 3. 프로젝트 생성
+        testProject = Project.builder()
+                .projectName("테스트프로젝트")
+                .startDate(java.time.LocalDate.now())
+                .endDate(java.time.LocalDate.now().plusDays(30))
                 .company(testCompany)
-                .createdBy(testUser.getId())
                 .build();
         projectRepository.saveAndFlush(testProject);
-        testProjectId = testProject.getId();
 
-        // 4. Stage 생성
-        Stage testStage = Stage.builder()
-                .stageName("개발 단계")
+        // 4. 스테이지 생성
+        stage1 = Stage.builder()
+                .stageName("요구사항 정의")
                 .build();
-        entityManager.persist(testStage);
-        entityManager.flush();
-        testStageId = testStage.getStageId();
+        stage2 = Stage.builder()
+                .stageName("화면 설계")
+                .build();
+        stage3 = Stage.builder()
+                .stageName("개발")
+                .build();
+        stageRepository.saveAndFlush(stage1);
+        stageRepository.saveAndFlush(stage2);
+        stageRepository.saveAndFlush(stage3);
 
-        // 5. 세션 설정 - User 객체를 세션에 저장
-        session = new MockHttpSession();
-        session.setAttribute(SessionConst.LOGIN_MEMBER, testUser);
+        // 5. 게시글 생성 - 완료된 게시글
+        completedPost = Post.builder()
+                .project(testProject)
+                .user(testUser)
+                .stage(stage1)
+                .title("완료된 게시글")
+                .content("완료된 게시글 내용")
+                .isCompleted(true)
+                .postNumber(1L)
+                .createdIp("127.0.0.1")
+                .build();
+        postRepository.saveAndFlush(completedPost);
+
+        // 6. 게시글 생성 - 미완료 게시글
+        uncompletedPost = Post.builder()
+                .project(testProject)
+                .user(testUser)
+                .stage(stage2)
+                .title("미완료 게시글")
+                .content("미완료 게시글 내용")
+                .isCompleted(false)
+                .postNumber(2L)
+                .createdIp("127.0.0.1")
+                .build();
+        postRepository.saveAndFlush(uncompletedPost);
+
+        // 7. 게시글 생성 - stage1의 게시글
+        stage1Post = Post.builder()
+                .project(testProject)
+                .user(testUser)
+                .stage(stage1)
+                .title("요구사항 정의 게시글")
+                .content("요구사항 정의 단계 게시글")
+                .isCompleted(false)
+                .postNumber(3L)
+                .createdIp("127.0.0.1")
+                .build();
+        postRepository.saveAndFlush(stage1Post);
+
+        // 8. 게시글 생성 - stage2의 게시글
+        stage2Post = Post.builder()
+                .project(testProject)
+                .user(testUser)
+                .stage(stage2)
+                .title("화면 설계 게시글")
+                .content("화면 설계 단계 게시글")
+                .isCompleted(false)
+                .postNumber(4L)
+                .createdIp("127.0.0.1")
+                .build();
+        postRepository.saveAndFlush(stage2Post);
     }
 
     @Test
-    @DisplayName("게시글 작성 성공 테스트 - 기본 필드만")
-    public void createPost_Success_WithRequiredFields() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title("테스트 게시글 제목")
-                .content("테스트 게시글 본문입니다.")
-                .stageId(testStageId)
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+    @DisplayName("필터 파라미터로 전체 게시글 조회 - filter=all")
+    public void getPostListWithFilterAll() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts", testProject.getId())
+                                .param("filter", "all")
+                )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.message").value("게시글 작성 성공"))
-                .andExpect(jsonPath("$.data.title").value("테스트 게시글 제목"))
-                .andExpect(jsonPath("$.data.content").value("테스트 게시글 본문입니다."))
-                .andExpect(jsonPath("$.data.stageId").value(testStageId))
-                .andExpect(jsonPath("$.data.postId").exists())
-                .andExpect(jsonPath("$.data.createdAt").exists());
+                .andExpect(jsonPath("$.message").value("게시글 목록 조회 성공"))
+                .andExpect(jsonPath("$.response", hasSize(4)));  // 전체 4개
     }
 
     @Test
-    @DisplayName("게시글 작성 성공 테스트 - 파일 URL 포함")
-    public void createPost_Success_WithFileUrls() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title("파일이 포함된 게시글")
-                .content("파일이 첨부된 게시글입니다.")
-                .stageId(testStageId)
-                .fileUrls(Arrays.asList(
-                        "https://s3.amazonaws.com/bucket/file1.pdf",
-                        "https://s3.amazonaws.com/bucket/file2.jpg"
-                ))
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+    @DisplayName("필터 파라미터로 완료된 게시글만 조회 - filter=finished")
+    public void getPostListWithFilterFinished() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts", testProject.getId())
+                                .param("filter", "finished")
+                )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.title").value("파일이 포함된 게시글"))
-                .andExpect(jsonPath("$.data.files").isArray());
+                .andExpect(jsonPath("$.message").value("게시글 목록 조회 성공"))
+                .andExpect(jsonPath("$.response", hasSize(1)))  // 완료된 게시글 1개
+                .andExpect(jsonPath("$.response[0].isCompleted").value(true))
+                .andExpect(jsonPath("$.response[0].title").value("완료된 게시글"));
     }
 
     @Test
-    @DisplayName("게시글 작성 성공 테스트 - 링크 URL 포함")
-    public void createPost_Success_WithLinkUrls() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title("링크가 포함된 게시글")
-                .content("링크가 포함된 게시글입니다.")
-                .stageId(testStageId)
-                .linkUrls(Arrays.asList(
-                        "https://example.com/reference1",
-                        "https://example.com/reference2"
-                ))
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+    @DisplayName("필터 파라미터로 미완료 게시글만 조회 - filter=unfinished")
+    public void getPostListWithFilterUnfinished() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts", testProject.getId())
+                                .param("filter", "unfinished")
+                )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.title").value("링크가 포함된 게시글"))
-                .andExpect(jsonPath("$.data.linkUrls").isArray());
+                .andExpect(jsonPath("$.message").value("게시글 목록 조회 성공"))
+                .andExpect(jsonPath("$.response", hasSize(3)))  // 미완료 게시글 3개
+                .andExpect(jsonPath("$.response[*].isCompleted", everyItem(is(false))));
     }
 
     @Test
-    @DisplayName("게시글 작성 성공 테스트 - 파일과 링크 모두 포함")
-    public void createPost_Success_WithFilesAndLinks() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title("파일과 링크가 모두 포함된 게시글")
-                .content("파일과 링크가 모두 첨부된 게시글입니다.")
-                .stageId(testStageId)
-                .fileUrls(Arrays.asList("https://s3.amazonaws.com/bucket/file1.pdf"))
-                .linkUrls(Arrays.asList("https://example.com/reference1"))
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+    @DisplayName("stage 파라미터로 스테이지별 게시글 조회 - stage=요구사항 정의")
+    public void getPostListWithStageParameter() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts", testProject.getId())
+                                .param("stage", "요구사항 정의")
+                )
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data.files").isArray())
-                .andExpect(jsonPath("$.data.linkUrls").isArray());
+                .andExpect(jsonPath("$.message").value("게시글 단계별 조회 성공"))
+                .andExpect(jsonPath("$.response", hasSize(2)))  // 요구사항 정의 단계 게시글 2개
+                .andExpect(jsonPath("$.response[*].stageName", everyItem(is("요구사항 정의"))));
     }
 
     @Test
-    @DisplayName("게시글 작성 실패 - 제목 누락")
-    public void createPost_Fail_TitleMissing() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .content("본문만 있는 게시글")
-                .stageId(testStageId)
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("게시글 작성 실패 - 제목 빈 문자열")
-    public void createPost_Fail_TitleBlank() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title("")
-                .content("본문 내용")
-                .stageId(testStageId)
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("게시글 작성 실패 - 제목 길이 초과 (200자 초과)")
-    public void createPost_Fail_TitleTooLong() throws Exception {
-        // given
-        String longTitle = "a".repeat(201); // 201자
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title(longTitle)
-                .content("본문 내용")
-                .stageId(testStageId)
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("게시글 작성 실패 - 본문 누락")
-    public void createPost_Fail_ContentMissing() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title("제목만 있는 게시글")
-                .stageId(testStageId)
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("게시글 작성 실패 - 본문 빈 문자열")
-    public void createPost_Fail_ContentBlank() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title("테스트 제목")
-                .content("")
-                .stageId(testStageId)
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("게시글 작성 실패 - stageId 누락")
-    public void createPost_Fail_StageIdMissing() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title("테스트 제목")
-                .content("테스트 본문")
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    @DisplayName("게시글 작성 실패 - 세션 없음 (로그인하지 않은 사용자)")
-    public void createPost_Fail_NoSession() throws Exception {
-        // given
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title("테스트 제목")
-                .content("테스트 본문")
-                .stageId(testStageId)
-                .build();
-
-        // when & then - 세션 없이 요청
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andDo(print())
-                .andExpect(status().is4xxClientError()); // 401 또는 302 등 에러 발생 예상
-    }
-
-    @Test
-    @DisplayName("게시글 작성 성공 - 제목 최대 길이 (200자)")
-    public void createPost_Success_MaxTitleLength() throws Exception {
-        // given
-        String maxTitle = "a".repeat(200); // 정확히 200자
-        PostCreateRequest request = PostCreateRequest.builder()
-                .title(maxTitle)
-                .content("본문 내용")
-                .stageId(testStageId)
-                .build();
-
-        // when & then
-        mockMvc.perform(post("/api/v1/users/projects/{projectId}/posts", testProjectId)
-                        .session(session)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+    @DisplayName("stage 파라미터로 스테이지별 게시글 조회 - stage=화면 설계")
+    public void getPostListWithStageParameterDesign() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts", testProject.getId())
+                                .param("stage", "화면 설계")
+                )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value(true));
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("게시글 단계별 조회 성공"))
+                .andExpect(jsonPath("$.response", hasSize(2)))  // 화면 설계 단계 게시글 2개
+                .andExpect(jsonPath("$.response[*].stageName", everyItem(is("화면 설계"))));
+    }
+
+    @Test
+    @DisplayName("stage 파라미터로 전체 게시글 조회 - stage=all")
+    public void getPostListWithStageAll() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts", testProject.getId())
+                                .param("stage", "all")
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("게시글 단계별 조회 성공"))
+                .andExpect(jsonPath("$.response", hasSize(4)));  // 전체 4개
+    }
+
+    @Test
+    @DisplayName("잘못된 filter 파라미터 사용 시 에러 발생")
+    public void getPostListWithInvalidFilter() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts", testProject.getId())
+                                .param("filter", "invalid_filter")
+                )
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 stage로 조회 시 에러 발생")
+    public void getPostListWithNonExistentStage() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts", testProject.getId())
+                                .param("stage", "존재하지않는단계")
+                )
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
+    }
+
+    @Test
+    @DisplayName("filter 파라미터 없이 조회 시 기본값(all) 적용")
+    public void getPostListWithoutFilterParameter() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts", testProject.getId())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.response", hasSize(4)));  // 기본값 all로 전체 조회
+    }
+
+    @Test
+    @DisplayName("게시글 상세 조회 성공")
+    public void getPostDetailSuccess() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts/{postId}",
+                                testProject.getId(),
+                                completedPost.getPostId())
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.message").value("게시글 조회 성공"))
+                .andExpect(jsonPath("$.response.postId").value(completedPost.getPostId()))
+                .andExpect(jsonPath("$.response.title").value("완료된 게시글"));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 게시글 조회 시 404 에러")
+    public void getPostDetailNotFound() throws Exception {
+        mockMvc.perform(
+                        get("/api/v1/users/projects/{projectId}/posts/{postId}",
+                                testProject.getId(),
+                                99999L)  // 존재하지 않는 postId
+                )
+                .andDo(print())
+                .andExpect(status().is4xxClientError());
     }
 }

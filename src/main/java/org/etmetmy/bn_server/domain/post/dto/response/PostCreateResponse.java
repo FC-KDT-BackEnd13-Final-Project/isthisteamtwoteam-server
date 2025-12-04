@@ -83,7 +83,7 @@ public class PostCreateResponse {
                     .postId(post.getPostId())
                     .title(post.getTitle())
                     .content(post.getContent())
-                    .stageId(post.getStage().getStageId())
+                    .stageId(post.getStage().getId())
                     .createdByUserId(post.getUser().getId())
                     .createdAt(post.getCreatedAt())
                     .files(fileInfos)

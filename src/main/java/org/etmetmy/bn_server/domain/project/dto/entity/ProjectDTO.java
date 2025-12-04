@@ -44,7 +44,7 @@ public class ProjectDTO {
                     .projectName(project.getProjectName())
                     .startDate(project.getStartDate())
                     .endDate(project.getEndDate())
-                    .stageId(project.getStage() != null ? project.getStage().getStageId().intValue() : null)
+                    .stageId(project.getStage() != null ? project.getStage().getId().intValue() : null)
                     .stageName(project.getStage() != null ? project.getStage().getStageName() : null)
                     .memoContent(memo != null ? memo.getContent() : null)
                     .members(memberUserIds)  // userId 리스트로 설정
@@ -62,5 +62,7 @@ public class ProjectDTO {
                             })
                     .collect(Collectors.toList());
         }
+
+
     }
 }

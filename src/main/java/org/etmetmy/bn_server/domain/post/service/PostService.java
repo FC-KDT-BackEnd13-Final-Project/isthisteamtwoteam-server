@@ -20,6 +20,8 @@ public interface PostService {
     List<PostListResponse> getPostListByProjectIdAndFilter(Long projectId, String filter);
 
     PostCreateResponse createPost(Long projectId, @Valid PostCreateRequest requestDto, Long loginUserId);
+
+    List<PostListResponse> getPostListByStage(Long projectId, String stage);
 }
 
 

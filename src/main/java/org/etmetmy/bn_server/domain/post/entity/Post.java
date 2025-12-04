@@ -34,9 +34,6 @@ public class Post extends BaseEntity {
     @Column(name = "parent_post_id")
     private Long parentPostId;
 
-    @Column(name = "author_id", nullable = false)
-    private Long authorId;
-
     @Column(name = "title", nullable = false, length = 500)
     private String title;
 
@@ -77,7 +74,7 @@ public class Post extends BaseEntity {
         return Post.builder()
                 .project(project)
                 .user(user)
-                .authorId(user.getId())
+                .parentPostId(user.getId())
                 .title(title)
                 .content(content)
                 .stage(stage)
