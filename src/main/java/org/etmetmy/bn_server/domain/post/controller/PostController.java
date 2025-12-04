@@ -70,11 +70,22 @@ public class PostController {
     @GetMapping("/{projectId}/posts")
     public CommonResponse<List<PostListResponse>> getPostList(
             @PathVariable Long projectId,
-            @RequestParam(name = "filter", defaultValue = "all") String filter
+            @RequestParam(name = "filter", required = false) String filter,
+            @RequestParam(name = "stage", required = false) String stage
     ) {
-        List<PostListResponse> response = postService.getPostListByProjectIdAndFilter(projectId, filter);
-        return CommonResponse.success("게시글 목록 조회 성공", response);
-    }
+        List<PostListResponse> response;
 
+        // stage 파라미터가 명시적으로 제공된 경우
+        if (stage != null) {
+            response = postService.getPostListByStage(projectId, stage);
+            return CommonResponse.success("게시글 단계별 조회 성공", response);
+        }
+        // filter 파라미터가 제공되거나 파라미터가 없는 경우
+        else {
+            String filterValue = filter != null ? filter : "all";
+            response = postService.getPostListByProjectIdAndFilter(projectId, filterValue);
+            return CommonResponse.success("게시글 목록 조회 성공", response);
+        }
+    }
 
 }
