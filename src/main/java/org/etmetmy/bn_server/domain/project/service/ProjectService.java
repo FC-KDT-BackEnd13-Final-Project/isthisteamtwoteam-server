@@ -37,4 +37,7 @@ public interface ProjectService {
     void removeProjectMember(Long projectId, Long userId);
 
     List<ProjectCheckListAllResponse> getCheckLists(Long projectId);
+
+    // 프로젝트 진행단계 수정
+    ProjectStageUpdateResponse updateProjectStage(Long projectId, ProjectStageUpdateRequest request, Long currentUserId);
 }
