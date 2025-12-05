@@ -1,7 +1,7 @@
 package org.etmetmy.bn_server.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.file.entity.EntityType;
+import org.etmetmy.bn_server.domain.file.dto.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
@@ -167,23 +167,14 @@ public class PostServiceImpl implements PostService {
 
 
         // 3. Post 엔티티 생성 및 저장
-        Post post = PostCreateRequest.toEntity(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
+        Post post = PostCreateRequest.Converter.toEntity(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
         Post savedPost = postRepository.save(post);
 
         // 4. 파일 처리
         List<File> savedFiles = new ArrayList<>();
         if (requestDto.getFileUrls() != null && !requestDto.getFileUrls().isEmpty()) {
             for (String fileUrl : requestDto.getFileUrls()) {
-                File file = File.builder()
-                        .entityType(EntityType.builder().entityTypeId(1L).build())
-                        .post(savedPost)
-                        .fileTitle(extractFileName(fileUrl))
-                        .filePath(fileUrl)
-                        .fileSize(0L)
-                        .fileType(extractFileType(fileUrl))
-                        .uploadedBy(loginUserId)
-                        .isDeleted(false)
-                        .build();
+                File file = FileCreateRequest.toEntity(fileUrl, savedPost, loginUserId);
                 savedFiles.add(file);
             }
             fileRepository.saveAll(savedFiles);
@@ -191,18 +182,5 @@ public class PostServiceImpl implements PostService {
 
         // 5. 응답 반환
         return PostCreateResponse.Converter.from(savedPost, savedFiles, requestDto.getLinkUrls());
-    }
-
-
-     // URL 에서 파일명 추출
-    private String extractFileName(String url) {
-        int lastSlash = url.lastIndexOf('/');
-        return lastSlash >= 0 ? url.substring(lastSlash + 1) : "unknown";
-    }
-
-    // URL 에서 파일 확장자 추출
-    private String extractFileType(String url) {
-        int lastDot = url.lastIndexOf('.');
-        return lastDot >= 0 ? url.substring(lastDot + 1).toLowerCase() : "unknown";
     }
 }

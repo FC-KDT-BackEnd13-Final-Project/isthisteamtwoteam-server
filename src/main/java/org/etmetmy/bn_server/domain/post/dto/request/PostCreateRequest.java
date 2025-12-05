@@ -36,16 +36,25 @@ public class PostCreateRequest {
     // 링크 URL 목록 (선택 사항)
     private List<String> linkUrls;
 
-    public static Post toEntity(Project project, User user, String title, String content, Stage stage, Long postNumber) {
-        return Post.builder()
-                .project(project)
-                .user(user)
-                .parentPostId(null) //일반 게시글은 부모 없음
-                .title(title)
-                .content(content)
-                .stage(stage)
-                .postNumber(postNumber)
-                .isCompleted(false)
-                .build();
+    public static class Converter {
+        public static Post toEntity(
+                Project project,
+                User user,
+                String title,
+                String content,
+                Stage stage,
+                Long postNumber) {
+
+            return Post.builder()
+                    .project(project)
+                    .user(user)
+                    .parentPostId(null) //일반 게시글은 부모 없음
+                    .title(title)
+                    .content(content)
+                    .stage(stage)
+                    .postNumber(postNumber)
+                    .isCompleted(false)
+                    .build();
+        }
     }
 }
