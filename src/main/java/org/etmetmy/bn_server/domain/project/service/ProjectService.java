@@ -6,6 +6,7 @@ import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectMemberRequest;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
+import org.etmetmy.bn_server.global.CommonResponse;
 
 import java.util.List;
 
@@ -35,4 +36,5 @@ public interface ProjectService {
     // 프로젝트 멤버 삭제
     void removeProjectMember(Long projectId, Long userId);
 
+    List<ProjectCheckListAllResponse> getCheckLists(Long projectId);
 }

@@ -65,6 +65,14 @@ public class ProjectController {
 
     }
 
+    // Todo : 단일 프로젝트 체크리스트 전체 조회
+    @GetMapping("/{projectId}/checklists")
+    public CommonResponse<List<ProjectCheckListAllResponse>> getCheckLists(
+            @PathVariable Long projectId
+    ){
+        return CommonResponse.success("프로젝트 체크리스트를 불러왔습니다.",projectService.getCheckLists(projectId));
+    }
+
     // 프로젝트 제목 수정
     @PatchMapping("/{projectId}/projectName")
     public CommonResponse<ProjectUpdateResponse> updateProjectName(

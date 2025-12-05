@@ -50,7 +50,6 @@ public class Post extends BaseEntity {
     @Column(name = "post_number", nullable = false)
     private Long postNumber;
 
-
     @PrePersist
     protected void onCreate() {
         if (isCompleted == null) isCompleted = false;
