@@ -54,4 +54,11 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "and p.stage.id = :stageId " +
             "order by p.postNumber desc")
     List<Post> findByProjectIdAndStageId(@Param("projectId") Long projectId, @Param("stageId") Long stageId);
+
+    /**
+     * 프로젝트 내 최대 게시글 번호 조회
+     */
+    @Query("SELECT MAX(p.postNumber) FROM Post p WHERE p.project.id = :projectId")
+    Optional<Long> findMaxPostNumberByProjectId(@Param("projectId") Long projectId);
+
 }
