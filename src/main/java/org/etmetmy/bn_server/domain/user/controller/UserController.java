@@ -4,12 +4,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
+import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.service.UserService;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,7 +88,7 @@ public class UserController {
 
 
     //회원 삭제 (DELETE)
-    @DeleteMapping("/{memberId}")
+    @DeleteMapping("/admin/users/{memberId}")
     public CommonResponse<Long> deleteMember(@PathVariable Long memberId) {
         Long userId = userService.deleteMember(memberId);
         return CommonResponse.success("회원 삭제 완료",userId);
@@ -94,7 +96,7 @@ public class UserController {
 
 
     //회원 정보 수정 (PUT)
-    @PutMapping("/{memberId}")
+    @PutMapping("/admin/users/{memberId}")
     public CommonResponse<Long> updateMember(
             @PathVariable Long memberId,
             @RequestBody MemberUpdateRequest request
@@ -104,6 +106,25 @@ public class UserController {
         return CommonResponse.success("회원 정보 수정 완료",userId);
     }
 
+
+    /**
+     * 회원의 프로필 사진과 회원명 조회
+     * */
+    @GetMapping("/users/profile/sidebar")
+    public CommonResponse<Object> getProfileImageAndUsername(
+            HttpServletRequest request
+    ){
+        HttpSession session = request.getSession(false);
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+
+        if(loginUserId == null){
+            return CommonResponse.fail("로그인이 필요합니다.");
+        }else{
+            UserProfileImgNameResponse profile = userService.getProfileImgName(loginUserId);
+            return CommonResponse.success("성공적으로 조회했습니다",profile);
+        }
+    }
 
 
 }
