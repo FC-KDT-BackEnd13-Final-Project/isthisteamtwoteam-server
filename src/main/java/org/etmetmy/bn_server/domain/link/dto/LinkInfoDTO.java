@@ -32,7 +32,7 @@ public class LinkInfoDTO {
     public static class Converter {
         public static List<LinkInfoDTO> from(List<Link> links) {
 
-            // 1. links가 null이면 빈 리스트 반환
+            // 1. links가 null 이면 빈 리스트 반환
             if (links == null) {
                 return new ArrayList<>();
             }

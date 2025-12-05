@@ -30,15 +30,15 @@ public class Link extends BaseEntity { //다른 패키지에서 접근
     private String linkUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = true)
+    @JoinColumn(name = "post_id")
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "checkList_id", nullable = true)
+    @JoinColumn(name = "checkList_id")
     private CheckList checkList;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comment_id", nullable = true)
+    @JoinColumn(name = "comment_id")
     private Comment comment;
 
     @Column(name = "uploaded_by", nullable = false)
@@ -57,8 +57,4 @@ public class Link extends BaseEntity { //다른 패키지에서 접근
     @JoinColumn(name = "entity_type_id", nullable = false)
     private EntityType entityType;
 
-    @PrePersist
-    protected void onCreate() {
-        if (isDeleted == null) isDeleted = false;
-    }
 }

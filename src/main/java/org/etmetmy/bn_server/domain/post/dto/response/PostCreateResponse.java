@@ -74,23 +74,5 @@ public class PostCreateResponse {
                     .linkUrls(linkUrls)
                     .build();
         }
-
-        /*public static PostCreateResponse from(Post post) {
-            // 게시글에 이미 연결된 파일과 링크를 조회해서 반환
-            List<FileInfoDTO> fileInfos = FileInfoDTO.Converter.from(post.getFiles());
-            List<String> linkUrls = LinkInfoDTO.Converter.toUrlList(post.getLinks());
-
-            return PostCreateResponse.builder()
-                    .postId(post.getPostId())
-                    .title(post.getTitle())
-                    .content(post.getContent())
-                    .stageId(post.getStage().getId())
-                    .createdByUserId(post.getUser().getId())
-                    .createdAt(post.getCreatedAt())
-                    .updatedAt(post.getUpdatedAt())
-                    .files(fileInfos)
-                    .linkUrls(linkUrls)
-                    .build();
-        }*/
     }
 }

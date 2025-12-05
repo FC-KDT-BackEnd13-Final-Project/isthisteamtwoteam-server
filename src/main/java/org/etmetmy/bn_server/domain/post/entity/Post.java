@@ -8,7 +8,6 @@ import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
