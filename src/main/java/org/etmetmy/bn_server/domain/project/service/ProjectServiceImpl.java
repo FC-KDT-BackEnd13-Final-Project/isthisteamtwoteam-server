@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.project.service;
 
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
@@ -23,6 +24,8 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,6 +48,44 @@ public class ProjectServiceImpl implements ProjectService{
     private final MemoRepository memoRepository;
     private final ProjectCheckListRepository projectChecklistRepository;
     private final CheckListRepository checkListRepository;
+
+    private final EntityManager entityManager;
+
+
+    // 🔥 Stage 기본 데이터 자동 삽입 =====================
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void initDefaultStages() {
+        log.info("Stage 기본 데이터 초기화 시작");
+
+        List<Stage> defaultStages = List.of(
+                Stage.builder().id(1L).stageName("진행전").build(),
+                Stage.builder().id(2L).stageName("진행중단").build(),
+                Stage.builder().id(3L).stageName("요구사항정의").build(),
+                Stage.builder().id(4L).stageName("디자인/퍼블리싱").build(),
+                Stage.builder().id(5L).stageName("개발").build(),
+                Stage.builder().id(6L).stageName("검수").build(),
+                Stage.builder().id(7L).stageName("유지보수단계").build()
+        );
+
+        int insertedCount = 0;
+        for (Stage stage : defaultStages) {
+            if (projectStageRepository.existsById(stage.getId())) {
+                continue;
+            }
+
+            entityManager.createNativeQuery("INSERT INTO stage (stage_id, stage_name) VALUES (:id, :name)")
+                    .setParameter("id", stage.getId())
+                    .setParameter("name", stage.getStageName())
+                    .executeUpdate();
+            insertedCount++;
+        }
+
+        log.info("Stage 기본 데이터 삽입 완료 - 추가된 Stage: {}건", insertedCount);
+    }
+
+
+
 
     @Override
     @Transactional
@@ -481,5 +522,54 @@ public class ProjectServiceImpl implements ProjectService{
                 projectId, userId, deletedCount);
     }
 
+
+    //프로젝트 진행단계 수정
+    @Transactional
+    @Override
+    public ProjectStageUpdateResponse updateProjectStage(Long projectId,
+                                                         ProjectStageUpdateRequest request,
+                                                         Long currentUserId) {
+        log.info("=== 프로젝트 진행단계 수정 시작 - projectId: {}, stageId: {}, userId: {} ===",
+                projectId, request != null ? request.getStageId() : null, currentUserId);
+
+        // 1. 입력값 검증
+        if (projectId == null) {
+            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
+        }
+        if (request == null || request.getStageId() == null) {
+            throw new InvalidInputException("진행단계 ID는 필수입니다.");
+        }
+
+        Long stageId = request.getStageId().longValue();
+
+        // 2. 프로젝트 존재 확인
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 3. Stage 존재 확인
+        Stage stage = projectStageRepository.findById(stageId)
+                .orElseThrow(() ->
+                        new BusinessException(ErrorCode.STAGE_NOT_FOUND, "해당 진행단계를 찾을 수 없습니다."));
+
+        // 4. 현재 사용자 조회 (로그 추적용 updatedBy 세팅)
+        Long updatedBy = currentUserId;
+        if (currentUserId != null) {
+            userRepository.findById(currentUserId)
+                    .orElseThrow(UserNotFoundException::new);
+        }
+
+        // 5. Project 의 stage FK 업데이트
+        int updated = projectRepository.updateProjectStage(projectId, stage.getId());
+        if (updated == 0) {
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR,
+                    "프로젝트 진행단계 수정에 실패했습니다.");
+        }
+
+        log.info("프로젝트 진행단계 수정 완료 - projectId: {}, stageId: {}, stageName: {}, updatedBy: {}",
+                projectId, stage.getId(), stage.getStageName(), updatedBy);
+
+        // 6. 응답 반환 (ADMIN 이면 ID, 아니면 null)
+        return ProjectStageUpdateResponse.Converter.of(stageId, updatedBy);
+    }
 
 }

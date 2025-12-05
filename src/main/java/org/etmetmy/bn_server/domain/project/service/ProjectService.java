@@ -35,4 +35,7 @@ public interface ProjectService {
     // 프로젝트 멤버 삭제
     void removeProjectMember(Long projectId, Long userId);
 
+    // 프로젝트 진행단계 수정
+    ProjectStageUpdateResponse updateProjectStage(Long projectId, ProjectStageUpdateRequest request, Long currentUserId);
 }
+

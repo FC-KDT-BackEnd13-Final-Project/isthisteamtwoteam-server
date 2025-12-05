@@ -103,4 +103,18 @@ public class ProjectController {
     }
 
 
+    // 프로젝트 진행단계 수정
+    @PatchMapping("/{projectId}/stage")
+    public CommonResponse<ProjectStageUpdateResponse> updateProjectStage(
+            HttpSession session,
+            @PathVariable Long projectId,
+            @RequestBody ProjectStageUpdateRequest request
+    ) {
+        Long currentUserId = (Long) session.getAttribute("userId"); // 🔥 로그인한 사용자 ID
+
+        ProjectStageUpdateResponse response =
+                projectService.updateProjectStage(projectId, request, currentUserId);
+
+        return CommonResponse.success("프로젝트 진행단계 수정 성공", response);
+    }
 }
