@@ -9,8 +9,10 @@ import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.PostNumberCounter;
 import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.post.repository.PostNumberCounterRepository;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.repository.RequestRepository;
 import org.etmetmy.bn_server.domain.project.entity.Project;
@@ -37,6 +39,7 @@ public class PostServiceImpl implements PostService {
     private final RequestRepository requestRepository;
     private final StageRepository stageRepository;
     private final UserRepository userRepository;
+    private final PostNumberCounterRepository postNumberCounterRepository;
     private final ProjectRepository projectRepository;
     private final FileRepository fileRepository;
 
@@ -153,10 +156,15 @@ public class PostServiceImpl implements PostService {
         Stage stage = stageRepository.findById(requestDto.getStageId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
-        // 2. 프로젝트 내 게시글 번호 생성
-        Long postNumber = postRepository.findMaxPostNumberByProjectId(projectId)
-                .map(max -> max + 1)
-                .orElse(1L);
+        // 2. Counter Table로 프로젝트 내 게시글 번호 생성 (낙관적 락 적용)
+        PostNumberCounter counter = postNumberCounterRepository.findByProjectId(projectId)
+                .orElseGet(() -> PostNumberCounter.builder()
+                        .projectId(projectId)
+                        .currentNumber(0L)
+                        .build());
+        Long postNumber = counter.getNextNumber();
+        postNumberCounterRepository.save(counter);
+
 
         // 3. Post 엔티티 생성 및 저장
         Post post = PostCreateRequest.toEntity(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
