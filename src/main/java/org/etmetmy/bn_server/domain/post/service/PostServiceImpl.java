@@ -23,6 +23,8 @@ import org.etmetmy.bn_server.domain.post.repository.StageRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BoardNotFoundException;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
+import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
+import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -150,9 +152,9 @@ public class PostServiceImpl implements PostService {
 
         // 1. 필요한 엔티티 조회
         User user = userRepository.findById(loginUserId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_NOT_FOUND));
+                .orElseThrow(() -> new ProjectNotFoundException("프로젝트를 찾을 수 없습니다."));
         Stage stage = stageRepository.findById(requestDto.getStageId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
