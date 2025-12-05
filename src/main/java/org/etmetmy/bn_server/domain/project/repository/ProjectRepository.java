@@ -35,4 +35,13 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     int moveToTrash(@Param("projectId") Long projectId,
                     @Param("deletedAt") LocalDateTime deletedAt);
 
+
+    // 프로젝트 진행단계 수정
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("UPDATE Project p " +
+            "SET p.stage.id = :stageId " +
+            "WHERE p.id = :projectId")
+    int updateProjectStage(@Param("projectId") Long projectId,
+                           @Param("stageId") Long stageId);
+
 }

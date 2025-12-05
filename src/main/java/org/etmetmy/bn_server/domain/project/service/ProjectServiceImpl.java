@@ -51,35 +51,24 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional
     public Long createProject(ProjectCreateRequest request, Long createdById){
 
-        log.info("=== 프로젝트 생성 시작 ===");
-        log.info("요청 데이터 - projectName: {}, members: {}", request.getProjectName(), request.getMembers());
-
         Stage startStage = getStartStage(request.getStage());
 
         // 2. Project 생성 및 저장 (시작 단계 설정 포함)
         Project project = ProjectCreateRequest.Converter.toEntity(request, createdById, startStage);
         Project savedProject = projectRepository.save(project);
 
-        log.info("프로젝트 저장 완료 - projectId: {}", savedProject.getId());
 
         // 3. Memo 생성 및 저장
         createMemoIfPresent(request.getMemo(), savedProject);
 
         // 4. 프로젝트 멤버 생성 및 저장
         if (hasMembers(request)) {
-            log.info("멤버 목록 존재 - 개수: {}, IDs: {}", request.getMembers().size(), request.getMembers());
-
 
             // List<Long>을 List<ProjectMemberRequest>로 변환 (생성자 사용)
             List<ProjectMemberRequest> memberRequests = request.getMembers().stream()
-                    .map(userId -> {
-                        ProjectMemberRequest memberRequest = new ProjectMemberRequest(userId);
-                        log.debug("ProjectMemberRequest 생성 - userId: {}", userId);
-                        return memberRequest;
-                    })
+                    .map(ProjectMemberRequest::new)
                     .collect(Collectors.toList());
 
-            log.info("ProjectMemberRequest 변환 완료 - 개수: {}", memberRequests.size());
 
             List<ProjectMember> projectMembers = createProjectMembers(
                     memberRequests,
@@ -87,34 +76,11 @@ public class ProjectServiceImpl implements ProjectService{
                     createdById
             );
 
-            log.info("ProjectMember 생성 완료 - 개수: {}", projectMembers.size());
 
             // 빈 리스트가 아닐 때만 저장
             if (!projectMembers.isEmpty()) {
-                List<ProjectMember> saved = projectMemberRepository.saveAll(projectMembers);
-                log.info("DB 저장 완료 - 저장된 멤버 수: {}", saved.size());
-
-                // 저장 확인
-                saved.forEach(pm ->
-                        log.info("저장된 ProjectMember - ID: {}, ProjectID: {}, UserID: {}",
-                                pm.getProjectMemberId(),
-                                pm.getProject().getId(),
-                                pm.getUser() != null ? pm.getUser().getId() : "null")
-                );
-
-                log.info("프로젝트 생성 완료 - ID: {}, 시작단계: {}, 멤버 수: {}",
-                        savedProject.getId(),
-                        startStage.getStageName(),
-                        saved.size()
-                );
-            } else {
-                log.warn("프로젝트 생성 완료 - ID: {} (시작단계: {}, 유효한 멤버 없음)",
-                        savedProject.getId(),
-                        startStage.getStageName()
-                );
+                projectMemberRepository.saveAll(projectMembers);
             }
-        } else {
-            log.warn("멤버 목록이 비어있음 - members: {}", request.getMembers());
         }
 
         return savedProject.getId();
@@ -133,12 +99,10 @@ public class ProjectServiceImpl implements ProjectService{
         List<ProjectMember> projectMembers = createProjectMembers(members, project, createdById);
 
         if (projectMembers.isEmpty()) {
-            log.warn("프로젝트 멤버 추가 실패 - projectId: {}, 유효한 사용자 없음", projectId);
             return 0;
         }
 
         projectMemberRepository.saveAll(projectMembers);
-        log.info("프로젝트 멤버 수동 추가 - projectId: {}, 추가된 멤버 수: {}", projectId, projectMembers.size());
         return projectMembers.size();
     }
 
@@ -147,14 +111,7 @@ public class ProjectServiceImpl implements ProjectService{
     public List<ProjectResponse> getAllProjects() {
         List<Project> projects = projectRepository.findAll();
 
-        log.info("전체 프로젝트 조회 - 개수: {}", projects.size());
-
         Map<Long, List<ProjectMember>> membersByProjectId = groupMembersByProject(projects);
-
-        log.info("프로젝트별 멤버 맵 - 크기: {}", membersByProjectId.size());
-        membersByProjectId.forEach((projectId, members) ->
-                log.info("ProjectID: {} - 멤버 수: {}", projectId, members.size())
-        );
 
         return ProjectResponse.Converter.from(projects, membersByProjectId);
     }
@@ -162,17 +119,7 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberResponse> getProjectMembers(Long projectId) {
-        log.info("=== 프로젝트 멤버 조회 시작 - projectId: {} ===", projectId);
-
         List<ProjectMember> members = projectMemberRepository.findByProject_Id(projectId);
-
-        log.info("조회된 멤버 수: {}", members.size());
-        members.forEach(pm ->
-                log.info("멤버 상세 - ProjectMemberID: {}, UserID: {}, UserName: {}",
-                        pm.getProjectMemberId(),
-                        pm.getUser() != null ? pm.getUser().getId() : "null",
-                        pm.getUser() != null ? pm.getUser().getName() : "null")
-        );
 
         return ProjectMemberResponse.Converter.from(members);
     }
@@ -180,14 +127,10 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional(readOnly = true)
     @Override
     public ProjectResponse getProjectById(Long projectId) {
-        log.info("=== 단일 프로젝트 조회 - projectId: {} ===", projectId);
-
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
         List<ProjectMember> members = projectMemberRepository.findByProject_Id(projectId);
-
-        log.info("프로젝트 ID: {}, 멤버 수: {}", projectId, members.size());
 
         return ProjectResponse.Converter.from(project, members);
     }
@@ -229,9 +172,7 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
     private boolean hasMembers(ProjectCreateRequest request) {
-        boolean result = request.getMembers() != null && !request.getMembers().isEmpty();
-        log.debug("hasMembers 체크 - members: {}, result: {}", request.getMembers(), result);
-        return result;
+        return request.getMembers() != null && !request.getMembers().isEmpty();
     }
 
     private List<ProjectMember> createProjectMembers(
@@ -239,40 +180,21 @@ public class ProjectServiceImpl implements ProjectService{
             Project project,
             Long createdById
     ) {
-        log.info("=== createProjectMembers 시작 ===");
-        log.info("입력 멤버 요청 수: {}", members.size());
-
         // 1. 중복 제거된 userId 리스트 추출
         List<Long> memberIds = members.stream()
                 .map(ProjectMemberRequest::getUserId)
                 .distinct()
                 .toList();
 
-        log.info("중복 제거 후 userId 목록: {}", memberIds);
-
         // 2. userId로 User 엔티티 일괄 조회
         List<User> users = userRepository.findAllById(memberIds);
-        log.info("DB에서 조회된 User 수: {}", users.size());
-        users.forEach(user -> log.info("조회된 User - ID: {}, Name: {}", user.getId(), user.getName()));
 
         Map<Long, User> userMap = users.stream()
                 .collect(Collectors.toMap(User::getId, user -> user));
 
-        // 3. 존재하지 않는 사용자 ID 체크 및 예외 발생
-        List<Long> notFoundUserIds = memberIds.stream()
-                .filter(id -> !userMap.containsKey(id))
-                .toList();
-
-        if (!notFoundUserIds.isEmpty()) {
-        }
-
         // 4. 존재하는 User만 필터링하여 ProjectMember 생성
         List<ProjectMember> projectMembers = members.stream()
-                .filter(req -> {
-                    boolean exists = userMap.containsKey(req.getUserId());
-                    log.debug("userId: {} 존재 여부: {}", req.getUserId(), exists);
-                    return exists;
-                })
+                .filter(req -> userMap.containsKey(req.getUserId()))
                 .map(req -> {
                     User user = userMap.get(req.getUserId());
                     ProjectMember pm = ProjectMemberRequest.Converter.toEntity(
@@ -281,13 +203,9 @@ public class ProjectServiceImpl implements ProjectService{
                             user,
                             createdById
                     );
-                    log.info("ProjectMember 생성 - UserID: {}, ProjectID: {}", user.getId(), project.getId());
                     return pm;
                 })
                 .toList();
-
-        log.info("프로젝트 멤버 생성 완료 - 전체: {}, 유효: {}, 무효: {}",
-                memberIds.size(), projectMembers.size(), notFoundUserIds.size());
 
         return projectMembers;
     }
@@ -303,7 +221,6 @@ public class ProjectServiceImpl implements ProjectService{
         }
 
         List<ProjectMember> allMembers = projectMemberRepository.findByProject_IdIn(projectIds);
-        log.info("전체 프로젝트의 멤버 조회 - 총 멤버 수: {}", allMembers.size());
 
         return allMembers.stream()
                 .collect(Collectors.groupingBy(pm -> pm.getProject().getId()));
@@ -349,8 +266,6 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional
     @Override
     public ProjectUpdateResponse updateProjectName(Long projectId, ProjectNameUpdateRequest request) {
-        log.info("=== 프로젝트 제목 수정 시작 - projectId: {} ===", projectId);
-
         if (projectId == null) {
             throw new InvalidInputException("프로젝트 ID가 필요합니다.");
         }
@@ -371,9 +286,6 @@ public class ProjectServiceImpl implements ProjectService{
         Project updatedProject = projectRepository.findById(projectId)
                 .orElseThrow((ProjectNotFoundException::new));
 
-        log.info("프로젝트 제목 수정 완료 - projectId: {}, newProjectName: {}, updatedAt: {}",
-                projectId, newProjectName, updatedProject.getUpdatedAt());
-
         return ProjectUpdateResponse.Converter.from(updatedProject);
     }
 
@@ -381,8 +293,6 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional
     @Override
     public ProjectUpdateResponse updateProjectDate(Long projectId, ProjectDateUpdateRequest request) {
-        log.info("=== 프로젝트 날짜 수정 시작 - projectId: {} ===", projectId);
-
         if (projectId == null) {
             throw new InvalidInputException("프로젝트 ID가 필요합니다.");
         }
@@ -410,14 +320,9 @@ public class ProjectServiceImpl implements ProjectService{
             Project updatedProject = projectRepository.findById(projectId)
                     .orElseThrow(ProjectNotFoundException::new);
 
-            log.info("프로젝트 날짜 수정 완료 - projectId: {}, startDate: {}, endDate: {}, updatedAt: {}",
-                    projectId, startDate, endDate, updatedProject.getUpdatedAt());
-
             return ProjectUpdateResponse.Converter.from(updatedProject);
 
         } catch (DateTimeParseException e) {
-            log.error("날짜 파싱 실패 - startDate: {}, endDate: {}",
-                    request.getStartDate(), request.getEndDate(), e);
             throw new InvalidInputException("날짜 형식이 올바르지 않습니다. (예: 2024-01-01 또는 2025-11-23T14:00:00Z)");
         }
     }
@@ -435,8 +340,6 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional
     @Override
     public ProjectTrashResponse deleteProject(Long projectId) {
-        log.info("=== 프로젝트 휴지통 이동 시작 - projectId: {} ===", projectId);
-
         if (projectId == null) {
             throw new InvalidInputException("프로젝트 ID가 필요합니다.");
         }
@@ -458,8 +361,6 @@ public class ProjectServiceImpl implements ProjectService{
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 삭제에 실패했습니다.");
         }
 
-        log.info("프로젝트 휴지통 이동 완료 - projectId: {}, deletedAt: {}", projectId, deletedAt);
-
         return ProjectTrashResponse.Converter.from(projectId);
     }
 
@@ -467,8 +368,6 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional
     @Override
     public void removeProjectMember(Long projectId, Long userId) {
-        log.info("=== 프로젝트 멤버 삭제 시작 - projectId: {}, userId: {} ===", projectId, userId);
-
         // 1. 프로젝트 존재 + 삭제 여부 확인
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
@@ -487,8 +386,49 @@ public class ProjectServiceImpl implements ProjectService{
         if (deletedCount == 0) {
             throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "프로젝트에 해당 멤버가 존재하지 않습니다.");
         }
+    }
 
-        log.info("프로젝트 멤버 삭제 완료 - projectId: {}, userId: {}, deletedCount: {}",
-                projectId, userId, deletedCount);
+    //프로젝트 진행단계 수정
+    @Transactional
+    @Override
+    public ProjectStageUpdateResponse updateProjectStage(Long projectId,
+                                                         ProjectStageUpdateRequest request,
+                                                         Long currentUserId) {
+        // 1. 입력값 검증
+        if (projectId == null) {
+            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
+        }
+        if (request == null || request.getStageId() == null) {
+            throw new InvalidInputException("진행단계 ID는 필수입니다.");
+        }
+
+        Long stageId = request.getStageId().longValue();
+
+        // 2. 프로젝트 존재 확인
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 3. Stage 존재 확인
+        Stage stage = projectStageRepository.findById(stageId)
+                .orElseThrow(() ->
+                        new BusinessException(ErrorCode.STAGE_NOT_FOUND, "해당 진행단계를 찾을 수 없습니다."));
+
+        // 4. 현재 사용자 조회 (존재 시 updatedBy 노출)
+        Long updatedBy = null;
+        if (currentUserId != null) {
+            userRepository.findById(currentUserId)
+                    .orElseThrow(UserNotFoundException::new);
+            updatedBy = currentUserId;
+        }
+
+        // 5. Project 의 stage FK 업데이트
+        int updated = projectRepository.updateProjectStage(projectId, stage.getId());
+        if (updated == 0) {
+            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR,
+                    "프로젝트 진행단계 수정에 실패했습니다.");
+        }
+
+        // 6. 응답 반환 (ADMIN 이면 ID, 아니면 null)
+        return ProjectStageUpdateResponse.Converter.of(stageId, updatedBy);
     }
 }
