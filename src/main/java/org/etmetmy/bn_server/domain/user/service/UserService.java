@@ -1,8 +1,9 @@
 package org.etmetmy.bn_server.domain.user.service;
 
-import org.etmetmy.bn_server.domain.user.dto.MemberUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
+import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,4 +19,6 @@ public interface UserService {
     List<User> searchMembers(String name, String email, String companyName, String type);
     Long joinUser(UserDto userDto);
     User login(UserLoginDto loginDto);
+
+    UserProfileImgNameResponse getProfileImgName(Long userId);
 }
