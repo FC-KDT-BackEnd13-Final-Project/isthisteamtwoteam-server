@@ -146,9 +146,12 @@ public class PostServiceImpl implements PostService {
     public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
 
         // 1. 필요한 엔티티 조회
-        User user = userRepository.getReferenceById(loginUserId);
-        Project project = projectRepository.getReferenceById(projectId);
-        Stage stage = Stage.builder().id(requestDto.getStageId()).build();
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_NOT_FOUND));
+        Stage stage = stageRepository.findById(requestDto.getStageId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
         // 2. 프로젝트 내 게시글 번호 생성
         Long postNumber = postRepository.findMaxPostNumberByProjectId(projectId)
