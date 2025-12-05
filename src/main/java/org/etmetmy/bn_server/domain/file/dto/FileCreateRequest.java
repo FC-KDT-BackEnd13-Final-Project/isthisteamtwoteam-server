@@ -8,6 +8,9 @@ import org.etmetmy.bn_server.domain.file.entity.EntityType;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 
+import static org.etmetmy.bn_server.domain.file.service.FileServiceImpl.extractFileName;
+import static org.etmetmy.bn_server.domain.file.service.FileServiceImpl.extractFileType;
+
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,22 +35,6 @@ public class FileCreateRequest {
                     .uploadedBy(uploadedBy)
                     .isDeleted(false)
                     .build();
-        }
-
-        /**
-         * URL에서 파일명 추출
-         */
-        private static String extractFileName(String url) {
-            int lastSlash = url.lastIndexOf('/');
-            return lastSlash >= 0 ? url.substring(lastSlash + 1) : "unknown";
-        }
-
-        /**
-         * URL에서 파일 확장자 추출
-         */
-        private static String extractFileType(String url) {
-            int lastDot = url.lastIndexOf('.');
-            return lastDot >= 0 ? url.substring(lastDot + 1).toLowerCase() : "unknown";
         }
     }
 }
