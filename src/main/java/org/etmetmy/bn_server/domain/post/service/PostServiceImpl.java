@@ -1,10 +1,15 @@
 package org.etmetmy.bn_server.domain.post.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.link.dto.LinkCreateRequest;
+import org.etmetmy.bn_server.domain.link.entity.Link;
+import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
@@ -44,6 +49,7 @@ public class PostServiceImpl implements PostService {
     private final PostNumberCounterRepository postNumberCounterRepository;
     private final ProjectRepository projectRepository;
     private final FileRepository fileRepository;
+    private final LinkRepository linkRepository;
 
     private static final String STATUS_APPROVED = "승인";
     private static final String STATUS_REJECTED = "거절";
@@ -57,7 +63,7 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
-        // DTO 변환 (StageName 처리는 DTO에서 Long stageId 기반으로 처리되어야 함)
+        // DTO 변환 (StageName 처리는 DTO 에서 Long stageId 기반으로 처리되어야 함)
         // DTO 호출 인자를 Post와 User로 단순화함
         return PostDetailResponse.fromEntity(post, post.getUser());
     }
@@ -147,6 +153,7 @@ public class PostServiceImpl implements PostService {
     /**
      * 게시글 작성 API
      */
+    @Override
     @Transactional
     public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
 
@@ -182,7 +189,66 @@ public class PostServiceImpl implements PostService {
             fileRepository.saveAll(savedFiles);
         }
 
-        // 5. 응답 반환
-        return PostCreateResponse.Converter.from(savedPost, savedFiles, requestDto.getLinkUrls());
+        // 5. 링크 처리
+        List<Link> savedLinks = new ArrayList<>();
+        if (requestDto.getLinkUrls() != null && !requestDto.getLinkUrls().isEmpty()) {
+            for (String linkUrl : requestDto.getLinkUrls()) {
+                Link link = LinkCreateRequest.Converter.toEntity(linkUrl, savedPost, loginUserId);
+                savedLinks.add(link);
+            }
+            linkRepository.saveAll(savedLinks);
+        }
+
+        // 6. 응답 반환
+        return PostCreateResponse.Converter.from(savedPost, savedFiles, savedLinks);
+    }
+
+    // 게시글 업데이트 API
+    @Override
+    @Transactional
+    public PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId) {
+
+        // 1. 게시글 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(BoardNotFoundException::new);
+
+        // 2. 작성자 권한 검증
+        if(!post.getUser().getId().equals(loginUserId)){
+            throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
+        }
+
+        // 3. Stage 조회
+        Stage stage = null;
+        if (requestDto.getStageId() != null) {
+            stage = stageRepository.findById(requestDto.getStageId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
+        }
+
+        // 4. 기본 필드 업데이트 (title, content, stage)
+        PostUpdateRequest.Converter.applyTo(requestDto, post, stage);
+
+        // 5. 링크 업데이트 (링크 URL이 제공된 경우)
+        if (requestDto.getLinkUrls() != null) {
+            // 기존 링크 조회
+            List<Link> existingLinks = linkRepository.findByPost(post);
+
+            // 기존 링크 삭제 (물리적 삭제 - orphanRemoval로 자동 처리됨)
+            linkRepository.deleteAll(existingLinks);
+
+            // 새 링크 추가
+            List<Link> newLinks = new ArrayList<>();
+            for (String linkUrl : requestDto.getLinkUrls()) {
+                Link link = LinkCreateRequest.Converter.toEntity(linkUrl, post, loginUserId);
+                newLinks.add(link);
+            }
+            linkRepository.saveAll(newLinks);
+        }
+
+        // 6. TODO: 파일 업데이트 로직은 별도 API로 구현 필요
+
+        // 7. 응답 반환 (파일, 링크 정보 포함)
+        List<File> savedFiles = fileRepository.findByPost(post);
+        List<Link> savedLinks = linkRepository.findByPost(post);
+        return PostCreateResponse.Converter.from(post, savedFiles, savedLinks);
     }
 }
