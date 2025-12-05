@@ -174,7 +174,7 @@ public class PostServiceImpl implements PostService {
         List<File> savedFiles = new ArrayList<>();
         if (requestDto.getFileUrls() != null && !requestDto.getFileUrls().isEmpty()) {
             for (String fileUrl : requestDto.getFileUrls()) {
-                File file = FileCreateRequest.toEntity(fileUrl, savedPost, loginUserId);
+                File file = FileCreateRequest.Converter.toEntity(fileUrl, savedPost, loginUserId);
                 savedFiles.add(file);
             }
             fileRepository.saveAll(savedFiles);
