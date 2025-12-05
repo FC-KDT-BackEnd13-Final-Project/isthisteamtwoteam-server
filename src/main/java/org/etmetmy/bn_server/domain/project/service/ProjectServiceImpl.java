@@ -15,6 +15,7 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
@@ -402,11 +403,12 @@ public class ProjectServiceImpl implements ProjectService{
                 .orElseThrow(() ->
                         new BusinessException(ErrorCode.STAGE_NOT_FOUND, "해당 진행단계를 찾을 수 없습니다."));
 
-        // 4. 현재 사용자 조회 (로그 추적용 updatedBy 세팅)
-        Long updatedBy = currentUserId;
+        // 4. 현재 사용자 조회 (존재 시 updatedBy 노출)
+        Long updatedBy = null;
         if (currentUserId != null) {
             userRepository.findById(currentUserId)
                     .orElseThrow(UserNotFoundException::new);
+            updatedBy = currentUserId;
         }
 
         // 5. Project 의 stage FK 업데이트

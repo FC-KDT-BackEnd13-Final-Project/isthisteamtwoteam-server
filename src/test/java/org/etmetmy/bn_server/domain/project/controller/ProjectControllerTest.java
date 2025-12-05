@@ -14,6 +14,7 @@ import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
 import org.etmetmy.bn_server.exception.handler.GlobalExceptionHandler;
 import org.etmetmy.bn_server.global.ExceptionControllerAdvice;
+import org.etmetmy.bn_server.web.SessionConst;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,6 +138,32 @@ class ProjectControllerTest {
                 .andExpect(jsonPath("$.message").value("프로젝트 진행단계 수정 성공"))
                 .andExpect(jsonPath("$.response.stageId").value(stageId.intValue()))
                 .andExpect(jsonPath("$.response.updatedBy").value(userId));
+    }
+
+    @Test
+    @DisplayName("세션에 로그인 사용자 객체만 있을 때도 updatedBy 반환")
+    void updateProjectStage_usesLoginMemberWhenUserIdMissing() throws Exception {
+        Long projectId = 8L;
+        Long stageId = 5L;
+
+        ProjectStageUpdateResponse response = ProjectStageUpdateResponse.Converter.of(stageId, 9L);
+
+        when(projectService.updateProjectStage(eq(projectId), any(ProjectStageUpdateRequest.class), eq(9L)))
+                .thenReturn(response);
+
+        org.etmetmy.bn_server.domain.user.entity.User loginUser = org.etmetmy.bn_server.domain.user.entity.User.builder()
+                .id(9L)
+                .email("login@test.com")
+                .build();
+
+        mockMvc.perform(patch("/admin/projects/{projectId}/stage", projectId)
+                        .sessionAttr(SessionConst.LOGIN_MEMBER, loginUser)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ProjectStageUpdateRequest(stageId))))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.response.updatedBy").value(9));
     }
 
     @Test

@@ -110,6 +110,76 @@ class ProjectServiceImplTest {
     }
 
     @Test
+    @DisplayName("권한과 관계없이 요청 사용자 ID가 updatedBy에 세팅된다")
+    void updateProjectStage_setsUpdatedBy_forNonAdmin() {
+        Long projectId = 2L;
+        Long stageId = 3L;
+        Long userId = 20L;
+
+        Stage stage = Stage.builder().id(stageId).stageName("개발").build();
+        Project project = Project.builder()
+                .id(projectId)
+                .projectName("프로젝트")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(1))
+                .stage(stage)
+                .build();
+
+        Company company = Company.builder().companyId(1L).companyName("company").build();
+        User user = User.builder()
+                .id(userId)
+                .company(company)
+                .email("user@test.com")
+                .password("pass")
+                .name("사용자")
+                .role(Role.DEVELOPER)
+                .build();
+
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        when(projectStageRepository.findById(stageId)).thenReturn(Optional.of(stage));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(projectRepository.updateProjectStage(projectId, stageId)).thenReturn(1);
+
+        ProjectStageUpdateResponse response = projectService.updateProjectStage(
+                projectId,
+                new ProjectStageUpdateRequest(stageId),
+                userId
+        );
+
+        assertThat(response.getUpdatedBy()).isEqualTo(userId);
+        verify(projectRepository).updateProjectStage(projectId, stageId);
+    }
+
+    @Test
+    @DisplayName("currentUserId가 null이면 updatedBy는 null")
+    void updateProjectStage_setsNullWhenNoUser() {
+        Long projectId = 5L;
+        Long stageId = 6L;
+
+        Stage stage = Stage.builder().id(stageId).stageName("검수").build();
+        Project project = Project.builder()
+                .id(projectId)
+                .projectName("프로젝트")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(1))
+                .stage(stage)
+                .build();
+
+        when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+        when(projectStageRepository.findById(stageId)).thenReturn(Optional.of(stage));
+        when(projectRepository.updateProjectStage(projectId, stageId)).thenReturn(1);
+
+        ProjectStageUpdateResponse response = projectService.updateProjectStage(
+                projectId,
+                new ProjectStageUpdateRequest(stageId),
+                null
+        );
+
+        assertThat(response.getUpdatedBy()).isNull();
+        verify(projectRepository).updateProjectStage(projectId, stageId);
+    }
+
+    @Test
     @DisplayName("진행단계가 존재하지 않으면 예외가 발생한다")
     void updateProjectStage_throws_whenStageMissing() {
         Long projectId = 1L;
@@ -166,7 +236,6 @@ class ProjectServiceImplTest {
         );
 
         assertThat(response.getProjectId()).isEqualTo(projectId);
-        assertThat(response.getUpdatedAt()).isEqualTo(updatedProject.getUpdatedAt());
         verify(projectRepository).updateProjectName(projectId, newName);
     }
 
@@ -211,7 +280,6 @@ class ProjectServiceImplTest {
         );
 
         assertThat(response.getProjectId()).isEqualTo(projectId);
-        assertThat(response.getUpdatedAt()).isEqualTo(updatedProject.getUpdatedAt());
         verify(projectRepository).updateProjectDates(projectId, newStart, newEnd);
     }
 

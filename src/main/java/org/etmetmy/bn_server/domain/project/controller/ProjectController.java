@@ -8,6 +8,7 @@ import org.etmetmy.bn_server.domain.project.dto.response.*;
 
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -110,7 +111,13 @@ public class ProjectController {
             @PathVariable Long projectId,
             @RequestBody ProjectStageUpdateRequest request
     ) {
-        Long currentUserId = (Long) session.getAttribute("userId"); // 🔥 로그인한 사용자 ID
+        Long currentUserId = (Long) session.getAttribute("userId");
+        if (currentUserId == null) {
+            Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember instanceof org.etmetmy.bn_server.domain.user.entity.User user) {
+                currentUserId = user.getId();
+            }
+        }
 
         ProjectStageUpdateResponse response =
                 projectService.updateProjectStage(projectId, request, currentUserId);

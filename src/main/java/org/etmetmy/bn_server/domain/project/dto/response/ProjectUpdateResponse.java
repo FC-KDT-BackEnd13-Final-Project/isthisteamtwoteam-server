@@ -15,13 +15,13 @@ import java.time.LocalDateTime;
 @Builder
 public class ProjectUpdateResponse {
     private Long projectId;
-    private LocalDateTime updatedAt;
+    private Long userId;
 
     public static class Converter{
         public static ProjectUpdateResponse from(Project project){
             return ProjectUpdateResponse.builder()
                     .projectId(project.getId())
-                    .updatedAt(project.getUpdatedAt())
+                    .userId(project.getCreatedBy())
                     .build();
         }
     }
