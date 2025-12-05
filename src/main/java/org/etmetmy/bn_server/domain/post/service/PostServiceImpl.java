@@ -152,9 +152,9 @@ public class PostServiceImpl implements PostService {
 
         // 1. 필요한 엔티티 조회
         User user = userRepository.findById(loginUserId)
-                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
+                .orElseThrow(UserNotFoundException::new);
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ProjectNotFoundException("프로젝트를 찾을 수 없습니다."));
+                .orElseThrow(ProjectNotFoundException::new);
         Stage stage = stageRepository.findById(requestDto.getStageId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
