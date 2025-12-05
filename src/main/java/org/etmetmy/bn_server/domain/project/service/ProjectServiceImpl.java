@@ -23,6 +23,7 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
+import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -334,6 +335,16 @@ public class ProjectServiceImpl implements ProjectService{
         return ProjectAddCheckListResponse.Converter.from(savedCheckLists);
     }
 
+    @Override
+    public List<ProjectCheckListAllResponse> getCheckLists(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        List<ProjectCheckList> projectCheckLists = projectChecklistRepository.findByProject(project);
+
+        return ProjectCheckListAllResponse.Converter.from(projectCheckLists);
+    }
+
     //프로젝트 제목수정
     @Transactional
     @Override
@@ -480,6 +491,4 @@ public class ProjectServiceImpl implements ProjectService{
         log.info("프로젝트 멤버 삭제 완료 - projectId: {}, userId: {}, deletedCount: {}",
                 projectId, userId, deletedCount);
     }
-
-
 }
