@@ -121,7 +121,8 @@ class ProjectControllerTest {
     void updateProjectStage_returnsResponse() throws Exception {
         Long projectId = 7L;
         Long userId = 3L;
-        ProjectStageUpdateResponse response = ProjectStageUpdateResponse.Converter.of(4L, userId);
+        Long stageId = 4L;
+        ProjectStageUpdateResponse response = ProjectStageUpdateResponse.Converter.of(stageId, userId);
 
         when(projectService.updateProjectStage(eq(projectId), any(ProjectStageUpdateRequest.class), eq(userId)))
                 .thenReturn(response);
@@ -129,12 +130,12 @@ class ProjectControllerTest {
         mockMvc.perform(patch("/admin/projects/{projectId}/stage", projectId)
                         .sessionAttr("userId", userId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(new ProjectStageUpdateRequest(4))))
+                        .content(objectMapper.writeValueAsString(new ProjectStageUpdateRequest(stageId))))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.message").value("프로젝트 진행단계 수정 성공"))
-                .andExpect(jsonPath("$.response.stageId").value(4))
+                .andExpect(jsonPath("$.response.stageId").value(stageId.intValue()))
                 .andExpect(jsonPath("$.response.updatedBy").value(userId));
     }
 

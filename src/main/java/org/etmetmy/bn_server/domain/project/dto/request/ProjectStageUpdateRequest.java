@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProjectStageUpdateRequest {
-    private Integer stageId;
+    private Long stageId;
 }

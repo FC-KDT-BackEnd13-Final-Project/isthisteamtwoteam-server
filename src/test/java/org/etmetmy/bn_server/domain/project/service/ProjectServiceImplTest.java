@@ -101,7 +101,7 @@ class ProjectServiceImplTest {
 
         ProjectStageUpdateResponse response = projectService.updateProjectStage(
                 projectId,
-                new ProjectStageUpdateRequest(stageId.intValue()),
+                new ProjectStageUpdateRequest(stageId),
                 userId
         );
 
@@ -127,7 +127,7 @@ class ProjectServiceImplTest {
 
         assertThrows(BusinessException.class, () -> projectService.updateProjectStage(
                 projectId,
-                new ProjectStageUpdateRequest(missingStageId.intValue()),
+                new ProjectStageUpdateRequest(missingStageId),
                 null
         ));
 
