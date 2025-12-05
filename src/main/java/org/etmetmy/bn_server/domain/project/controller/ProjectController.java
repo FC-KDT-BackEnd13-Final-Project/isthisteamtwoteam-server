@@ -8,6 +8,7 @@ import org.etmetmy.bn_server.domain.project.dto.response.*;
 
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -65,6 +66,14 @@ public class ProjectController {
 
     }
 
+    // Todo : 단일 프로젝트 체크리스트 전체 조회
+    @GetMapping("/{projectId}/checklists")
+    public CommonResponse<List<ProjectCheckListAllResponse>> getCheckLists(
+            @PathVariable Long projectId
+    ){
+        return CommonResponse.success("프로젝트 체크리스트를 불러왔습니다.",projectService.getCheckLists(projectId));
+    }
+
     // 프로젝트 제목 수정
     @PatchMapping("/{projectId}/projectName")
     public CommonResponse<ProjectUpdateResponse> updateProjectName(
@@ -103,4 +112,24 @@ public class ProjectController {
     }
 
 
+    // 프로젝트 진행단계 수정
+    @PatchMapping("/{projectId}/stage")
+    public CommonResponse<ProjectStageUpdateResponse> updateProjectStage(
+            HttpSession session,
+            @PathVariable Long projectId,
+            @RequestBody ProjectStageUpdateRequest request
+    ) {
+        Long currentUserId = (Long) session.getAttribute("userId");
+        if (currentUserId == null) {
+            Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
+            if (loginMember instanceof org.etmetmy.bn_server.domain.user.entity.User user) {
+                currentUserId = user.getId();
+            }
+        }
+
+        ProjectStageUpdateResponse response =
+                projectService.updateProjectStage(projectId, request, currentUserId);
+
+        return CommonResponse.success("프로젝트 진행단계 수정 성공", response);
+    }
 }

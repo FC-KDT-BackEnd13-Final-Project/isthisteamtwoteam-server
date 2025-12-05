@@ -31,4 +31,6 @@ public class CheckListResponse {
                     .collect(Collectors.toList());
         }
     }
+
+
 }
