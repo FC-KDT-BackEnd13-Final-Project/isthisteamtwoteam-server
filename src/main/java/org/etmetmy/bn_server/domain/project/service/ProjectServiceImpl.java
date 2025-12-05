@@ -52,41 +52,6 @@ public class ProjectServiceImpl implements ProjectService{
     private final EntityManager entityManager;
 
 
-    // 🔥 Stage 기본 데이터 자동 삽입 =====================
-    @EventListener(ApplicationReadyEvent.class)
-    @Transactional
-    public void initDefaultStages() {
-        log.info("Stage 기본 데이터 초기화 시작");
-
-        List<Stage> defaultStages = List.of(
-                Stage.builder().id(1L).stageName("진행전").build(),
-                Stage.builder().id(2L).stageName("진행중단").build(),
-                Stage.builder().id(3L).stageName("요구사항정의").build(),
-                Stage.builder().id(4L).stageName("디자인/퍼블리싱").build(),
-                Stage.builder().id(5L).stageName("개발").build(),
-                Stage.builder().id(6L).stageName("검수").build(),
-                Stage.builder().id(7L).stageName("유지보수단계").build()
-        );
-
-        int insertedCount = 0;
-        for (Stage stage : defaultStages) {
-            if (projectStageRepository.existsById(stage.getId())) {
-                continue;
-            }
-
-            entityManager.createNativeQuery("INSERT INTO stage (stage_id, stage_name) VALUES (:id, :name)")
-                    .setParameter("id", stage.getId())
-                    .setParameter("name", stage.getStageName())
-                    .executeUpdate();
-            insertedCount++;
-        }
-
-        log.info("Stage 기본 데이터 삽입 완료 - 추가된 Stage: {}건", insertedCount);
-    }
-
-
-
-
     @Override
     @Transactional
     public Long createProject(ProjectCreateRequest request, Long createdById){
