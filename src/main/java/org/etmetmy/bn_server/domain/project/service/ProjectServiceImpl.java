@@ -431,4 +431,13 @@ public class ProjectServiceImpl implements ProjectService{
         // 6. 응답 반환 (ADMIN 이면 ID, 아니면 null)
         return ProjectStageUpdateResponse.Converter.of(stageId, updatedBy);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProjectDetailResponse getProjectDetail(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        return ProjectDetailResponse.Converter.from(project);
+    }
 }

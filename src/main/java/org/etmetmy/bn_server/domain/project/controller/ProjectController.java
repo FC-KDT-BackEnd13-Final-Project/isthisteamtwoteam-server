@@ -132,4 +132,14 @@ public class ProjectController {
 
         return CommonResponse.success("프로젝트 진행단계 수정 성공", response);
     }
+
+    @GetMapping("/{projectId}")
+    public CommonResponse<ProjectDetailResponse> getProjectDetail(
+            @PathVariable Long projectId
+    ) {
+        ProjectDetailResponse response = projectService.getProjectDetail(projectId);
+        return CommonResponse.success("프로젝트 조회 성공", response);
+    }
+
+
 }
