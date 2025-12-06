@@ -49,10 +49,6 @@ public class CheckListController {
             @RequestParam(defaultValue = "ASC") String direction,
             @RequestParam(required = false) String keyword
     ) {
-        System.out.println("=== CheckList GET 호출 ===");
-        System.out.println("keyword: [" + keyword + "]");
-        System.out.println("page: " + page + ", size: " + size);
-
         // 동적 정렬 생성
         Sort sort = direction.equalsIgnoreCase("DESC")
                 ? Sort.by(sortBy).descending()
@@ -67,10 +63,8 @@ public class CheckListController {
         String trimmedKeyword = (keyword != null) ? keyword.trim() : null;
 
         if (trimmedKeyword != null && !trimmedKeyword.isEmpty()) {
-            System.out.println(">>> 검색 실행: " + trimmedKeyword);
             result = checkListService.searchCheckLists(trimmedKeyword, pageRequest);
         } else {
-            System.out.println(">>> 전체 조회 실행");
             result = checkListService.getCheckLists(pageRequest);
         }
 

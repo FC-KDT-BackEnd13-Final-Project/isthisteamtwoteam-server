@@ -2,9 +2,15 @@ package org.etmetmy.bn_server.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.etmetmy.bn_server.domain.file.entity.File;
+import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.link.entity.Link;
+import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.file.dto.FileInfoDTO;
+import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
@@ -46,6 +52,8 @@ public class ProjectServiceImpl implements ProjectService{
     private final MemoRepository memoRepository;
     private final ProjectCheckListRepository projectChecklistRepository;
     private final CheckListRepository checkListRepository;
+    private final FileRepository fileRepository;
+    private final LinkRepository linkRepository;
 
     @Override
     @Transactional
@@ -258,8 +266,29 @@ public class ProjectServiceImpl implements ProjectService{
                 .orElseThrow(ProjectNotFoundException::new);
 
         List<ProjectCheckList> projectCheckLists = projectChecklistRepository.findByProject(project);
+        log.debug("조회된 ProjectCheckList 개수: {}", projectCheckLists.size());
 
-        return ProjectCheckListAllResponse.Converter.from(projectCheckLists);
+        // 각 ProjectCheckList에 대해 File과 Link를 조회하여 Response 생성
+        return projectCheckLists.stream()
+                .map(projectCheckList -> {
+                    Long checkListId = projectCheckList.getProjectCheckListId();
+                    log.debug("ProjectCheckList ID: {}", checkListId);
+
+                    // File 조회 및 DTO 변환 (ID 기반 조회로 변경)
+                    List<File> files = fileRepository.findByProjectCheckListId(checkListId);
+                    log.debug("ProjectCheckList ID {}에 대한 File 개수 (JPQL): {}", checkListId, files.size());
+
+                    List<FileInfoDTO> fileDTOs = FileInfoDTO.Converter.from(files);
+
+                    // Link 조회 및 DTO 변환 (ID 기반 조회로 변경)
+                    List<Link> links = linkRepository.findByProjectCheckListId(checkListId);
+                    log.debug("ProjectCheckList ID {}에 대한 Link 개수: {}", checkListId, links.size());
+                    List<LinkInfoDTO> linkDTOs = LinkInfoDTO.Converter.from(links);
+
+                    // Response 생성
+                    return ProjectCheckListAllResponse.Converter.from(projectCheckList, fileDTOs, linkDTOs);
+                })
+                .toList();
     }
 
     //프로젝트 제목수정

@@ -2,7 +2,6 @@ package org.etmetmy.bn_server.domain.post.service;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.file.dto.EntityTypeConstants;
 import org.etmetmy.bn_server.domain.file.dto.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
