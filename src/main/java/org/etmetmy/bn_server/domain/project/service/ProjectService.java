@@ -12,7 +12,6 @@ import java.util.List;
 
 public interface ProjectService {
 
-
     Long createProject(ProjectCreateRequest request, Long createdById);
 
     int addProjectMembers(Long projectId, List<ProjectMemberRequest> members, Long createdById);
@@ -28,7 +27,6 @@ public interface ProjectService {
 
     // 프로젝트 날짜 수정
     ProjectUpdateResponse updateProjectDate(Long projectId, ProjectDateUpdateRequest request);
-
 
     //프로젝트 삭제(흊지통이동)
     ProjectTrashResponse deleteProject(Long projectId);

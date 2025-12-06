@@ -29,7 +29,6 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
-import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -266,23 +265,18 @@ public class ProjectServiceImpl implements ProjectService{
                 .orElseThrow(ProjectNotFoundException::new);
 
         List<ProjectCheckList> projectCheckLists = projectChecklistRepository.findByProject(project);
-        log.debug("조회된 ProjectCheckList 개수: {}", projectCheckLists.size());
 
         // 각 ProjectCheckList에 대해 File과 Link를 조회하여 Response 생성
         return projectCheckLists.stream()
                 .map(projectCheckList -> {
                     Long checkListId = projectCheckList.getProjectCheckListId();
-                    log.debug("ProjectCheckList ID: {}", checkListId);
 
                     // File 조회 및 DTO 변환 (ID 기반 조회로 변경)
                     List<File> files = fileRepository.findByProjectCheckListId(checkListId);
-                    log.debug("ProjectCheckList ID {}에 대한 File 개수 (JPQL): {}", checkListId, files.size());
-
                     List<FileInfoDTO> fileDTOs = FileInfoDTO.Converter.from(files);
 
                     // Link 조회 및 DTO 변환 (ID 기반 조회로 변경)
                     List<Link> links = linkRepository.findByProjectCheckListId(checkListId);
-                    log.debug("ProjectCheckList ID {}에 대한 Link 개수: {}", checkListId, links.size());
                     List<LinkInfoDTO> linkDTOs = LinkInfoDTO.Converter.from(links);
 
                     // Response 생성
