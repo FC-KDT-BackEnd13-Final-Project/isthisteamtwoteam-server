@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users/projects/{projectId}")
+@RequestMapping("/api/v1/users/projects/{projectId}")
 public class FileController {
 
     private final FileService fileService;
