@@ -263,7 +263,7 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-            // 작성자 검증
+    // 작성자 검증
     public static void validateWriter(Post post, Long loginUserId) {
         if (!post.getUser().getId().equals(loginUserId)) {
             throw new ProjectPermissionDeniedException();
