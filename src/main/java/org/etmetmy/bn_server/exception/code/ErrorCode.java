@@ -47,10 +47,12 @@ public enum ErrorCode {
     USER_ALREADY_DELETED(400, "U003", "이미 탈퇴한 사용자입니다."),
     USER_NOT_LOGIN(401,"Y004", "로그인이 필요합니다."),
 
+    //파일 관련 에러
     FILE_NOT_FOUND(404, "F001", "파일을 찾을 수 없습니다"),
     FILE_SIZE_EXCEEDED(400, "F002", "파일 크기가 제한을 초과했습니다"),
     INVALID_FILE_TYPE(400, "F003", "지원하지 않는 파일 형식입니다"),
     FILE_UPLOAD_FAILED(500, "F004", "파일 업로드에 실패했습니다"),
+    FILE_NOT_IN_POST(400, "F005", "파일이 해당 게시글에 속하지 않습니다."),
 
     // 체크리스트 관련 에러
     CHECKLIST_NOT_FOUND(404,"D001","체크리스트를 찾을 수 없습니다."),

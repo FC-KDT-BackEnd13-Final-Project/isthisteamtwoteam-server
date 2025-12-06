@@ -55,4 +55,10 @@ public class File extends BaseEntity {
     @Column(name = "deleted_by")
     private Long deletedBy;
 
+
+    public void softDelete(Long deletedBy) {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
     }
+}
