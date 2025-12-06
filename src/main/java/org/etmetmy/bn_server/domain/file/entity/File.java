@@ -53,8 +53,8 @@ public class File extends BaseEntity {
     @Column(name = "uploaded_by", nullable = false)
     private Long uploadedBy;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -62,8 +62,4 @@ public class File extends BaseEntity {
     @Column(name = "deleted_by")
     private Long deletedBy;
 
-    @PrePersist
-    protected void onCreate() {
-        if (isDeleted == null) isDeleted = false;
-    }
     }

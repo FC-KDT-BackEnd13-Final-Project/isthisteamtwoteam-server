@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.file.entity.File;
+import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
@@ -40,8 +41,8 @@ public class Post extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "is_completed")
-    private Boolean isCompleted;
+    @Column(name = "is_completed", nullable = false)
+    private Boolean isCompleted = false;
 
     @Column(name = "created_ip")
     private String createdIp;
@@ -58,11 +59,23 @@ public class Post extends BaseEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<File> files = new ArrayList<>();
 
-    @PrePersist
-    protected void onCreate() {
-        if (isCompleted == null) isCompleted = false;
+    //링크 목록
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Link> links = new ArrayList<>();
+
+
+    // 게시글 업데이트 메서드
+    public void updateTitle(String title) {
+        this.title = title;
+    }
+    public void updateContent(String content) {
+        this.content = content;
+    }
+    public void updateStage(Stage stage) {
+        this.stage = stage;
     }
 
+    // 지원님 코드 (수정필요)
     public void updateStage(Long stageId) {
         this.stage = stage;
     }
