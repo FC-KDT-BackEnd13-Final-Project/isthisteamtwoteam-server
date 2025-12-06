@@ -20,19 +20,20 @@ public class FileCreateRequest {
     private String fileUrl;
     private Long entityTypeId;
 
-
     public static class Converter {
         /**
          * File 엔티티 생성
          */
-        public static File toEntity(FileCreateRequest fileCreateRequest, Post post, Long uploadedBy) {
+        public static File toEntity(String fileUrl, Post post, Long uploadedBy) {
             return File.builder()
-                    .entityType(EntityType.builder().entityTypeId(fileCreateRequest.getEntityTypeId()).build())
+                    .entityType(EntityType.builder()
+                            .entityTypeId(EntityTypeConstants.POST)
+                            .build())
                     .post(post)
-                    .fileTitle(extractFileName(fileCreateRequest.getFileUrl()))
-                    .filePath(fileCreateRequest.getFileUrl())
+                    .fileTitle(extractFileName(fileUrl))
+                    .filePath(fileUrl)
                     .fileSize(0L)
-                    .fileType(extractFileType(fileCreateRequest.getFileUrl()))
+                    .fileType(extractFileType(fileUrl))
                     .uploadedBy(uploadedBy)
                     .isDeleted(false)
                     .build();

@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.domain.post.service;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.file.dto.EntityTypeConstants;
 import org.etmetmy.bn_server.domain.file.dto.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
@@ -183,17 +184,14 @@ public class PostServiceImpl implements PostService {
         List<File> savedFiles = new ArrayList<>();
         if (requestDto.getFileUrls() != null && !requestDto.getFileUrls().isEmpty()) {
             for (String fileUrl : requestDto.getFileUrls()) {
-                FileCreateRequest fileCreateRequest = FileCreateRequest.builder()
-                        .fileUrl(fileUrl)
-                        .entityTypeId(1L) // Assuming 1L represents the Post entity type
-                        .build();
-                File file = FileCreateRequest.Converter.toEntity(fileCreateRequest, savedPost, loginUserId);
+                File file = FileCreateRequest.Converter.toEntity(fileUrl, savedPost, loginUserId);
                 savedFiles.add(file);
             }
             fileRepository.saveAll(savedFiles);
         }
 
         // 5. 링크 처리
+
         List<Link> savedLinks = new ArrayList<>();
         if (requestDto.getLinkUrls() != null && !requestDto.getLinkUrls().isEmpty()) {
             for (String linkUrl : requestDto.getLinkUrls()) {
@@ -216,22 +214,27 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
-        // 2. 작성자 권한 검증
+        // 2. 게시글이 해당 프로젝트에 속하는지 검증
+        if (!post.getProject().getId().equals(projectId)) {
+            throw new BusinessException(ErrorCode.POST_PROJECT_MISMATCH);
+        }
+
+        // 3. 작성자 권한 검증
         if(!post.getUser().getId().equals(loginUserId)){
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
 
-        // 3. Stage 조회
+        // 4. Stage 조회
         Stage stage = null;
         if (requestDto.getStageId() != null) {
             stage = stageRepository.findById(requestDto.getStageId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
         }
 
-        // 4. 기본 필드 업데이트 (title, content, stage)
+        // 5. 기본 필드 업데이트 (title, content, stage)
         PostUpdateRequest.Converter.applyTo(requestDto, post, stage);
 
-        // 5. 링크 업데이트 (링크 URL이 제공된 경우)
+        // 6. 링크 업데이트 (링크 URL이 제공된 경우)
         if (requestDto.getLinkUrls() != null) {
             // 기존 링크 조회
             List<Link> existingLinks = linkRepository.findByPost(post);
@@ -248,9 +251,9 @@ public class PostServiceImpl implements PostService {
             linkRepository.saveAll(newLinks);
         }
 
-        // 6. TODO: 파일 업데이트 로직은 별도 API로 구현 필요
+        // 7. TODO: 파일 업데이트 로직은 별도 API로 구현 필요
 
-        // 7. 응답 반환 (파일, 링크 정보 포함)
+        // 8. 응답 반환 (파일, 링크 정보 포함)
         List<File> savedFiles = fileRepository.findByPost(post);
         List<Link> savedLinks = linkRepository.findByPost(post);
         return PostCreateResponse.Converter.from(post, savedFiles, savedLinks);

@@ -55,8 +55,4 @@ public class File extends BaseEntity {
     @Column(name = "deleted_by")
     private Long deletedBy;
 
-    @PrePersist
-    protected void onCreate() {
-        if (isDeleted == null) isDeleted = false;
-    }
     }

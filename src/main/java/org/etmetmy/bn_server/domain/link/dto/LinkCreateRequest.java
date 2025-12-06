@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.etmetmy.bn_server.domain.file.dto.EntityTypeConstants;
 import org.etmetmy.bn_server.domain.file.entity.EntityType;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.post.entity.Post;
@@ -22,7 +23,9 @@ public class LinkCreateRequest {
          */
         public static Link toEntity(String linkUrl, Post post, Long uploadedBy) {
             return Link.builder()
-                    .entityType(EntityType.builder().entityTypeId(1L).build()) // 1L = Post 타입
+                    .entityType(EntityType.builder()
+                            .entityTypeId(EntityTypeConstants.POST)
+                            .build())
                     .post(post)
                     .linkUrl(linkUrl)
                     .uploadedBy(uploadedBy)
