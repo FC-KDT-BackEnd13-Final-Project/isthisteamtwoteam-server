@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
@@ -106,5 +107,19 @@ public class PostController {
             response = postService.getPostListByProjectIdAndFilter(projectId, filterValue);
             return CommonResponse.success("게시글 목록 조회 성공", response);
         }
+    }
+
+    @PatchMapping("/{projectId}/posts/{postId}")
+    public CommonResponse<PostCreateResponse> updatePost(
+            @PathVariable Long projectId,
+            @PathVariable Long postId,
+            @Valid @RequestBody PostUpdateRequest requestDto,
+            HttpSession session){
+
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+        PostCreateResponse response = postService.updatePost(
+                projectId, postId, requestDto, loginUserId);
+        return CommonResponse.success("게시글 수정 성공", response);
     }
 }

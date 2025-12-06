@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
+import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.entity.EntityType;
+import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
@@ -16,7 +19,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-class Link extends BaseEntity {
+public class Link extends BaseEntity { //다른 패키지에서 접근
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,11 +29,23 @@ class Link extends BaseEntity {
     @Column(name = "link_url", nullable = false, length = 500)
     private String linkUrl;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "checkList_id")
+    private CheckList checkList;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
     @Column(name = "uploaded_by", nullable = false)
     private Long uploadedBy;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -42,8 +57,4 @@ class Link extends BaseEntity {
     @JoinColumn(name = "entity_type_id", nullable = false)
     private EntityType entityType;
 
-    @PrePersist
-    protected void onCreate() {
-        if (isDeleted == null) isDeleted = false;
-    }
 }

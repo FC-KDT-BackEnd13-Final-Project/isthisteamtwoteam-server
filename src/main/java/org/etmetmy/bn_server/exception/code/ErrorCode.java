@@ -21,6 +21,7 @@ public enum ErrorCode {
     BOARD_PERMISSION_DENIED(403, "B003", "게시글 수정/삭제 권한이 없습니다."),
     BOARD_ALREADY_DELETED(400, "B004", "이미 삭제된 게시글입니다."),
     BOARD_INVALID_FILTER(400,"B005", "유효하지 않은 게시글 필터입니다."),
+    POST_PROJECT_MISMATCH(400, "P014", "게시글이 해당 프로젝트에 속하지 않습니다."),
 
 
     INVALID_INPUT_VALUE(400, "C001", "잘못된 입력값입니다."),

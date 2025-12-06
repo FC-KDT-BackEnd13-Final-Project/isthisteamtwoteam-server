@@ -43,7 +43,7 @@ public class FileInfoDTO {
         public static List<FileInfoDTO> from(
                 List<org.etmetmy.bn_server.domain.file.entity.File> files) {
 
-            // 1. files가 null이면 빈 리스트 반환
+            // 1. files가 null 이면 빈 리스트 반환
             if (files == null) {
                 return new ArrayList<>();
             }
