@@ -44,8 +44,8 @@ public class Link extends BaseEntity { //다른 패키지에서 접근
     @Column(name = "uploaded_by", nullable = false)
     private Long uploadedBy;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

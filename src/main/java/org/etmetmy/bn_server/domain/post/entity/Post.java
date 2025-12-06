@@ -41,8 +41,8 @@ public class Post extends BaseEntity {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "is_completed")
-    private Boolean isCompleted;
+    @Column(name = "is_completed", nullable = false)
+    private Boolean isCompleted = false;
 
     @Column(name = "created_ip")
     private String createdIp;
