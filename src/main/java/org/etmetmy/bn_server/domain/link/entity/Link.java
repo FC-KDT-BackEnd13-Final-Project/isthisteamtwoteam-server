@@ -5,7 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.etmetmy.bn_server.domain.file.entity.EntityType;
+import org.etmetmy.bn_server.domain.comment.entity.Comment;
+import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
@@ -23,6 +25,18 @@ class Link extends BaseEntity {
     @Column(name = "link_id")
     private Long linkId;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_check_list_id")
+    private ProjectCheckList projectCheckList;
+
     @Column(name = "link_url", nullable = false, length = 500)
     private String linkUrl;
 
@@ -37,10 +51,6 @@ class Link extends BaseEntity {
 
     @Column(name = "deleted_by")
     private Long deletedBy;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entity_type_id", nullable = false)
-    private EntityType entityType;
 
     @PrePersist
     protected void onCreate() {

@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.etmetmy.bn_server.domain.file.entity.EntityType;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 
@@ -26,7 +25,6 @@ public class FileCreateRequest {
          */
         public static File toEntity(String fileUrl, Post post, Long uploadedBy) {
             return File.builder()
-                    .entityType(EntityType.builder().entityTypeId(1L).build())
                     .post(post)
                     .fileTitle(extractFileName(fileUrl))
                     .filePath(fileUrl)
