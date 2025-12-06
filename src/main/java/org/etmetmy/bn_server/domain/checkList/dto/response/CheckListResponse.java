@@ -28,7 +28,7 @@ public class CheckListResponse {
         public static List<CheckListResponse> from(List<CheckList> checkLists){
             return checkLists.stream()
                     .map(Converter::from)
-                    .collect(Collectors.toList());
+                    .toList();
         }
     }
 

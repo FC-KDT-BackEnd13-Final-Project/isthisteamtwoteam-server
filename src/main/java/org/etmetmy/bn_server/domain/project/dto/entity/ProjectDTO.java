@@ -62,7 +62,5 @@ public class ProjectDTO {
                             })
                     .collect(Collectors.toList());
         }
-
-
     }
 }

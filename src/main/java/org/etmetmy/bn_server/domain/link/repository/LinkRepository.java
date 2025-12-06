@@ -11,7 +11,6 @@ import java.util.List;
 public interface LinkRepository extends JpaRepository<Link, Long> {
 
     @Query("SELECT l FROM Link l " +
-           "JOIN FETCH l.entityType " +
            "JOIN FETCH l.post p " +
            "WHERE p.project.id = :projectId " +
            "AND l.isDeleted = false")

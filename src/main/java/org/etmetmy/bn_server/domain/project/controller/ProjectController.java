@@ -7,6 +7,7 @@ import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/projects")
+@RequestMapping("/api/v1/admin/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -122,7 +123,7 @@ public class ProjectController {
         Long currentUserId = (Long) session.getAttribute("userId");
         if (currentUserId == null) {
             Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
-            if (loginMember instanceof org.etmetmy.bn_server.domain.user.entity.User user) {
+            if (loginMember instanceof User user) {
                 currentUserId = user.getId();
             }
         }
@@ -140,6 +141,4 @@ public class ProjectController {
         ProjectDetailResponse response = projectService.getProjectDetail(projectId);
         return CommonResponse.success("프로젝트 조회 성공", response);
     }
-
-
 }

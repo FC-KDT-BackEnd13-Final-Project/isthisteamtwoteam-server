@@ -11,7 +11,6 @@ import java.util.List;
 public interface FileRepository extends JpaRepository<File, Long> {
 
     @Query("SELECT f FROM File f " +
-           "JOIN FETCH f.entityType " +
            "JOIN FETCH f.post p " +
            "WHERE p.project.id = :projectId " +
            "AND f.isDeleted = false")

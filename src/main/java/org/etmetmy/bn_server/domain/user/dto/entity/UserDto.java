@@ -24,8 +24,6 @@ public class UserDto {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-
-
     public static class Converter{
         //todo : userDto -> user 로 변환하는 컨버터
         public static User toUser(UserDto userDto, Company company){

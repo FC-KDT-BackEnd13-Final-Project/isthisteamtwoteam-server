@@ -23,16 +23,18 @@ public class ActivityLogResponse {
 
     private LocalDateTime createdAt;
 
-    // 엔티티 -> DTO 변환 편의 메서드 (detail은 서비스에서 변환해서 넣어줌)
-    public static ActivityLogResponse from(ActivityLog log, List<LogDetail> parsedDetails) {
-        return ActivityLogResponse.builder()
-                .logId(log.getLogId())
-                .userId(log.getUserId())
-                .action(log.getAction().getDescription()) // Enum의 한글 설명("수정", "생성") 반환
-                .targetType(log.getTargetType())
-                .targetId(log.getTargetId())
-                .details(parsedDetails) // 파싱된 리스트 주입
-                .createdAt(log.getCreatedAt())
-                .build();
+    public static class Converter {
+        // 엔티티 -> DTO 변환 편의 메서드 (detail은 서비스에서 변환해서 넣어줌)
+        public static ActivityLogResponse from(ActivityLog log, List<LogDetail> parsedDetails) {
+            return ActivityLogResponse.builder()
+                    .logId(log.getLogId())
+                    .userId(log.getUserId())
+                    .action(log.getAction().getDescription()) // Enum의 한글 설명("수정", "생성") 반환
+                    .targetType(log.getTargetType())
+                    .targetId(log.getTargetId())
+                    .details(parsedDetails) // 파싱된 리스트 주입
+                    .createdAt(log.getCreatedAt())
+                    .build();
+        }
     }
 }

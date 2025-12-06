@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
-import org.etmetmy.bn_server.domain.file.entity.EntityType;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
@@ -52,9 +51,4 @@ public class Link extends BaseEntity { //다른 패키지에서 접근
 
     @Column(name = "deleted_by")
     private Long deletedBy;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entity_type_id", nullable = false)
-    private EntityType entityType;
-
 }

@@ -24,10 +24,6 @@ public class File extends BaseEntity {
     private Long fileId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entity_type_id", nullable = false)
-    private EntityType entityType;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
