@@ -25,7 +25,7 @@ public class UserController {
     private final UserService userService;
 
     //todo : 회원 계정 생성
-    @PostMapping("/api/v1/admin/user")
+    @PostMapping("/admin/user")
     public CommonResponse<Long> joinUser(
             @RequestBody UserDto userDto
     ){

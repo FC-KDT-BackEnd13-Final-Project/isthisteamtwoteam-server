@@ -19,6 +19,7 @@ import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.repository.RequestRepository;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.domain.post.repository.StageRepository;
@@ -242,5 +243,25 @@ public class PostServiceImpl implements PostService {
         List<File> savedFiles = fileRepository.findByPost(post);
         List<Link> savedLinks = linkRepository.findByPost(post);
         return PostCreateResponse.Converter.from(post, savedFiles, savedLinks);
+    }
+
+    @Override
+    @Transactional
+    public void completePost(Long postId, Long loginUserId) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 2. ADMIN과 DEVELOPER만 완료 가능
+        if (user.getRole() != Role.ADMIN && user.getRole() != Role.DEVELOPER) {
+            throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
+        }
+
+        // 3. 게시글 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(BoardNotFoundException::new);
+
+        // 4. 완료 상태로 업데이트
+        post.updateCompletedStatus(true);
     }
 }
