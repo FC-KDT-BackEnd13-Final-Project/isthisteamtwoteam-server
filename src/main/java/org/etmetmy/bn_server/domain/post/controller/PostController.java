@@ -9,6 +9,7 @@ import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.ReplyPostCreateResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
@@ -39,6 +40,19 @@ public class PostController {
         return CommonResponse.success("게시글 작성 성공", response);
     }
 
+    // todo: reply 게시글 작성 API
+    @PostMapping("/{projectId}/posts/{postId}")
+    public CommonResponse<ReplyPostCreateResponse> createReplyPost(
+            @PathVariable Long projectId,
+            @Valid @RequestBody PostCreateRequest requestDto,
+            @PathVariable Long postId,
+            HttpSession session) {
+
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+        ReplyPostCreateResponse response = postService.createReplyPost(projectId, requestDto, postId, loginUserId);
+        return CommonResponse.success("게시글 작성 성공", response);
+    }
     /**
      * 게시글 상세 조회
      */

@@ -56,5 +56,26 @@ public class PostCreateRequest {
                     .isCompleted(false)
                     .build();
         }
+
+        public static Post toReplyEntity(
+                Project project,
+                User user,
+                Post post,
+                String title,
+                String content,
+                Stage stage,
+                Long postNumber) {
+
+            return Post.builder()
+                    .project(project)
+                    .user(user)
+                    .parentPostId(post.getPostId()) //일반 게시글은 부모 없음
+                    .title(title)
+                    .content(content)
+                    .stage(stage)
+                    .postNumber(postNumber)
+                    .isCompleted(false)
+                    .build();
+        }
     }
 }
