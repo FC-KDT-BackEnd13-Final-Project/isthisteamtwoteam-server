@@ -31,7 +31,7 @@ public class PostController {
     public CommonResponse<PostCreateResponse> createPost(
             @PathVariable Long projectId,
             @Valid @RequestBody PostCreateRequest requestDto,
-            HttpSession session){
+            HttpSession session) {
 
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
@@ -78,6 +78,16 @@ public class PostController {
         return ResponseEntity.ok(CommonResponse.success("게시글 거절 완료"));
     }
 
+    // todo : 관리자 및 개발사가 게시글 완료하기 버튼
+    @PatchMapping("/{projectId}/posts/{postId}/completion")
+    public void completePost(@PathVariable Long projectId,
+                             @PathVariable Long postId,
+                             HttpSession session) {
+
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        postService.completePost(projectId, postId, loginUserId);
+    }
+
     /**
      * 게시글 조회(필터)
      * all : 전체
@@ -113,7 +123,7 @@ public class PostController {
             @PathVariable Long projectId,
             @PathVariable Long postId,
             @Valid @RequestBody PostUpdateRequest requestDto,
-            HttpSession session){
+            HttpSession session) {
 
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
