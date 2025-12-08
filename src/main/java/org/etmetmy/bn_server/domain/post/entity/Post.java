@@ -74,9 +74,4 @@ public class Post extends BaseEntity {
     public void updateStage(Stage stage) {
         this.stage = stage;
     }
-
-    // 지원님 코드 (수정필요)
-    public void updateStage(Long stageId) {
-        this.stage = stage;
-    }
 }

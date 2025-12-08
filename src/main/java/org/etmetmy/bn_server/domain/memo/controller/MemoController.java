@@ -73,10 +73,7 @@ public class MemoController {
             HttpSession session
 
     ){
-        System.out.println("1");
-
         Long userId = SessionUtil.getLoginUserId(session);
-        System.out.println("2");
 
         Long memoId = memoService.updateProjectMemo(userId, projectId, memoUpdateRequestDto.getContent());
         if(memoId != null){

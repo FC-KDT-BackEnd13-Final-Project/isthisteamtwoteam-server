@@ -5,10 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
-import org.etmetmy.bn_server.domain.file.entity.EntityType;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
@@ -26,20 +25,20 @@ public class Link extends BaseEntity { //다른 패키지에서 접근
     @Column(name = "link_id")
     private Long linkId;
 
-    @Column(name = "link_url", nullable = false, length = 500)
-    private String linkUrl;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "checkList_id")
-    private CheckList checkList;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id")
     private Comment comment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_check_list_id")
+    private ProjectCheckList projectCheckList;
+
+    @Column(name = "link_url", nullable = false, length = 500)
+    private String linkUrl;
 
     @Column(name = "uploaded_by", nullable = false)
     private Long uploadedBy;
@@ -52,9 +51,4 @@ public class Link extends BaseEntity { //다른 패키지에서 접근
 
     @Column(name = "deleted_by")
     private Long deletedBy;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entity_type_id", nullable = false)
-    private EntityType entityType;
-
 }

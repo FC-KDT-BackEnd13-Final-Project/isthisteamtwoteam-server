@@ -2,16 +2,17 @@ package org.etmetmy.bn_server.domain.company.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.company.dto.CompanyCreateRequest;
-import org.etmetmy.bn_server.domain.company.dto.CompanyResponse;
+import org.etmetmy.bn_server.domain.company.dto.request.CompanyCreateRequest;
+import org.etmetmy.bn_server.domain.company.dto.response.CompanyResponse;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
-import org.springframework.http.ResponseEntity;
+import org.etmetmy.bn_server.domain.company.service.CompanyServiceImpl;
+import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/companies")
+@RequestMapping("/api/v1/companies")
 @RequiredArgsConstructor
 public class CompanyController {
 
@@ -19,15 +20,13 @@ public class CompanyController {
 
     // 회사 생성 API
     @PostMapping
-    public ResponseEntity<String> createCompany(@RequestBody @Valid CompanyCreateRequest request) {
-        Long companyId = companyService.createCompany(request);
-        return ResponseEntity.ok("회사 생성 완료. ID: " + companyId);
+    public CommonResponse<Long> createCompany(@RequestBody @Valid CompanyCreateRequest request) {
+        return CommonResponse.success("회사 생성 완료",companyService.createCompany(request));
     }
 
     //회사 목록 조회 API
     @GetMapping
-    public ResponseEntity<List<CompanyResponse>> getAllCompanies() {
-        List<CompanyResponse> companies = companyService.getAllCompanies();
-        return ResponseEntity.ok(companies);
+    public CommonResponse<List<CompanyResponse>> getAllCompanies() {
+        return CommonResponse.success("회사 전체 조회 완료",companyService.getAllCompanies());
     }
 }

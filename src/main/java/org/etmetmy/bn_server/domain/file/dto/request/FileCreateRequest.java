@@ -1,10 +1,9 @@
-package org.etmetmy.bn_server.domain.file.dto;
+package org.etmetmy.bn_server.domain.file.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.etmetmy.bn_server.domain.file.entity.EntityType;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 
@@ -18,7 +17,7 @@ import static org.etmetmy.bn_server.domain.file.service.FileServiceImpl.extractF
 public class FileCreateRequest {
 
     private String fileUrl;
-    private Long entityTypeId;
+
 
     public static class Converter {
         /**
@@ -26,9 +25,6 @@ public class FileCreateRequest {
          */
         public static File toEntity(String fileUrl, Post post, Long uploadedBy) {
             return File.builder()
-                    .entityType(EntityType.builder()
-                            .entityTypeId(EntityTypeConstants.POST)
-                            .build())
                     .post(post)
                     .fileTitle(extractFileName(fileUrl))
                     .filePath(fileUrl)

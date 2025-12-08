@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.company.dto;
+package org.etmetmy.bn_server.domain.company.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
@@ -25,16 +25,19 @@ public class CompanyCreateRequest {
 
     private String businessRegistration; // 사업자등록번호 (String)
 
-    // DTO -> Entity 변환
-    public Company toEntity() {
-        return Company.builder()
-                .companyName(this.companyName)
-                .companyAddress(this.companyAddress)
-                .companyCeo(this.companyCeo)
-                .companyPhone(this.companyPhone)
-                .companyContactPerson(this.companyContactPerson)
-                .companyContactPhone(this.companyContactPhone)
-                .businessRegistration(this.businessRegistration)
-                .build();
+    public static class Converter{
+        // DTO -> Entity 변환
+        public static Company toEntity(CompanyCreateRequest request) {
+            return Company.builder()
+                    .companyName(request.getCompanyName())
+                    .companyAddress(request.getCompanyAddress())
+                    .companyCeo(request.getCompanyCeo())
+                    .companyPhone(request.getCompanyPhone())
+                    .companyContactPerson(request.getCompanyContactPerson())
+                    .companyContactPhone(request.getCompanyContactPhone())
+                    .businessRegistration(request.getBusinessRegistration())
+                    .build();
+        }
     }
+
 }

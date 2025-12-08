@@ -2,9 +2,15 @@ package org.etmetmy.bn_server.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.etmetmy.bn_server.domain.file.entity.File;
+import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.link.entity.Link;
+import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.file.dto.FileInfoDTO;
+import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
@@ -23,7 +29,6 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
-import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,43 +51,38 @@ public class ProjectServiceImpl implements ProjectService{
     private final MemoRepository memoRepository;
     private final ProjectCheckListRepository projectChecklistRepository;
     private final CheckListRepository checkListRepository;
+    private final FileRepository fileRepository;
+    private final LinkRepository linkRepository;
 
     @Override
     @Transactional
     public Long createProject(ProjectCreateRequest request, Long createdById){
-
         Stage startStage = getStartStage(request.getStage());
 
         // 2. Project 생성 및 저장 (시작 단계 설정 포함)
         Project project = ProjectCreateRequest.Converter.toEntity(request, createdById, startStage);
         Project savedProject = projectRepository.save(project);
 
-
         // 3. Memo 생성 및 저장
         createMemoIfPresent(request.getMemo(), savedProject);
 
         // 4. 프로젝트 멤버 생성 및 저장
         if (hasMembers(request)) {
-
             // List<Long>을 List<ProjectMemberRequest>로 변환 (생성자 사용)
             List<ProjectMemberRequest> memberRequests = request.getMembers().stream()
                     .map(ProjectMemberRequest::new)
                     .collect(Collectors.toList());
-
 
             List<ProjectMember> projectMembers = createProjectMembers(
                     memberRequests,
                     savedProject,
                     createdById
             );
-
-
             // 빈 리스트가 아닐 때만 저장
             if (!projectMembers.isEmpty()) {
                 projectMemberRepository.saveAll(projectMembers);
             }
         }
-
         return savedProject.getId();
     }
 
@@ -259,7 +259,23 @@ public class ProjectServiceImpl implements ProjectService{
 
         List<ProjectCheckList> projectCheckLists = projectChecklistRepository.findByProject(project);
 
-        return ProjectCheckListAllResponse.Converter.from(projectCheckLists);
+        // 각 ProjectCheckList에 대해 File과 Link를 조회하여 Response 생성
+        return projectCheckLists.stream()
+                .map(projectCheckList -> {
+                    Long checkListId = projectCheckList.getProjectCheckListId();
+
+                    // File 조회 및 DTO 변환 (ID 기반 조회로 변경)
+                    List<File> files = fileRepository.findByProjectCheckListId(checkListId);
+                    List<FileInfoDTO> fileDTOs = FileInfoDTO.Converter.from(files);
+
+                    // Link 조회 및 DTO 변환 (ID 기반 조회로 변경)
+                    List<Link> links = linkRepository.findByProjectCheckListId(checkListId);
+                    List<LinkInfoDTO> linkDTOs = LinkInfoDTO.Converter.from(links);
+
+                    // Response 생성
+                    return ProjectCheckListAllResponse.Converter.from(projectCheckList, fileDTOs, linkDTOs);
+                })
+                .toList();
     }
 
     //프로젝트 제목수정
@@ -278,7 +294,7 @@ public class ProjectServiceImpl implements ProjectService{
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        int updated = projectRepository.updateProjectName(projectId, newProjectName);
+        int updated = projectRepository.updateProjectName(project.getId(), newProjectName);
         if (updated == 0) {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 제목 수정에 실패했습니다.");
         }
@@ -312,15 +328,12 @@ public class ProjectServiceImpl implements ProjectService{
                 throw new InvalidInputException("종료일은 시작일보다 이를 수 없습니다.");
             }
 
-            int updated = projectRepository.updateProjectDates(projectId, startDate, endDate);
+            int updated = projectRepository.updateProjectDates(project.getId(), startDate, endDate);
             if (updated == 0) {
                 throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 날짜 수정에 실패했습니다.");
             }
 
-            Project updatedProject = projectRepository.findById(projectId)
-                    .orElseThrow(ProjectNotFoundException::new);
-
-            return ProjectUpdateResponse.Converter.from(updatedProject);
+            return ProjectUpdateResponse.Converter.from(project);
 
         } catch (DateTimeParseException e) {
             throw new InvalidInputException("날짜 형식이 올바르지 않습니다. (예: 2024-01-01 또는 2025-11-23T14:00:00Z)");
@@ -343,16 +356,13 @@ public class ProjectServiceImpl implements ProjectService{
         if (projectId == null) {
             throw new InvalidInputException("프로젝트 ID가 필요합니다.");
         }
-
         // 프로젝트 존재 확인
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
-
         // 이미 삭제된 프로젝트인지 확인
         if (project.getIsDeleted() != null && project.getIsDeleted()) {
             throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "이미 삭제된 프로젝트입니다.");
         }
-
         // 휴지통으로 이동 (소프트 삭제)
         LocalDateTime deletedAt = LocalDateTime.now();
         int updated = projectRepository.moveToTrash(projectId, deletedAt);
@@ -402,7 +412,7 @@ public class ProjectServiceImpl implements ProjectService{
             throw new InvalidInputException("진행단계 ID는 필수입니다.");
         }
 
-        Long stageId = request.getStageId().longValue();
+        Long stageId = request.getStageId();
 
         // 2. 프로젝트 존재 확인
         Project project = projectRepository.findById(projectId)

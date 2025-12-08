@@ -13,11 +13,9 @@ public class CheckListUpdateRequest {
 
     public static class Converter{
 
-        public static CheckList updateEntity(CheckListUpdateRequest request, CheckList checkList){
-            return checkList.builder()
-                    .checkListId(checkList.getCheckListId())
-                    .content(request.getContent())
-                    .build();
+        public static void updateEntity(CheckListUpdateRequest request, CheckList checkList){
+            checkList.updateContent(request.getContent());
         }
+
     }
 }
