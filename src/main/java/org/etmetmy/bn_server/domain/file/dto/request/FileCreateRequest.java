@@ -18,7 +18,7 @@ import static org.etmetmy.bn_server.domain.file.service.FileServiceImpl.extractF
 public class FileCreateRequest {
 
     private String fileUrl;
-    private Long entityTypeId;
+
 
     public static class Converter {
         /**

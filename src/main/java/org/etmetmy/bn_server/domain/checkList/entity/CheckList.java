@@ -22,4 +22,7 @@ public class CheckList {
     @Column(name = "content", length = 500)
     private String content;
 
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

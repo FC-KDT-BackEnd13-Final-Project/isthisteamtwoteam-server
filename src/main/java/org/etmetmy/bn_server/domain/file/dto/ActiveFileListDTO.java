@@ -26,8 +26,6 @@ public class ActiveFileListDTO {
     private String fileType;
     private Long fileSize;
 
-    private String entityTypeName;
-
     private String postTitle;
     private Long postId;
 

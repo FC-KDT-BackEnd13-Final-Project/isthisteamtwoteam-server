@@ -65,6 +65,7 @@ public class PostServiceImpl implements PostService {
         return PostDetailResponse.Converter.fromEntity(post, post.getUser());
     }
 
+
     // 2. 게시글 승인
     @Transactional
     public void approvePost(Long postId, Long approvingUserId) {
@@ -77,6 +78,7 @@ public class PostServiceImpl implements PostService {
         // 2. Request 상태를 '승인'으로 업데이트
         currentRequest.updateStatus(approvingUserId, RequestStatus.STATUS_APPROVED, null);
     }
+
 
     // 3. 게시글 거절
     @Transactional
@@ -98,6 +100,7 @@ public class PostServiceImpl implements PostService {
         return posts.stream()
                 .map(PostListResponse::from)
                 .collect(Collectors.toList());
+
     }
 
     @Override
@@ -112,6 +115,7 @@ public class PostServiceImpl implements PostService {
 
 
     private List<Post> getPostsByStageFilter(Long projectId, String stage) {
+
         if (stage.equals("all")) {
             return postRepository.findAllByProjectId(projectId);
         }

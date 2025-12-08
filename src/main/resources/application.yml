@@ -32,7 +32,7 @@ springdoc:
 logging:
   level:
     root: INFO
-    org.etmetmy.bn_server: DEBUG
-    org.etmetmy.bn_server.exception: ERROR
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
