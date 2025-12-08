@@ -13,6 +13,7 @@ import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.ReplyPostCreateResponse;
 import org.etmetmy.bn_server.domain.post.entity.*;
 import org.etmetmy.bn_server.domain.post.repository.PostNumberCounterRepository;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
@@ -181,6 +182,58 @@ public class PostServiceImpl implements PostService {
         return PostCreateResponse.Converter.from(savedPost, savedFiles, savedLinks);
     }
 
+    @Override
+    @Transactional
+    public ReplyPostCreateResponse createReplyPost(Long projectId, PostCreateRequest requestDto, Long postId, Long loginUserId) {
+
+        // 1. 필요한 엔티티 조회
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+        Stage stage = stageRepository.findById(requestDto.getStageId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(BoardNotFoundException::new);
+
+        // 2. Counter Table로 프로젝트 내 게시글 번호 생성 (낙관적 락 적용)
+        PostNumberCounter counter = postNumberCounterRepository.findByProjectId(projectId)
+                .orElseGet(() -> PostNumberCounter.builder()
+                        .projectId(projectId)
+                        .currentNumber(0L)
+                        .build());
+        Long postNumber = counter.getNextNumber();
+        postNumberCounterRepository.save(counter);
+
+        // 3. Post 엔티티 생성 및 저장
+        Post replyPost = PostCreateRequest.Converter.toReplyEntity(project, user,post, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
+        Post savedPost = postRepository.save(replyPost);
+
+        // 4. 파일 처리
+        List<File> savedFiles = new ArrayList<>();
+        if (requestDto.getFileUrls() != null && !requestDto.getFileUrls().isEmpty()) {
+            for (String fileUrl : requestDto.getFileUrls()) {
+                File file = FileCreateRequest.Converter.toEntity(fileUrl, savedPost, loginUserId);
+                savedFiles.add(file);
+            }
+            fileRepository.saveAll(savedFiles);
+        }
+
+        // 5. 링크 처리
+
+        List<Link> savedLinks = new ArrayList<>();
+        if (requestDto.getLinkUrls() != null && !requestDto.getLinkUrls().isEmpty()) {
+            for (String linkUrl : requestDto.getLinkUrls()) {
+                Link link = LinkCreateRequest.Converter.toEntity(linkUrl, savedPost, loginUserId);
+                savedLinks.add(link);
+            }
+            linkRepository.saveAll(savedLinks);
+        }
+
+        // 6. 응답 반환
+        return ReplyPostCreateResponse.Converter.from(savedPost, post, savedFiles, savedLinks);
+    }
+
     // 게시글 업데이트 API
     @Override
     @Transactional
@@ -196,7 +249,7 @@ public class PostServiceImpl implements PostService {
         }
 
         // 3. 작성자 권한 검증
-        if(!post.getUser().getId().equals(loginUserId)){
+        if (!post.getUser().getId().equals(loginUserId)) {
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
 
@@ -262,6 +315,8 @@ public class PostServiceImpl implements PostService {
         // 완료 상태로 업데이트
         post.updateCompletedStatus(true);
     }
+
+
     // 프로젝트–게시글 소속 검증
     public static void validatePostBelongsToProject(Post post, Project project) {
         if (!post.getProject().getId().equals(project.getId())) {
