@@ -4,12 +4,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.user.dto.entity.UserSessionDto;
 import org.etmetmy.bn_server.domain.user.dto.request.MemberUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.service.UserService;
+import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
@@ -120,5 +122,22 @@ public class UserController {
             UserProfileImgNameResponse profile = userService.getProfileImgName(loginUserId);
             return CommonResponse.success("성공적으로 조회했습니다",profile);
         }
+    }
+
+
+    /**
+     * 프론트엔드에서 세션 확인할 때 사용되는 api
+     * */
+    @GetMapping("/auth/session")
+    public CommonResponse<UserSessionDto> getSession(
+            @SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false) User loginUser
+    ) {
+        if (loginUser == null) {
+            throw new UserNotFoundException("로그인이 필요합니다.");
+        }
+
+        return CommonResponse.success("세션 조회 성공",
+                new UserSessionDto(loginUser.getId(), loginUser.getName(), loginUser.getRole())
+        );
     }
 }
