@@ -110,11 +110,20 @@ public class FileServiceImpl implements FileService {
     }
 
     // 3. 파일 삭제 (hard delete)
+    @Override
+    @Transactional
     public void deleteFile(Long projectId, List<Long> fileIds){
 
         List<File> files = fileRepository.findAllById(fileIds);
 
-        if (files.isEmpty()) {
+        // 파일들이 해당 프로젝트에 속하는지 검증 (악의적 요청 가정)
+        for (File file : files) {
+            if (!file.getPost().getProject().getId().equals(projectId)) {
+                throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
+            }
+        }
+        // 일부만 있어도 에러 발생
+        if (files.size() != fileIds.size()) {
             throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }
 
