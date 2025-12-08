@@ -38,7 +38,7 @@ public class ProjectCheckList extends BaseEntity {
     private Boolean checked;
 
     @PrePersist
-    protected void onCreate() {
+    protected void onCreateCheckList() {
         if (checked == null) checked = false;
     }
 }

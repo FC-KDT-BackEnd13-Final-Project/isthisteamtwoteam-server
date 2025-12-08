@@ -26,8 +26,6 @@ public class ActiveFileListDTO {
     private String fileType;
     private Long fileSize;
 
-    private String entityTypeName;
-
     private String postTitle;
     private Long postId;
 
@@ -44,7 +42,6 @@ public class ActiveFileListDTO {
                     .filePath(file.getFilePath())
                     .fileType(file.getFileType())
                     .fileSize(file.getFileSize())
-                    .entityTypeName(file.getEntityType().getEntityType())
                     .postTitle(file.getPost().getTitle())
                     .postId(file.getPost().getPostId())
                     .uploadUserName(file.getPost().getUser().getName())

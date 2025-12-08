@@ -29,14 +29,14 @@ public class CheckListServiceImpl implements CheckListService {
     }
 
     @Override
+    @Transactional
     public CheckListResponse update(Long checkListId, CheckListUpdateRequest request) {
 
         CheckList checkList = checkListRepository.findById(checkListId)
                 .orElseThrow(()-> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
-        CheckList updateEntity =CheckListUpdateRequest.Converter.updateEntity(request, checkList);
-        CheckList saved = checkListRepository.save(updateEntity);
+        CheckListUpdateRequest.Converter.updateEntity(request, checkList);
 
-        return CheckListResponse.Converter.from(saved);
+        return CheckListResponse.Converter.from(checkList);
     }
 
     @Override

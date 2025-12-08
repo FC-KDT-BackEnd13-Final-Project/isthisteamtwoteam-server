@@ -2,9 +2,15 @@ package org.etmetmy.bn_server.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.etmetmy.bn_server.domain.file.entity.File;
+import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.link.entity.Link;
+import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.file.dto.FileInfoDTO;
+import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
@@ -23,7 +29,6 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
-import org.etmetmy.bn_server.global.CommonResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +51,8 @@ public class ProjectServiceImpl implements ProjectService{
     private final MemoRepository memoRepository;
     private final ProjectCheckListRepository projectChecklistRepository;
     private final CheckListRepository checkListRepository;
+    private final FileRepository fileRepository;
+    private final LinkRepository linkRepository;
 
     @Override
     @Transactional
@@ -259,7 +266,23 @@ public class ProjectServiceImpl implements ProjectService{
 
         List<ProjectCheckList> projectCheckLists = projectChecklistRepository.findByProject(project);
 
-        return ProjectCheckListAllResponse.Converter.from(projectCheckLists);
+        // 각 ProjectCheckList에 대해 File과 Link를 조회하여 Response 생성
+        return projectCheckLists.stream()
+                .map(projectCheckList -> {
+                    Long checkListId = projectCheckList.getProjectCheckListId();
+
+                    // File 조회 및 DTO 변환 (ID 기반 조회로 변경)
+                    List<File> files = fileRepository.findByProjectCheckListId(checkListId);
+                    List<FileInfoDTO> fileDTOs = FileInfoDTO.Converter.from(files);
+
+                    // Link 조회 및 DTO 변환 (ID 기반 조회로 변경)
+                    List<Link> links = linkRepository.findByProjectCheckListId(checkListId);
+                    List<LinkInfoDTO> linkDTOs = LinkInfoDTO.Converter.from(links);
+
+                    // Response 생성
+                    return ProjectCheckListAllResponse.Converter.from(projectCheckList, fileDTOs, linkDTOs);
+                })
+                .toList();
     }
 
     //프로젝트 제목수정

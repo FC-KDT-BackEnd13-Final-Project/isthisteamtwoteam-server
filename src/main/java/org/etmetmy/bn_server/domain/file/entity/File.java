@@ -5,7 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
+import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
@@ -24,12 +27,16 @@ public class File extends BaseEntity {
     private Long fileId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "entity_type_id", nullable = false)
-    private EntityType entityType;
+    @JoinColumn(name = "post_id")
+    private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
-    private Post post;
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_check_list_id")
+    private ProjectCheckList projectCheckList;
 
     @Column(name = "file_title", nullable = false, length = 255)
     private String fileTitle;
@@ -54,5 +61,4 @@ public class File extends BaseEntity {
 
     @Column(name = "deleted_by")
     private Long deletedBy;
-
     }
