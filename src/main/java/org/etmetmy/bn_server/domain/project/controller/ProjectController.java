@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 
+import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.CommonResponse;
@@ -20,6 +21,7 @@ import java.util.List;
 public class ProjectController {
 
     private final ProjectService projectService;
+    private final ProjectMemberService projectMemberService;
 
     @PostMapping
     public CommonResponse<Long> createProject(HttpSession session, @RequestBody ProjectCreateRequest request) {
@@ -141,4 +143,16 @@ public class ProjectController {
         ProjectDetailResponse response = projectService.getProjectDetail(projectId);
         return CommonResponse.success("프로젝트 조회 성공", response);
     }
+
+
+    //프로젝트 생성 - 개발사 사원 조회
+    @GetMapping(value = "/users", params = "type=developers")
+    public CommonResponse<List<ProjectMemberSearchResponse>> searchDevelopersForCreate(
+            @RequestParam(required = false) String keyword
+    ) {
+        List<ProjectMemberSearchResponse> responses =
+                projectMemberService.searchDeveloperMembers(keyword);
+        return CommonResponse.success("개발사 사원 조회 성공", responses);
+    }
+
 }

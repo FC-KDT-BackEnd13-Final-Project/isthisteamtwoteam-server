@@ -23,5 +23,5 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     List<ProjectMember> findByProjectIdIn(List<Long> projectIds);
     ProjectMember findByUserIdAndProjectId(Long userId, Long projectId);
     // 프로젝트 + 유저 기준으로 매핑 삭제
-    long deleteByProject_IdAndUser_Id(Long projectId, Long userId);
+    long deleteByProjectIdAndUserId(Long projectId, Long userId);
 }
