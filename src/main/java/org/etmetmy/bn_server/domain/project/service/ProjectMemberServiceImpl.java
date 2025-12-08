@@ -38,16 +38,12 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     // 프로젝트 생성 - 개발사 담당자, 사원 조회
     @Transactional(readOnly = true)
     @Override
-    public List<ProjectMemberSearchResponse> searchDeveloperMembers(String keyword) {
+    public List<ProjectMemberSearchResponse> searchDeveloperMembers() {
         CompanyType companyType = CompanyType.DEVELOPER;
-
-        if (keyword == null || keyword.trim().isEmpty()) {
-            return userRepository.findByCompanyType(companyType);
-        } else {
-            String searchKeyword = "%" + keyword.trim() + "%";
-            return userRepository.searchByCompanyTypeAndKeyword(companyType, searchKeyword);
-        }
+        return userRepository.findByCompanyType(companyType);
     }
+
+
 
 
 

@@ -147,11 +147,8 @@ public class ProjectController {
 
     //프로젝트 생성 - 개발사 사원 조회
     @GetMapping(value = "/users", params = "type=developers")
-    public CommonResponse<List<ProjectMemberSearchResponse>> searchDevelopersForCreate(
-            @RequestParam(required = false) String keyword
-    ) {
-        List<ProjectMemberSearchResponse> responses =
-                projectMemberService.searchDeveloperMembers(keyword);
+    public CommonResponse<List<ProjectMemberSearchResponse>> searchDevelopersForCreate() {
+        List<ProjectMemberSearchResponse> responses = projectMemberService.searchDeveloperMembers();
         return CommonResponse.success("개발사 사원 조회 성공", responses);
     }
 

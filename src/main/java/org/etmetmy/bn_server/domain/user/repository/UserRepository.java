@@ -44,15 +44,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "WHERE u.company.type = :companyType")
     List<ProjectMemberSearchResponse> findByCompanyType(@Param("companyType") CompanyType companyType);
 
-    /**
-     * 회사 타입 + 이름/이메일 키워드 검색
-     */
-    @Query("SELECT new org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse(" +
-            "u.id, u.name, u.email) " +
-            "FROM User u " +
-            "WHERE u.company.type = :companyType " +
-            "AND (u.name LIKE :keyword OR u.email LIKE :keyword)")
-    List<ProjectMemberSearchResponse> searchByCompanyTypeAndKeyword(@Param("companyType") CompanyType companyType,
-                                                                    @Param("keyword") String keyword);
-
 }
