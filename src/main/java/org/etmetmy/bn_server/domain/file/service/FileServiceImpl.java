@@ -2,7 +2,7 @@ package org.etmetmy.bn_server.domain.file.service;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
@@ -17,10 +17,19 @@ import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
 import org.etmetmy.bn_server.exception.custom.ProjectPermissionDeniedException;
 import org.etmetmy.bn_server.global.util.SessionUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.sync.RequestBody;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +39,10 @@ public class FileServiceImpl implements FileService {
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final PostRepository postRepository;
+    private final S3Client s3Client;
+
+    @Value("${aws.s3.bucket-name}")
+    private String bucketName;
 
     //프로젝트별 파일 목록 조회
     @Override
@@ -54,6 +67,42 @@ public class FileServiceImpl implements FileService {
         return ActiveFileListDTO.Converter.from(files);
 
     }
+
+    // 임시 파일 업로드
+    @Override
+    @Transactional
+    public List<ActiveFileListDTO> postFiles(Long projectId, Long postId, List<MultipartFile> files){
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(BoardNotFoundException::new);
+
+        List<File> savedFiles = new ArrayList<>();
+
+        for (MultipartFile file : files) {
+
+            // S3 업로드
+            String fileUrl = uploadToS3(file);
+
+            // 파일명, 확장자 추출
+            String savedFileName = extractFileName(fileUrl);
+            String fileType = extractFileType(fileUrl);
+
+            // DB에 저장
+            File saved = fileRepository.save(File.builder()
+                    .fileTitle(savedFileName) // 원본 파일명
+                    .filePath(fileUrl)
+                    .fileSize(file.getSize())
+                    .fileType(fileType)
+                    .post(post)
+                    .uploadedBy(post.getUser().getId())
+                    .isDeleted(false)
+                    .build());
+
+            savedFiles.add(saved);
+        }
+        return ActiveFileListDTO.Converter.from(savedFiles);
+    }
+
 
     // 업로드 된 파일 삭제 API
     @Override
@@ -88,15 +137,40 @@ public class FileServiceImpl implements FileService {
 
     }
 
-    //URL 에서 파일명 추출
+    // URL 에서 파일명 추출
     public static String extractFileName(String url) {
         int lastSlash = url.lastIndexOf('/');
         return lastSlash >= 0 ? url.substring(lastSlash + 1) : "unknown";
     }
 
-    //URL 에서 파일 확장자 추출
+    // URL 에서 파일 확장자 추출
     public static String extractFileType(String url) {
         int lastDot = url.lastIndexOf('.');
         return lastDot >= 0 ? url.substring(lastDot + 1).toLowerCase() : "unknown";
+    }
+
+    // S3 업로드 메서드
+    private String uploadToS3(MultipartFile file) {
+
+        String originalFilename = file.getOriginalFilename();
+        String s3FileName = UUID.randomUUID() + "_" + originalFilename;
+
+        try(InputStream is = file.getInputStream()){
+
+            PutObjectRequest req = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3FileName)
+                    .acl(ObjectCannedACL.PUBLIC_READ)
+                    .contentType(file.getContentType())
+                    .contentLength(file.getSize())
+                    .build();
+
+            s3Client.putObject(req, RequestBody.fromInputStream(is,file.getSize()));
+        }
+        catch (Exception e){
+            throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
+        }
+        return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName))
+                .toString();
     }
 }

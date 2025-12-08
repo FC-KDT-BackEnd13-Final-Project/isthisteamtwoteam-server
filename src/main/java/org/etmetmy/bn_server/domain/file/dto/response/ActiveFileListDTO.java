@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.file.dto;
+package org.etmetmy.bn_server.domain.file.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
