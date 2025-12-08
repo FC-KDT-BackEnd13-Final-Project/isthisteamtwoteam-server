@@ -2,6 +2,8 @@ package org.etmetmy.bn_server.domain.file.service;
 
 import jakarta.servlet.http.HttpSession;
 import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.FileInfoDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -13,4 +15,5 @@ public interface FileService {
     // 업로드 된 파일 삭제
     void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId);
 
+    List<ActiveFileListDTO> postFiles(Long projectId, Long postId, List<MultipartFile> files);
 }

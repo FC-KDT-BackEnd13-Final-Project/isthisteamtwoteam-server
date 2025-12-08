@@ -171,7 +171,6 @@ public class PostServiceImpl implements PostService {
         }
 
         // 5. 링크 처리
-
         List<Link> savedLinks = new ArrayList<>();
         if (requestDto.getLinkUrls() != null && !requestDto.getLinkUrls().isEmpty()) {
             for (String linkUrl : requestDto.getLinkUrls()) {
