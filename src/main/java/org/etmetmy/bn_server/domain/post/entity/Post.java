@@ -74,4 +74,7 @@ public class Post extends BaseEntity {
     public void updateStage(Stage stage) {
         this.stage = stage;
     }
+    public void updateCompletedStatus(Boolean isCompleted) {
+        this.isCompleted = isCompleted;
+    }
 }

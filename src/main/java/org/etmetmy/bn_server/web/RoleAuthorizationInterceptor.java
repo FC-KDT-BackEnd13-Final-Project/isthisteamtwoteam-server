@@ -36,7 +36,7 @@ public class RoleAuthorizationInterceptor implements HandlerInterceptor {
 
         if(requiredRole != null && !hasPermission(userRole, requiredRole)){  // 순서 수정
             log.info("권한이 없습니다. 필요한 권한: {}, 유저의 권한: {}", requiredRole, userRole);
-            sendForbiddenResponse(response, "접근 권한이 없습니다.");  // 추가
+            sendForbiddenResponse(response, "접근 권한이 없습니w다.");  // 추가
             return false;
         }
 
