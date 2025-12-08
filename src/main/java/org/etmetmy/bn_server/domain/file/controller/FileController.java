@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.request.FileDeleteRequest;
 import org.etmetmy.bn_server.domain.file.service.FileService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
@@ -41,5 +42,15 @@ public class FileController {
     {
         Long loginUserId = SessionUtil.getLoginUserId(session);
         fileService.deletePostFiles(projectId, postId, fileId, loginUserId);
+    }
+
+    // 임시 파일 삭제 API (hard delete)
+    @DeleteMapping("/delete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void s3Delete(
+            @PathVariable String projectId,
+            @RequestBody FileDeleteRequest fileDeleteRequest)
+    {
+        fileService.s3Delete(projectId,fileDeleteRequest);
     }
 }

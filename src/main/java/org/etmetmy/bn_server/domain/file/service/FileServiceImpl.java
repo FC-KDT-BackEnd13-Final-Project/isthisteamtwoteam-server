@@ -3,6 +3,7 @@ package org.etmetmy.bn_server.domain.file.service;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.request.FileDeleteRequest;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
@@ -85,6 +86,11 @@ public class FileServiceImpl implements FileService {
         file.softDelete(loginUserId);
 
         fileRepository.save(file);
+    }
+
+    // 임시 업로드 파일 삭제 (hard delete)
+    public void s3Delete(String projectId, FileDeleteRequest fileDeleteRequest){
+
 
     }
 
