@@ -116,15 +116,18 @@ public class FileServiceImpl implements FileService {
 
         List<File> files = fileRepository.findAllById(fileIds);
 
-        // 파일들이 해당 프로젝트에 속하는지 검증 (악의적 요청 가정)
-        for (File file : files) {
-            if (!file.getPost().getProject().getId().equals(projectId)) {
-                throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
-            }
-        }
-        // 일부만 있어도 에러 발생
+        // 파일 개수 검증
         if (files.size() != fileIds.size()) {
             throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
+        }
+
+        // 프로젝트 소속 검증 (악의적 요청 가정)
+        for (File file : files) {
+            if (file.getPost() == null ||
+                    file.getPost().getProject() == null ||
+                    !file.getPost().getProject().getId().equals(projectId)) {
+                throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
+            }
         }
 
         for (File file : files) {

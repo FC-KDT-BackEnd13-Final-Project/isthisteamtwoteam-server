@@ -11,5 +11,5 @@ import java.util.List;
 @AllArgsConstructor
 public class FileDeleteRequest {
 
-    private List<Long> fileId;
+    private List<Long> fileIds;
 }
