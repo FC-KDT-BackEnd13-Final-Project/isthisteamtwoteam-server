@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.activityLog.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
 import org.etmetmy.bn_server.domain.activityLog.entity.ActivityLog;
@@ -12,13 +13,18 @@ import java.util.List;
 @Builder
 public class ActivityLogResponse {
 
+    @JsonProperty("logId")
     private Long logId;
-    private Long userId;          // 누가?
-    private String action;        // 뭘 했나? (한글 설명으로 변환해서 줄 예정)
+
+    private Long userId;
+    private String action;
     private String targetType;    // 대상 (Post, Member)
     private Long targetId;        // 대상 ID
 
-    // 여기가 핵심! DB의 String을 List 객체로 변환해서 담음
+    @JsonProperty("ipAddress")
+    private String ipAddress;
+
+    //DB의 String -> List 객체
     private List<LogDetail> details;
 
     private LocalDateTime createdAt;
@@ -34,6 +40,7 @@ public class ActivityLogResponse {
                     .targetId(log.getTargetId())
                     .details(parsedDetails) // 파싱된 리스트 주입
                     .createdAt(log.getCreatedAt())
+                    .ipAddress(log.getIpAddress())
                     .build();
         }
     }

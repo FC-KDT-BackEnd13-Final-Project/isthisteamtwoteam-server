@@ -28,7 +28,6 @@ public class ActivityLog extends BaseEntity {
     @Column(name = "log_id")
     private Long logId;
 
-    //테스트용 컬럼 , 임시로 숫자만 사용
     @Column(name = "project_id", nullable = false, updatable = false)
     private Long projectId;
 

@@ -20,11 +20,11 @@ public interface PostService {
 
     List<PostListResponse> getPostListByProjectIdAndFilter(Long projectId, String filter);
 
-    PostCreateResponse createPost(Long projectId, @Valid PostCreateRequest requestDto, Long loginUserId);
+    PostCreateResponse createPost(Long projectId, @Valid PostCreateRequest requestDto, Long loginUserId, String ipAddress);
 
     List<PostListResponse> getPostListByStage(Long projectId, String stage);
 
-    PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId);
+    PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId, String ipAddress);
 }
 
 

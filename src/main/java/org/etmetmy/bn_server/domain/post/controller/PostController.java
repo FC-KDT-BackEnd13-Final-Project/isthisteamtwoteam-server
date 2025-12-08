@@ -1,6 +1,8 @@
 package org.etmetmy.bn_server.domain.post.controller;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
+import org.etmetmy.bn_server.global.util.RequestUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
@@ -31,11 +33,19 @@ public class PostController {
     public CommonResponse<PostCreateResponse> createPost(
             @PathVariable Long projectId,
             @Valid @RequestBody PostCreateRequest requestDto,
+            HttpServletRequest httpServletRequest,
             HttpSession session){
 
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
-        PostCreateResponse response = postService.createPost(projectId, requestDto, loginUserId);
+        String ipAddress = RequestUtil.getClientIpAddress(httpServletRequest);
+
+        PostCreateResponse response = postService.createPost(
+                projectId,
+                requestDto,
+                loginUserId,
+                ipAddress
+        );
         return CommonResponse.success("게시글 작성 성공", response);
     }
 
@@ -113,12 +123,15 @@ public class PostController {
             @PathVariable Long projectId,
             @PathVariable Long postId,
             @Valid @RequestBody PostUpdateRequest requestDto,
+            HttpServletRequest httpServletRequest,
             HttpSession session){
 
+        String ipAddress = RequestUtil.getClientIpAddress(httpServletRequest); //IP 주소
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
+        // 서비스 호출 시 IP 주소 전달
         PostCreateResponse response = postService.updatePost(
-                projectId, postId, requestDto, loginUserId);
+                projectId, postId, requestDto, loginUserId, ipAddress);
         return CommonResponse.success("게시글 수정 성공", response);
     }
 }

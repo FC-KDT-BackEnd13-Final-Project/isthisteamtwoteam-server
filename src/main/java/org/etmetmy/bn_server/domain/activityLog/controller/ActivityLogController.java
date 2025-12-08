@@ -1,5 +1,7 @@
 package org.etmetmy.bn_server.domain.activityLog.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import org.etmetmy.bn_server.global.util.RequestUtil;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.dto.ActivityLogResponse;
 import org.etmetmy.bn_server.domain.activityLog.service.ActivityLogService;
@@ -15,12 +17,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/projects")
+@RequestMapping("/api/v1/admin/projects")
 public class ActivityLogController {
 
     private final ActivityLogService activityLogService;
 
-    // Todo : 프로젝트 활동 로그들 출력
+    // 프로젝트 활동 로그들 출력
     @GetMapping("/{projectId}/logs")
     public CommonResponse<List<ActivityLogResponse>> getProjectActivityLogs(
             @PathVariable Long projectId
@@ -28,4 +30,6 @@ public class ActivityLogController {
         List<ActivityLogResponse> logs = activityLogService.getProjectLogs(projectId);
         return CommonResponse.success("프로젝트 활동 로그를 가져왔습니다.",logs);
     }
+
+    //IP 주소 가져오기
 }

@@ -2,6 +2,8 @@ package org.etmetmy.bn_server.domain.post.service;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.activityLog.dto.LogDetail;
+import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
@@ -27,11 +29,13 @@ import org.etmetmy.bn_server.exception.custom.BoardNotFoundException;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
+import org.etmetmy.bn_server.domain.activityLog.service.ActivityLogService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,6 +51,7 @@ public class PostServiceImpl implements PostService {
     private final ProjectRepository projectRepository;
     private final FileRepository fileRepository;
     private final LinkRepository linkRepository;
+    private final ActivityLogService activityLogService;
 
     private static final String STATUS_APPROVED = "승인";
     private static final String STATUS_REJECTED = "거절";
@@ -142,7 +147,7 @@ public class PostServiceImpl implements PostService {
      */
     @Override
     @Transactional
-    public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
+    public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId, String ipAddress) {
 
         // 1. 필요한 엔티티 조회
         User user = userRepository.findById(loginUserId)
@@ -165,6 +170,7 @@ public class PostServiceImpl implements PostService {
         Post post = PostCreateRequest.Converter.toEntity(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
         Post savedPost = postRepository.save(post);
 
+
         // 4. 파일 처리
         List<File> savedFiles = new ArrayList<>();
         if (requestDto.getFileUrls() != null && !requestDto.getFileUrls().isEmpty()) {
@@ -186,18 +192,37 @@ public class PostServiceImpl implements PostService {
             linkRepository.saveAll(savedLinks);
         }
 
-        // 6. 응답 반환
+        // 활동 로그 저장
+        activityLogService.saveLog(
+                projectId,
+                loginUserId,
+                org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction.CREATE, // ActivityAction 임포트 필요
+                "Post",
+                savedPost.getPostId(),
+                null, // 생성 시 변경 상세 정보는 필요 없음
+                ipAddress // Controller에서 받은 IP 주소 전달
+        );
+
+
+        // 응답 반환
         return PostCreateResponse.Converter.from(savedPost, savedFiles, savedLinks);
     }
 
     // 게시글 업데이트 API
     @Override
     @Transactional
-    public PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId) {
+
+    public PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId, String ipAddress) {
 
         // 1. 게시글 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
+
+        //변경 전 상태 기록
+        String oldTitle = post.getTitle();
+        String oldContent = post.getContent();
+        // StageName을 로그에 기록하기 위해 Stage Entity에서 이름을 가져옴
+        String oldStageName = post.getStage() != null ? post.getStage().getStageName() : null;
 
         // 2. 게시글이 해당 프로젝트에 속하는지 검증
         if (!post.getProject().getId().equals(projectId)) {
@@ -238,7 +263,39 @@ public class PostServiceImpl implements PostService {
 
         // 7. TODO: 파일 업데이트 로직은 별도 API로 구현 필요
 
-        // 8. 응답 반환 (파일, 링크 정보 포함)
+        // 변경사항 비교 및 LogDetail 설정
+        List<LogDetail> details = new ArrayList<>();
+
+        // 8-1. 제목 변경 추적
+        if (!Objects.equals(oldTitle, post.getTitle())) {
+            details.add(new LogDetail("제목", oldTitle, post.getTitle()));
+        }
+
+        // 8-2. 내용 변경 추적 (간결하게 기록)
+        if (!Objects.equals(oldContent, post.getContent())) {
+            details.add(new LogDetail("내용", "수정 전 내용", "수정 후 내용"));
+        }
+
+        // 8-3. Stage 변경 추적 (업데이트 후 Stage 이름 사용)
+        String newStageName = post.getStage() != null ? post.getStage().getStageName() : null;
+        if (!Objects.equals(oldStageName, newStageName)) {
+            details.add(new LogDetail("진행 단계", oldStageName, newStageName));
+        }
+
+        // 9. 활동 로그 저장 - UPDATE 내용 기록
+        if (!details.isEmpty()) { // 변경된 내용이 있을 경우에만 로그 저장
+            activityLogService.saveLog(
+                    projectId,
+                    loginUserId,
+                    ActivityAction.UPDATE,
+                    "Post",
+                    postId,
+                    details,
+                    ipAddress
+            );
+        }
+
+        // 10. 응답 반환 (파일, 링크 정보 포함)
         List<File> savedFiles = fileRepository.findByPost(post);
         List<Link> savedLinks = linkRepository.findByPost(post);
         return PostCreateResponse.Converter.from(post, savedFiles, savedLinks);
