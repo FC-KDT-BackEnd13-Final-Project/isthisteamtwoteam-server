@@ -25,10 +25,7 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.domain.post.repository.StageRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
-import org.etmetmy.bn_server.exception.custom.BoardNotFoundException;
-import org.etmetmy.bn_server.exception.custom.BusinessException;
-import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
-import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
+import org.etmetmy.bn_server.exception.custom.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -265,5 +262,18 @@ public class PostServiceImpl implements PostService {
 
         // 완료 상태로 업데이트
         post.updateCompletedStatus(true);
+    }
+    // 프로젝트–게시글 소속 검증
+    public static void validatePostBelongsToProject(Post post, Project project) {
+        if (!post.getProject().getId().equals(project.getId())) {
+            throw new BusinessException(ErrorCode.POST_PROJECT_MISMATCH);
+        }
+    }
+
+    // 작성자 검증
+    public static void validateWriter(Post post, Long loginUserId) {
+        if (!post.getUser().getId().equals(loginUserId)) {
+            throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
+        }
     }
 }
