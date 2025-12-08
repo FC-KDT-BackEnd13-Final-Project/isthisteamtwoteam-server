@@ -1,7 +1,7 @@
 package org.etmetmy.bn_server.domain.file.service;
 
 import jakarta.servlet.http.HttpSession;
-import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
