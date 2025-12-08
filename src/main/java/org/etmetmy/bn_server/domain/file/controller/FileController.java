@@ -50,7 +50,7 @@ public class FileController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTempFile(@PathVariable Long projectId, @RequestBody FileDeleteRequest request)
     {
-        fileService.deleteFile(projectId,request.getFileId());
+        fileService.deleteFile(projectId,request.getFileIds());
     }
 
     // 4. 업로드 된 파일 삭제 API (soft delete)
