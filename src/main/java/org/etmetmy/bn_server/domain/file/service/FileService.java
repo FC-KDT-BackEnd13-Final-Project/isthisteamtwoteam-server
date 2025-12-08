@@ -12,12 +12,12 @@ public interface FileService {
     //프로젝트별 파일 목록 조회
     List<ActiveFileListDTO> findAllByProjectId(Long projectId, HttpSession session);
 
-    // 업로드 된 파일 삭제 (soft delete)
-    void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId);
-
-    // 임시 업로드 파일 삭제 (hard delete)
-    void s3Delete(String projectId, FileDeleteRequest fileDeleteRequest);
-
     // 임시 파일 업로드
     List<ActiveFileListDTO> postFiles(Long projectId, Long postId, List<MultipartFile> files);
+
+    // 임시 업로드 파일 삭제 (hard delete)
+    void deleteFile(Long projectId, Long fileId);
+
+    // 업로드 된 파일 삭제 (soft delete)
+    void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId);
 }

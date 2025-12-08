@@ -24,10 +24,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -45,7 +50,7 @@ public class FileServiceImpl implements FileService {
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
 
-    //프로젝트별 파일 목록 조회
+    // 1. 프로젝트별 파일 목록 조회
     @Override
     public List<ActiveFileListDTO> findAllByProjectId(Long projectId, HttpSession session){
 
@@ -69,7 +74,7 @@ public class FileServiceImpl implements FileService {
 
     }
 
-    // 임시 파일 업로드
+    // 2. 임시 파일 업로드
     @Override
     @Transactional
     public List<ActiveFileListDTO> postFiles(Long projectId, Long postId, List<MultipartFile> files){
@@ -104,8 +109,36 @@ public class FileServiceImpl implements FileService {
         return ActiveFileListDTO.Converter.from(savedFiles);
     }
 
+    // 3. S3 파일 삭제 (hard delete)
+    public void deleteFile(Long projectId, Long fileId) {
 
-    // 업로드 된 파일 삭제 API
+        File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
+
+        String fileUrl = file.getFilePath();
+
+        try {
+            // S3 key 추출
+            String key = getKeyFromFileUrls(fileUrl);
+
+            // S3 삭제 요청
+            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            s3Client.deleteObject(deleteRequest);
+
+            // DB 레코드 삭제
+            fileRepository.deleteById(fileId);
+
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
+        }
+    }
+
+
+    // 5. 업로드 된 파일 삭제 (soft delete)
     @Override
     @Transactional
     public void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId){
@@ -135,12 +168,6 @@ public class FileServiceImpl implements FileService {
         file.softDelete(loginUserId);
 
         fileRepository.save(file);
-    }
-
-    // 임시 업로드 파일 삭제 (hard delete)
-    public void s3Delete(String projectId, FileDeleteRequest fileDeleteRequest){
-
-
     }
 
     // URL 에서 파일명 추출
@@ -178,5 +205,19 @@ public class FileServiceImpl implements FileService {
         }
         return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName))
                 .toString();
+    }
+
+    // 삭제에 필요한 key 반환
+    private String getKeyFromFileUrls(String fileUrl) {
+        try{
+            URL url = new URI(fileUrl).toURL();
+            String decodedKey = URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8);
+
+            //경로 앞에 '/' 제거 후 반환
+            return decodedKey.substring(1);
+        }
+        catch (Exception e){
+            throw new BusinessException(ErrorCode.INVALID_URL_FORMAT);
+        }
     }
 }

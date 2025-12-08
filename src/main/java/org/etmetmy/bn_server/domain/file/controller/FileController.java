@@ -45,9 +45,15 @@ public class FileController {
         return CommonResponse.success("파일 업로드 성공", response);
     }
 
-    // todo: 3. 임시 파일 삭제 API
+    // 3. 임시 파일 삭제 API (hard delete)
+    @DeleteMapping("files/{fileId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTempFile(@PathVariable Long projectId, @PathVariable Long fileId)
+    {
+        fileService.deleteFile(projectId,fileId);
+    }
 
-    // 4. 업로드 된 파일 삭제 API
+    // 4. 업로드 된 파일 삭제 API (soft delete)
     @DeleteMapping("/posts/{postId}/files/{fileId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePostFiles(
@@ -58,15 +64,5 @@ public class FileController {
     {
         Long loginUserId = SessionUtil.getLoginUserId(session);
         fileService.deletePostFiles(projectId, postId, fileId, loginUserId);
-    }
-
-    // 임시 파일 삭제 API (hard delete)
-    @DeleteMapping("/delete")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void s3Delete(
-            @PathVariable String projectId,
-            @RequestBody FileDeleteRequest fileDeleteRequest)
-    {
-        fileService.s3Delete(projectId,fileDeleteRequest);
     }
 }
