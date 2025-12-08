@@ -3,6 +3,7 @@ package org.etmetmy.bn_server.domain.file.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.file.dto.request.FileDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.service.FileService;
 import org.etmetmy.bn_server.global.CommonResponse;
@@ -44,9 +45,15 @@ public class FileController {
         return CommonResponse.success("파일 업로드 성공", response);
     }
 
-    // todo: 3. 임시 파일 삭제 API
+    // 3. 임시 파일 삭제 API (hard delete)
+    @DeleteMapping("files")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteTempFile(@PathVariable Long projectId, @RequestBody FileDeleteRequest request)
+    {
+        fileService.deleteFile(projectId,request.getFileIds());
+    }
 
-    // 4. 업로드 된 파일 삭제 API
+    // 4. 업로드 된 파일 삭제 API (soft delete)
     @DeleteMapping("/posts/{postId}/files/{fileId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePostFiles(

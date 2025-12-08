@@ -30,7 +30,6 @@ public interface PostService {
     PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId);
 
     void completePost(Long projectId, Long postId, Long loginUserId);
-
 }
 
 

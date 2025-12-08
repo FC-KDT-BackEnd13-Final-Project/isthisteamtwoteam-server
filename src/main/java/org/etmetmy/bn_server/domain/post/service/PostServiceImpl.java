@@ -249,7 +249,7 @@ public class PostServiceImpl implements PostService {
         }
 
         // 3. 작성자 권한 검증
-        if (!post.getUser().getId().equals(loginUserId)) {
+        if(!post.getUser().getId().equals(loginUserId)){
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
 
@@ -315,8 +315,6 @@ public class PostServiceImpl implements PostService {
         // 완료 상태로 업데이트
         post.updateCompletedStatus(true);
     }
-
-
     // 프로젝트–게시글 소속 검증
     public static void validatePostBelongsToProject(Post post, Project project) {
         if (!post.getProject().getId().equals(project.getId())) {
