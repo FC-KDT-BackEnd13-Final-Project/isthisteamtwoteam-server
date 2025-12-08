@@ -9,7 +9,8 @@ public interface ProjectMemberService {
 
     // 프로젝트 생성 - 개발사/고객사 담당자, 사원조회
     List<ProjectMemberSearchResponse> searchDeveloperMembers();
+    List<ProjectMemberSearchResponse> searchClientMembers();
 
-    // 프로젝트 설정 - 개발사 담당자, 사원 조회
+    // 프로젝트 설정 - 개발사/고객사 담당자, 사원 조회
 
 }
