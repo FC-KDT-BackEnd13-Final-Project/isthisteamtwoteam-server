@@ -79,7 +79,7 @@ public class PostController {
     }
 
     // todo : 관리자 및 개발사가 게시글 완료하기 버튼
-    @PatchMapping("/posts/{postId}/completion")
+    @PatchMapping("/{projectId}/posts/{postId}/completion")
     public void completePost(@PathVariable Long postId, HttpSession session) {
 
         Long loginUserId = SessionUtil.getLoginUserId(session);
