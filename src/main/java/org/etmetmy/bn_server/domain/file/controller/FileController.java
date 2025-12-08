@@ -48,9 +48,9 @@ public class FileController {
     // 3. 임시 파일 삭제 API (hard delete)
     @DeleteMapping("files/{fileId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTempFile(@PathVariable Long projectId, @PathVariable Long fileId)
+    public void deleteTempFile(@PathVariable Long projectId, @RequestBody FileDeleteRequest request)
     {
-        fileService.deleteFile(projectId,fileId);
+        fileService.deleteFile(projectId,request.getFileId());
     }
 
     // 4. 업로드 된 파일 삭제 API (soft delete)

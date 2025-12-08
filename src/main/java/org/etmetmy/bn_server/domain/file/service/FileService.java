@@ -16,7 +16,7 @@ public interface FileService {
     List<ActiveFileListDTO> postFiles(Long projectId, Long postId, List<MultipartFile> files);
 
     // 임시 업로드 파일 삭제 (hard delete)
-    void deleteFile(Long projectId, Long fileId);
+    void deleteFile(Long projectId, List<Long> fileIds);
 
     // 업로드 된 파일 삭제 (soft delete)
     void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId);

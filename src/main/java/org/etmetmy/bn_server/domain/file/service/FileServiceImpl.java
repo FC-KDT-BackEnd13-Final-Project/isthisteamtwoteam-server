@@ -109,34 +109,39 @@ public class FileServiceImpl implements FileService {
         return ActiveFileListDTO.Converter.from(savedFiles);
     }
 
-    // 3. S3 파일 삭제 (hard delete)
-    public void deleteFile(Long projectId, Long fileId) {
+    // 3. 파일 삭제 (hard delete)
+    public void deleteFile(Long projectId, List<Long> fileIds){
 
-        File file = fileRepository.findById(fileId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
+        List<File> files = fileRepository.findAllById(fileIds);
 
-        String fileUrl = file.getFilePath();
+        if (files.isEmpty()) {
+            throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
+        }
 
-        try {
-            // S3 key 추출
-            String key = getKeyFromFileUrls(fileUrl);
+        for (File file : files) {
+            try {
+                String fileUrl = file.getFilePath();
+                Long fileId = file.getFileId();
 
-            // S3 삭제 요청
-            DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(key)
-                    .build();
+                // S3 key 추출
+                String key = getKeyFromFileUrls(fileUrl);
 
-            s3Client.deleteObject(deleteRequest);
+                // S3 삭제 요청
+                DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .build();
 
-            // DB 레코드 삭제
-            fileRepository.deleteById(fileId);
+                s3Client.deleteObject(deleteRequest);
 
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
+                // DB 레코드 삭제
+                fileRepository.deleteById(fileId);
+
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
+            }
         }
     }
-
 
     // 5. 업로드 된 파일 삭제 (soft delete)
     @Override
