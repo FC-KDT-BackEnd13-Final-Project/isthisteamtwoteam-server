@@ -3,7 +3,6 @@ package org.etmetmy.bn_server.domain.file.service;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
-import org.etmetmy.bn_server.domain.file.dto.response.FileTrashResponse;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
@@ -19,8 +18,8 @@ import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
 import org.etmetmy.bn_server.exception.custom.ProjectPermissionDeniedException;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -56,9 +55,10 @@ public class FileServiceImpl implements FileService {
 
     }
 
-    // 업로드 된 파일 삭제
+    // 업로드 된 파일 삭제 API
     @Override
-    public List<FileTrashResponse> deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId){
+    @Transactional
+    public void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId){
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
@@ -72,7 +72,7 @@ public class FileServiceImpl implements FileService {
         // 권한 체크 (작성자만 가능)
         PostServiceImpl.validateWriter(post, loginUserId);
 
-        //파일 검증
+        // 파일 검증
         File file = fileRepository.findById(fileId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
@@ -85,12 +85,6 @@ public class FileServiceImpl implements FileService {
         file.softDelete(loginUserId);
 
         fileRepository.save(file);
-
-        // 삭제된 파일 목록 반환
-        return fileRepository.findAllByPostAndIsDeletedTrue(post)
-                .stream()
-                .map(FileTrashResponse.Converter::from)
-                .toList();
 
     }
 

@@ -4,12 +4,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
-import org.etmetmy.bn_server.domain.file.dto.response.FileTrashResponse;
 import org.etmetmy.bn_server.domain.file.service.FileService;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectTrashResponse;
-import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,15 +32,14 @@ public class FileController {
 
     // 업로드 된 파일 삭제 API
     @DeleteMapping("/posts/{postId}/files/{fileId}")
-    public CommonResponse<List<FileTrashResponse>> deletePostFiles(
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deletePostFiles(
             @PathVariable Long projectId,
             @PathVariable Long postId,
             @PathVariable Long fileId,
             HttpSession session)
     {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-        List<FileTrashResponse> response = fileService.deletePostFiles(projectId, postId, fileId, loginUserId);
-
-        return CommonResponse.success("파일 삭제 완료", response);
+        fileService.deletePostFiles(projectId, postId, fileId, loginUserId);
     }
 }

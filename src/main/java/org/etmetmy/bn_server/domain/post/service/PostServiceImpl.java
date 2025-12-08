@@ -134,9 +134,7 @@ public class PostServiceImpl implements PostService {
         };
     }
 
-    /**
-     * 게시글 작성 API
-     */
+    // 게시글 작성 API
     @Override
     @Transactional
     public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
@@ -251,7 +249,7 @@ public class PostServiceImpl implements PostService {
     // 작성자 검증
     public static void validateWriter(Post post, Long loginUserId) {
         if (!post.getUser().getId().equals(loginUserId)) {
-            throw new ProjectPermissionDeniedException();
+            throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
     }
 }
