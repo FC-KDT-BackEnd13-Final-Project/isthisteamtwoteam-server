@@ -9,7 +9,7 @@ import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
-import org.etmetmy.bn_server.domain.file.dto.FileInfoDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
@@ -391,7 +391,7 @@ public class ProjectServiceImpl implements ProjectService{
                 .orElseThrow(UserNotFoundException::new);
 
         // 3. 프로젝트-멤버 매핑 삭제
-        long deletedCount = projectMemberRepository.deleteByProject_IdAndUser_Id(projectId, userId);
+        long deletedCount = projectMemberRepository.deleteByProjectIdAndUserId(projectId, userId);
 
         if (deletedCount == 0) {
             throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "프로젝트에 해당 멤버가 존재하지 않습니다.");

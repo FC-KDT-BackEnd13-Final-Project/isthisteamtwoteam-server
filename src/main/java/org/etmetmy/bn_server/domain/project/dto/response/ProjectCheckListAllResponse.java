@@ -2,7 +2,7 @@ package org.etmetmy.bn_server.domain.project.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.etmetmy.bn_server.domain.file.dto.FileInfoDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 

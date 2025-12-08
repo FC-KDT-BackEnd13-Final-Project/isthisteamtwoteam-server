@@ -8,10 +8,6 @@ import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
-import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
-import org.etmetmy.bn_server.domain.comment.entity.Comment;
-import org.etmetmy.bn_server.domain.post.entity.Post;
-import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;

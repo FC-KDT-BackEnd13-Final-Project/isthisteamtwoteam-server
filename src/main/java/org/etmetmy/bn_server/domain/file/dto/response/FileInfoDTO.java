@@ -1,4 +1,4 @@
-package org.etmetmy.bn_server.domain.file.dto;
+package org.etmetmy.bn_server.domain.file.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
