@@ -18,7 +18,9 @@ import org.etmetmy.bn_server.domain.post.repository.PostNumberCounterRepository;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.repository.RequestRepository;
 import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.domain.post.repository.StageRepository;
@@ -42,15 +44,9 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final PostNumberCounterRepository postNumberCounterRepository;
     private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository projectMemberRepository;
     private final FileRepository fileRepository;
     private final LinkRepository linkRepository;
-
-    private static final String STATUS_APPROVED = "승인";
-    private static final String STATUS_REJECTED = "거절";
-    private static final String STATUS_PENDING = "대기";
-    private static final Long STAGE_APPROVED_ID = 99L;
-    private static final Long STAGE_REJECTED_ID = 98L;
-
 
     // 1. 게시글 상세 조회 (GET)
     public PostDetailResponse getPostDetail(Long postId) {
@@ -61,7 +57,6 @@ public class PostServiceImpl implements PostService {
         // DTO 호출 인자를 Post와 User로 단순화함
         return PostDetailResponse.Converter.fromEntity(post, post.getUser());
     }
-
 
     // 2. 게시글 승인
     @Transactional
@@ -134,7 +129,9 @@ public class PostServiceImpl implements PostService {
         };
     }
 
-    // 게시글 작성 API
+    /**
+     * 게시글 작성 API
+     */
     @Override
     @Transactional
     public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
@@ -239,6 +236,33 @@ public class PostServiceImpl implements PostService {
         return PostCreateResponse.Converter.from(post, savedFiles, savedLinks);
     }
 
+    @Override
+    @Transactional
+    public void completePost(Long projectId, Long postId, Long loginUserId) {
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 프로젝트 멤버 검증 (로그인 유저가 해당 프로젝트의 멤버인지 확인)
+        if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId)) {
+            throw new BusinessException(ErrorCode.PROJECT_AND_USER_NOT_FOUND);
+        }
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(BoardNotFoundException::new);
+
+        // 게시글이 해당 프로젝트에 속하는지 검증
+        if (!post.getProject().getId().equals(projectId)) {
+            throw new BusinessException(ErrorCode.POST_PROJECT_MISMATCH);
+        }
+
+        // ADMIN과 DEVELOPER 권한 확인 (개발사만 완료 처리 가능)
+        if (user.getRole() != Role.ADMIN && user.getRole() != Role.DEVELOPER) {
+            throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
+        }
+
+        // 완료 상태로 업데이트
+        post.updateCompletedStatus(true);
+    }
     // 프로젝트–게시글 소속 검증
     public static void validatePostBelongsToProject(Post post, Project project) {
         if (!post.getProject().getId().equals(project.getId())) {

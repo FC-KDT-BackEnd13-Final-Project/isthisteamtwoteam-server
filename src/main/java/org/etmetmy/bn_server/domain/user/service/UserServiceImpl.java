@@ -103,6 +103,7 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
+    @Transactional
     public Long joinUser(UserDto userDto) {
         Company company = companyService.findByCompanyName(userDto.getCompany())
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));

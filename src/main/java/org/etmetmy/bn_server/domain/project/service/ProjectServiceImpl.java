@@ -119,7 +119,7 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberResponse> getProjectMembers(Long projectId) {
-        List<ProjectMember> members = projectMemberRepository.findByProject_Id(projectId);
+        List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);
 
         return ProjectMemberResponse.Converter.from(members);
     }
@@ -130,7 +130,7 @@ public class ProjectServiceImpl implements ProjectService{
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        List<ProjectMember> members = projectMemberRepository.findByProject_Id(projectId);
+        List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);
 
         return ProjectResponse.Converter.from(project, members);
     }
@@ -220,7 +220,7 @@ public class ProjectServiceImpl implements ProjectService{
             return Map.of();
         }
 
-        List<ProjectMember> allMembers = projectMemberRepository.findByProject_IdIn(projectIds);
+        List<ProjectMember> allMembers = projectMemberRepository.findByProjectIdIn(projectIds);
 
         return allMembers.stream()
                 .collect(Collectors.groupingBy(pm -> pm.getProject().getId()));
