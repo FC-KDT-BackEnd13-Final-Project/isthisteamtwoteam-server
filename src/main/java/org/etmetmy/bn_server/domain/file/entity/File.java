@@ -61,4 +61,5 @@ public class File extends BaseEntity {
 
     @Column(name = "deleted_by")
     private Long deletedBy;
+
     }

@@ -44,8 +44,6 @@ public class User extends BaseEntity {
     @Column(name = "profile_img")
     private String profileImg;
 
-
-
     public void updateInfo(String name, String email, Company company, Role role) {
         this.name = name;
         this.email = email;

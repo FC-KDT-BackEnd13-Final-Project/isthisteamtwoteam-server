@@ -25,7 +25,7 @@ public class UserController {
     private final UserService userService;
 
     //todo : 회원 계정 생성
-    @PostMapping("/admin/user")
+    @PostMapping("/api/v1/admin/user")
     public CommonResponse<Long> joinUser(
             @RequestBody UserDto userDto
     ){
@@ -86,14 +86,12 @@ public class UserController {
         return CommonResponse.success("회원을 성공적으로 조회하였습니다.", members);
     }
 
-
     //회원 삭제 (DELETE)
     @DeleteMapping("/admin/users/{memberId}")
     public CommonResponse<Long> deleteMember(@PathVariable Long memberId) {
         Long userId = userService.deleteMember(memberId);
         return CommonResponse.success("회원 삭제 완료",userId);
     }
-
 
     //회원 정보 수정 (PUT)
     @PutMapping("/admin/users/{memberId}")
@@ -106,7 +104,6 @@ public class UserController {
         return CommonResponse.success("회원 정보 수정 완료",userId);
     }
 
-
     /**
      * 회원의 프로필 사진과 회원명 조회
      * */
@@ -117,7 +114,6 @@ public class UserController {
         HttpSession session = request.getSession(false);
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
-
         if(loginUserId == null){
             return CommonResponse.fail("로그인이 필요합니다.");
         }else{
@@ -125,6 +121,4 @@ public class UserController {
             return CommonResponse.success("성공적으로 조회했습니다",profile);
         }
     }
-
-
 }

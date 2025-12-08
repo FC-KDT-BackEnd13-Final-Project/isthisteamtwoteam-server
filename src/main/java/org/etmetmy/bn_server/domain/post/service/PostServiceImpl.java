@@ -2,7 +2,7 @@ package org.etmetmy.bn_server.domain.post.service;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.file.dto.FileCreateRequest;
+import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.link.dto.LinkCreateRequest;
@@ -13,10 +13,7 @@ import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
-import org.etmetmy.bn_server.domain.post.entity.Post;
-import org.etmetmy.bn_server.domain.post.entity.PostNumberCounter;
-import org.etmetmy.bn_server.domain.post.entity.Request;
-import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.post.entity.*;
 import org.etmetmy.bn_server.domain.post.repository.PostNumberCounterRepository;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.repository.RequestRepository;
@@ -65,7 +62,7 @@ public class PostServiceImpl implements PostService {
 
         // DTO 변환 (StageName 처리는 DTO 에서 Long stageId 기반으로 처리되어야 함)
         // DTO 호출 인자를 Post와 User로 단순화함
-        return PostDetailResponse.fromEntity(post, post.getUser());
+        return PostDetailResponse.Converter.fromEntity(post, post.getUser());
     }
 
 
@@ -75,14 +72,11 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
-        Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(postId, STATUS_PENDING)
+        Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(post.getPostId(), RequestStatus.STATUS_PENDING)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
-        // 1. Post의 Stage ID를 APPROVED (99)로 변경
-        //post.updateStage(STAGE_APPROVED_ID);
-
         // 2. Request 상태를 '승인'으로 업데이트
-        currentRequest.updateStatus(approvingUserId, STATUS_APPROVED, null);
+        currentRequest.updateStatus(approvingUserId, RequestStatus.STATUS_APPROVED, null);
     }
 
 
@@ -92,14 +86,11 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
-        Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(postId, STATUS_PENDING)
+        Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(post.getPostId(), RequestStatus.STATUS_PENDING)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
-        // 1. Post의 Stage ID를 REJECTED (98)로 변경
-        post.updateStage(STAGE_REJECTED_ID);
-
         // 2. Request 상태를 '거절'로 업데이트
-        currentRequest.updateStatus(rejectingUserId, STATUS_REJECTED, rejectReason);
+        currentRequest.updateStatus(rejectingUserId, RequestStatus.STATUS_REJECTED, rejectReason);
     }
 
     @Override
@@ -138,16 +129,12 @@ public class PostServiceImpl implements PostService {
      * 필터에 따라 게시글 조회
      */
     private List<Post> getPostsByFilter(Long projectId, String filter) {
-        switch (filter.toLowerCase()) {
-            case "all":
-                return postRepository.findAllByProjectId(projectId);
-            case "finished":
-                return postRepository.findCompletedByProjectId(projectId);
-            case "unfinished":
-                return postRepository.findUncompletedByProjectId(projectId);
-            default:
-                throw new BusinessException(ErrorCode.BOARD_INVALID_FILTER);
-        }
+        return switch (filter.toLowerCase()) {
+            case "all" -> postRepository.findAllByProjectId(projectId);
+            case "finished" -> postRepository.findCompletedByProjectId(projectId);
+            case "unfinished" -> postRepository.findUncompletedByProjectId(projectId);
+            default -> throw new BusinessException(ErrorCode.BOARD_INVALID_FILTER);
+        };
     }
 
     /**
@@ -173,7 +160,6 @@ public class PostServiceImpl implements PostService {
                         .build());
         Long postNumber = counter.getNextNumber();
         postNumberCounterRepository.save(counter);
-
 
         // 3. Post 엔티티 생성 및 저장
         Post post = PostCreateRequest.Converter.toEntity(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);

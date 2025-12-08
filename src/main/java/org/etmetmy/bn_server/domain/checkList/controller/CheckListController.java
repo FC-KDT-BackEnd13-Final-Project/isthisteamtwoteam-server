@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/admin/checklists")
+@RequestMapping("/api/v1/checklists")
 public class CheckListController {
 
     private final CheckListService checkListService;
@@ -67,7 +67,6 @@ public class CheckListController {
         } else {
             result = checkListService.getCheckLists(pageRequest);
         }
-
         // PageResponse로 변환하여 깔끔한 응답 반환
         return CommonResponse.success("성공적으로 페이지를 조회하였습니다.", PageResponse.of(result));
     }

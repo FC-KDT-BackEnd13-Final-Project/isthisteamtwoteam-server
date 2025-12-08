@@ -22,4 +22,11 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "WHERE c.commentId2 = :parentCommentId " +
             "ORDER BY c.createdAt ASC")
     List<Comment> findRepliesByParentId(@Param("parentCommentId") Long parentCommentId);
+
+    // 3. 특정 Post의 모든 댓글 조회 (한 번에)
+    @Query("SELECT c FROM Comment c " +
+            "JOIN FETCH c.user u " +
+            "WHERE c.post.postId = :postId " +
+            "ORDER BY c.createdAt ASC")
+    List<Comment> findAllByPostId(@Param("postId") Long postId);
 }

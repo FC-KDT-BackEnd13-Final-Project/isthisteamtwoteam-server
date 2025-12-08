@@ -57,39 +57,32 @@ public class ProjectServiceImpl implements ProjectService{
     @Override
     @Transactional
     public Long createProject(ProjectCreateRequest request, Long createdById){
-
         Stage startStage = getStartStage(request.getStage());
 
         // 2. Project 생성 및 저장 (시작 단계 설정 포함)
         Project project = ProjectCreateRequest.Converter.toEntity(request, createdById, startStage);
         Project savedProject = projectRepository.save(project);
 
-
         // 3. Memo 생성 및 저장
         createMemoIfPresent(request.getMemo(), savedProject);
 
         // 4. 프로젝트 멤버 생성 및 저장
         if (hasMembers(request)) {
-
             // List<Long>을 List<ProjectMemberRequest>로 변환 (생성자 사용)
             List<ProjectMemberRequest> memberRequests = request.getMembers().stream()
                     .map(ProjectMemberRequest::new)
                     .collect(Collectors.toList());
-
 
             List<ProjectMember> projectMembers = createProjectMembers(
                     memberRequests,
                     savedProject,
                     createdById
             );
-
-
             // 빈 리스트가 아닐 때만 저장
             if (!projectMembers.isEmpty()) {
                 projectMemberRepository.saveAll(projectMembers);
             }
         }
-
         return savedProject.getId();
     }
 
@@ -301,7 +294,7 @@ public class ProjectServiceImpl implements ProjectService{
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        int updated = projectRepository.updateProjectName(projectId, newProjectName);
+        int updated = projectRepository.updateProjectName(project.getId(), newProjectName);
         if (updated == 0) {
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 제목 수정에 실패했습니다.");
         }
@@ -335,15 +328,12 @@ public class ProjectServiceImpl implements ProjectService{
                 throw new InvalidInputException("종료일은 시작일보다 이를 수 없습니다.");
             }
 
-            int updated = projectRepository.updateProjectDates(projectId, startDate, endDate);
+            int updated = projectRepository.updateProjectDates(project.getId(), startDate, endDate);
             if (updated == 0) {
                 throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 날짜 수정에 실패했습니다.");
             }
 
-            Project updatedProject = projectRepository.findById(projectId)
-                    .orElseThrow(ProjectNotFoundException::new);
-
-            return ProjectUpdateResponse.Converter.from(updatedProject);
+            return ProjectUpdateResponse.Converter.from(project);
 
         } catch (DateTimeParseException e) {
             throw new InvalidInputException("날짜 형식이 올바르지 않습니다. (예: 2024-01-01 또는 2025-11-23T14:00:00Z)");
@@ -366,16 +356,13 @@ public class ProjectServiceImpl implements ProjectService{
         if (projectId == null) {
             throw new InvalidInputException("프로젝트 ID가 필요합니다.");
         }
-
         // 프로젝트 존재 확인
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
-
         // 이미 삭제된 프로젝트인지 확인
         if (project.getIsDeleted() != null && project.getIsDeleted()) {
             throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "이미 삭제된 프로젝트입니다.");
         }
-
         // 휴지통으로 이동 (소프트 삭제)
         LocalDateTime deletedAt = LocalDateTime.now();
         int updated = projectRepository.moveToTrash(projectId, deletedAt);
@@ -425,7 +412,7 @@ public class ProjectServiceImpl implements ProjectService{
             throw new InvalidInputException("진행단계 ID는 필수입니다.");
         }
 
-        Long stageId = request.getStageId().longValue();
+        Long stageId = request.getStageId();
 
         // 2. 프로젝트 존재 확인
         Project project = projectRepository.findById(projectId)

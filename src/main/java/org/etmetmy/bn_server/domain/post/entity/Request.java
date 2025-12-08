@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 public class Request extends BaseEntity {
 
     @Id
-    @Column(name = "key", length = 255)
-    private String key;
+    @Column(name = "request_id")
+    private Long requestId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
@@ -32,7 +32,7 @@ public class Request extends BaseEntity {
     private Long replitUserId;
 
     @Column(name = "approve_status", length = 255)
-    private String approveStatus;
+    private RequestStatus approveStatus;
 
     @Column(name = "reply_time")
     private LocalDateTime replyTime;
@@ -40,9 +40,9 @@ public class Request extends BaseEntity {
     @Column(name = "reject_reason", length = 255)
     private String rejectReason;
 
-    public void updateStatus(Long replyUserId, String newStatus, String rejectReason) {
+    public void updateStatus(Long replyUserId, RequestStatus status, String rejectReason) {
         this.replitUserId = replyUserId;
-        this.approveStatus = newStatus;
+        this.approveStatus = status;
         this.rejectReason = rejectReason;
         this.replyTime = LocalDateTime.now();
     }

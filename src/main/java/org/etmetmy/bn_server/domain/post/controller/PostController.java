@@ -1,10 +1,8 @@
 package org.etmetmy.bn_server.domain.post.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.file.dto.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
@@ -45,12 +43,13 @@ public class PostController {
      * 게시글 상세 조회
      */
     @GetMapping("/{projectId}/posts/{postId}")
-    public ResponseEntity<CommonResponse<PostDetailResponse>> getPostDetail(
+    public CommonResponse<PostDetailResponse> getPostDetail(
             @PathVariable Long projectId,
             @PathVariable Long postId
     ) {
         PostDetailResponse response = postService.getPostDetail(postId);
-        return ResponseEntity.ok(CommonResponse.success("게시글 조회 성공", response));
+        return CommonResponse.success("게시글 조회 성공", response);
+
     }
 
     /**

@@ -47,10 +47,7 @@ public class CheckListServiceImpl implements CheckListService {
     // 페이지네이션 체크리스트 전체 조회
     @Override
     public Page<CheckListResponse> getCheckLists(PageRequest pageRequest) {
-        // 1. Repository에서 Page<CheckList> 조회
         Page<CheckList> checkListPage = checkListRepository.findAll(pageRequest);
-
-        // 2. Entity -> DTO 변환
         return checkListPage.map(CheckListResponse.Converter::from);
     }
 
@@ -58,7 +55,6 @@ public class CheckListServiceImpl implements CheckListService {
     @Override
     public Page<CheckListResponse> searchCheckLists(String keyword, PageRequest pageRequest) {
         Page<CheckList> keywrodCheckListPage = checkListRepository.findByKeyword(keyword, pageRequest);
-
         return keywrodCheckListPage.map(CheckListResponse.Converter::from);
     }
 
