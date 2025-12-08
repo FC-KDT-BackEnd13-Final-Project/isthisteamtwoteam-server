@@ -16,6 +16,5 @@ public class CheckListUpdateRequest {
         public static void updateEntity(CheckListUpdateRequest request, CheckList checkList){
             checkList.updateContent(request.getContent());
         }
-
     }
 }
