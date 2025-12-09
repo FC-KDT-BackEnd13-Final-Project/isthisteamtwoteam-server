@@ -63,5 +63,6 @@ public class Project extends BaseEntity {
 
     public void restore() {
         isDeleted = false;
+        deletedAt = null;
     }
 }
