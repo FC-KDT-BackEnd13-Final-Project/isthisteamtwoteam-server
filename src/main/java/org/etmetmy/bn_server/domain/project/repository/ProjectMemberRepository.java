@@ -17,8 +17,7 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
            "FROM ProjectMember pm " +
            "WHERE pm.project.id = :projectId " +
            "AND pm.user.id = :userId")
-    boolean existsByProjectIdAndUserId(@Param("projectId") Long projectId,
-                                       @Param("userId") Long userId);
+    boolean existsByProjectIdAndUserId(@Param("projectId") Long projectId, @Param("userId") Long userId);
 
     List<ProjectMember> findByProjectId(Long projectId);
     List<ProjectMember> findByProjectIdIn(List<Long> projectIds);
@@ -34,6 +33,4 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     where pm.user.id = :userId
     """)
     List<Long> findProjectIdsByUserId(@Param("userId") Long userId);
-
-    boolean existsByProjectIdAndUserId(Long projectId, Long loginUserId);
 }
