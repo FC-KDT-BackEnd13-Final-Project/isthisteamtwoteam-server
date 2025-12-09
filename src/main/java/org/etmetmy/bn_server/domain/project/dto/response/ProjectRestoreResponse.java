@@ -25,9 +25,8 @@ public class ProjectRestoreResponse {
         public static ProjectRestoreResponse from(List<Project> projects) {
 
             return ProjectRestoreResponse.builder()
-                    .restoredCount((long)projects.size()).restoredIds(
-                            projects.stream()
-                                    .map(Project::getId).toList())
+                    .restoredCount((long)projects.size())
+                    .restoredIds(projects.stream().map(Project::getId).toList())
                     .build();
         }
     }

@@ -9,7 +9,6 @@ import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
-import org.hibernate.annotations.DynamicInsert;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
