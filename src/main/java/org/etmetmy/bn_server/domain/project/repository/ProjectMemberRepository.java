@@ -16,12 +16,20 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
            "FROM ProjectMember pm " +
            "WHERE pm.project.id = :projectId " +
            "AND pm.user.id = :userId")
-    boolean existsByProjectIdAndUserId(@Param("projectId") Long projectId,
-                                       @Param("userId") Long userId);
+    boolean existsByProjectIdAndUserId(@Param("projectId") Long projectId, @Param("userId") Long userId);
 
     List<ProjectMember> findByProjectId(Long projectId);
     List<ProjectMember> findByProjectIdIn(List<Long> projectIds);
     ProjectMember findByUserIdAndProjectId(Long userId, Long projectId);
+
     // 프로젝트 + 유저 기준으로 매핑 삭제
     long deleteByProjectIdAndUserId(Long projectId, Long userId);
+    
+    // 권한이 있는 모든 프로젝트 조회
+    @Query("""
+    select pm.project.id
+    from ProjectMember pm
+    where pm.user.id = :userId
+    """)
+    List<Long> findProjectIdsByUserId(@Param("userId") Long userId);
 }
