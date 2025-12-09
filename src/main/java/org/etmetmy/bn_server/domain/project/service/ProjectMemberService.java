@@ -9,14 +9,6 @@ import java.util.List;
 public interface ProjectMemberService {
     boolean hasRoleToProject(Long userId, Long projectId);
 
-    // 프로젝트 생성 - 개발사/고객사 담당자, 사원조회
-    List<ProjectMemberSearchResponse> searchDeveloperMembers();
-    List<ProjectMemberSearchResponse> searchClientMembers();
-
-    // 프로젝트 설정 - 개발사/고객사 담당자, 사원 조회
-    List<ProjectMemberSearchResponse> searchDeveloperMembersForProject(Long projectId);
-    List<ProjectMemberSearchResponse> searchClientMembersForProject(Long projectId);
-
     List<ProjectMemberSearchResponse> searchUsersForCreate(Role role);
     List<ProjectMemberSearchResponse> searchUsersForProject(Long projectId, Role role);
 

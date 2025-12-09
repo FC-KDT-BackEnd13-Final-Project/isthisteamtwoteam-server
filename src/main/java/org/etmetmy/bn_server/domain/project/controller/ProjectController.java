@@ -148,19 +148,14 @@ public class ProjectController {
 
     //프로젝트 생성 - 개발사/고객사 사원 조회
     @GetMapping(value = "/users" )
-    public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForCreate(
-            @RequestParam("role") Role role
-    ) {
+    public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForCreate(@RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForCreate(role);
             return CommonResponse.success("프로젝트 생성 사원 조회 성공", responses);
 
     }
     // 프로젝트 설정 - 개발사/고객사 담당자, 사원 조회
     @GetMapping("/{projectId}/users")
-    public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(
-            @PathVariable Long projectId,
-            @RequestParam("role") Role role
-    ) {
+    public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(@PathVariable Long projectId, @RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForProject(projectId, role);
             return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
     }
