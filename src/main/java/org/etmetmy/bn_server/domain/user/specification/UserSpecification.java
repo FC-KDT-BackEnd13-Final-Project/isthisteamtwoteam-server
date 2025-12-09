@@ -24,10 +24,4 @@ public class UserSpecification {
         return (root, query, criteriaBuilder) ->
                 criteriaBuilder.like(root.join("company", JoinType.LEFT).get("companyName"), "%" + companyName + "%");
     }
-
-    // 4. 회사 타입 검색
-    public static Specification<User> equalCompanyType(CompanyType type) {
-        return (root, query, criteriaBuilder) ->
-                criteriaBuilder.equal(root.join("company", JoinType.LEFT).get("type"), type);
-    }
 }

@@ -2,13 +2,13 @@ package org.etmetmy.bn_server.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
-import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
-import org.etmetmy.bn_server.domain.user.dto.request.MemberUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
-import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
+import org.etmetmy.bn_server.domain.user.dto.response.*;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
@@ -32,7 +32,7 @@ public class UserServiceImpl implements UserService{
 
     // 회원 정보 수정 (Update)
     @Transactional
-    public Long updateMember(Long memberId, MemberUpdateRequest request) {
+    public Long updateMember(Long memberId, UserUpdateRequest request) {
         // 1. 회원 찾기
         User user = userRepository.findById(memberId)
                 .orElseThrow(UserNotFoundException::new);
@@ -58,28 +58,49 @@ public class UserServiceImpl implements UserService{
         return userId;
     }
 
-    // 검색 & 조회 기능
+
+    // 검색 조회
     @Override
-    public List<User> searchMembers(String name, String email, String companyName, String type) {
-        CompanyType companyType = null;
+    public UserDataResponse searchUsers(String name, String email) {
 
-        // 1. String 타입의 type 파라미터를 Enum으로 변환
-        if (type != null && !type.isBlank()) {
-            try {
-                companyType = CompanyType.valueOf(type.toUpperCase());
-            } catch (BusinessException e) {
-                // 잘못된 type 값은 무시하고 null로 (쿼리에서 IS NULL 처리됨)
-            }
-        }
+        // 1. 회원 목록 조회
+        List<User> allMembers = userRepository.findByNamicMembers(name, email, null,null);
 
-        // 2. Repository의 @Query 메서드 호출
-        return userRepository.findByNamicMembers(
-                name,
-                email,
-                companyName,
-                companyType // Enum 값 전달
+        // 2. 회사 목록 조회
+        List<Company> allCompanies = companyRepository.findAll();
+
+        // 3. 회원 목록 역할별 분리
+
+        // 개발사 회원 DTO 변환
+        List<DeveloperUserResponse> developerResponses = allMembers.stream()
+                .filter(user -> user.getRole() == Role.DEVELOPER)
+                .map(DeveloperUserResponse::new)
+                .toList();
+
+        // 고객사 회원 DTO 변환
+        List<CustomerUserResponse> clientResponses = allMembers.stream()
+                .filter(user -> user.getRole() == Role.CUSTOMER)
+                .map(CustomerUserResponse::new)
+                .toList();
+
+        // 4. UserItems 객체 생성
+        UserItems<DeveloperUserResponse> developerItems = new UserItems<>(developerResponses);
+        UserItems<CustomerUserResponse> clientItems = new UserItems<>(clientResponses);
+
+        // 5. 회사 목록 DTO 변환 -> UserItems 객체 생성
+        List<CompanySearchResponse> companyResponses = allCompanies.stream()
+                .map(CompanySearchResponse::new)
+                .toList();
+
+        UserItems<CompanySearchResponse> companyItems = new UserItems<>(companyResponses);
+
+        return new UserDataResponse(
+                developerItems,
+                clientItems,
+                companyItems
         );
     }
+
 
     // UserService
     @Override

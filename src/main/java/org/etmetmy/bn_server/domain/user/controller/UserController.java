@@ -4,10 +4,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserSessionDto;
-import org.etmetmy.bn_server.domain.user.dto.request.MemberUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
+import org.etmetmy.bn_server.domain.user.dto.response.UserDataResponse;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.service.UserService;
@@ -16,8 +18,6 @@ import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -75,17 +75,17 @@ public class UserController {
 
     }
 
-    // 회원 조회 & 검색 API
-    @GetMapping
-    public CommonResponse<List<User>> getMembers(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String email,
-            @RequestParam(required = false) String companyName,
-            @RequestParam(required = false) String type
-    ) {
 
-        List<User> members = userService.searchMembers(name, email, companyName, type);
-        return CommonResponse.success("회원을 성공적으로 조회하였습니다.", members);
+    //회원 조회
+    @GetMapping("/admin/users")
+    public CommonResponse<UserDataResponse> searchUsers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String email
+
+    ) {
+        UserDataResponse usersBoardData = userService.searchUsers(name, email);
+
+        return CommonResponse.success("대시보드 데이터를 성공적으로 조회하였습니다.", usersBoardData);
     }
 
     //회원 삭제 (DELETE)
@@ -99,7 +99,7 @@ public class UserController {
     @PutMapping("/admin/users/{memberId}")
     public CommonResponse<Long> updateMember(
             @PathVariable Long memberId,
-            @RequestBody MemberUpdateRequest request
+            @RequestBody UserUpdateRequest request
     ) {
         Long userId = userService.updateMember(memberId, request);
 

@@ -47,7 +47,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberSearchResponse> searchClientMembers() {
-        CompanyType companyType = CompanyType.CLIENT;
+        CompanyType companyType = CompanyType.CUSTOMER;
         return userRepository.findByCompanyType(companyType);
     }
 
