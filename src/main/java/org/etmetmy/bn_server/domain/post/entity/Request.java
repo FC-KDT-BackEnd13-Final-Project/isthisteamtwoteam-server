@@ -22,7 +22,7 @@ public class Request extends BaseEntity {
     @Column(name = "request_id")
     private Long requestId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 

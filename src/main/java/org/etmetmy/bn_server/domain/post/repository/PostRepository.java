@@ -62,9 +62,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT MAX(p.postNumber) FROM Post p WHERE p.project.id = :projectId")
     Optional<Long> findMaxPostNumberByProjectId(@Param("projectId") Long projectId);
 
-    /**
-     * STATUS_PENDING 상태인 Request를 가진 Post 목록 조회
-     */
+    // status에 따른 post 조회
     @Query("SELECT DISTINCT p FROM Post p " +
             "join fetch p.user u " +
             "join fetch p.stage s " +
@@ -72,5 +70,32 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE r.approveStatus = :status " +
             "ORDER BY p.createdAt DESC")
     List<Post> findPostsWithRequestStatus(@Param("status") RequestStatus status);
+
+    /**
+     * 특정 stageId의 Post와 연결된 Request 함께 조회
+     */
+    // stageName에 따라 조회
+    @Query("SELECT p FROM Post p " +
+            "join fetch p.user u " +
+            "join fetch p.stage s " +
+            "join fetch p.project pr " +
+            "join fetch pr.company c " +
+            "left join fetch p.request " +
+            "WHERE p.stage.stageName = :stageName " +
+            "ORDER BY p.createdAt DESC")
+    List<Post> findPostsByStageName(@Param("stageName") String stageName);
+
+    /**
+     * Request가 있는 모든 Post 조회 (승인 요청이 있는 게시글만)
+     */
+    @Query("SELECT p FROM Post p " +
+            "join fetch p.user u " +
+            "join fetch p.stage s " +
+            "join fetch p.project pr " +
+            "join fetch pr.company c " +
+            "join fetch p.request r " +
+            "WHERE p.request IS NOT NULL " +
+            "ORDER BY p.createdAt DESC")
+    List<Post> findAllPostsWithRequest();
 
 }

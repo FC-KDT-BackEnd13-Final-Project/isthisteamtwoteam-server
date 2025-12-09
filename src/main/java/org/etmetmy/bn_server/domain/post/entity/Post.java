@@ -63,6 +63,10 @@ public class Post extends BaseEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Link> links = new ArrayList<>();
 
+    //요청 (1:1 관계)
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Request request;
+
 
     // 게시글 업데이트 메서드
     public void updateTitle(String title) {
