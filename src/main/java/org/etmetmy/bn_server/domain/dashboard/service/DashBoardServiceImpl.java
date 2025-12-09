@@ -45,6 +45,10 @@ public class DashBoardServiceImpl implements DashBoardService{
     @Override
     @Transactional(readOnly = true)
     public DashBoardResponse getStatusDashboard(Long loginUserId) {
+        // 유저 검증
+        userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
         // STATUS_PENDING(요청대기) 상태인 Post 목록
         List<Post> pendingPosts = postRepository.findPostsWithRequestStatus(RequestStatus.STATUS_PENDING);
         List<DashBoardStatusResponseDTO> pendingList = DashBoardStatusResponseDTO.Converter.toPostDTOList(pendingPosts, RequestStatus.STATUS_PENDING);

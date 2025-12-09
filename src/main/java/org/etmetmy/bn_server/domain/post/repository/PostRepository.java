@@ -66,9 +66,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
      * STATUS_PENDING 상태인 Request를 가진 Post 목록 조회
      */
     @Query("SELECT DISTINCT p FROM Post p " +
-            "JOIN p.user u " +
-            "JOIN p.stage s " +
-            "JOIN Request r ON r.post.postId = p.postId " +
+            "join fetch p.user u " +
+            "join fetch p.stage s " +
+            "join fetch Request r ON r.post.postId = p.postId " +
             "WHERE r.approveStatus = :status " +
             "ORDER BY p.createdAt DESC")
     List<Post> findPostsWithRequestStatus(@Param("status") RequestStatus status);

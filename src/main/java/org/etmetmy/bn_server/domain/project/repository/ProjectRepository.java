@@ -49,7 +49,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p " +
             "JOIN FETCH p.stage s " +
             "JOIN FETCH p.company c " +
-            "WHERE p.stage.id BETWEEN 3 AND 7 " +
+            "WHERE p.stage.stageName in ('요구사항 정의', '화면 설계', '디자인, 퍼블리싱', '개발', '검수')" +
             "AND p.isDeleted = false " +
             "ORDER BY p.createdAt DESC")
     List<Project> findProjectsInProgress();
@@ -58,7 +58,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p " +
             "JOIN FETCH p.stage s " +
             "JOIN FETCH p.company c " +
-            "WHERE p.stage.id = 8" +
+            "WHERE p.stage.stageName = '유지보수'" +
             "AND p.isDeleted = false " +
             "ORDER BY p.createdAt DESC")
     List<Project> findProjectsMaintenance();
