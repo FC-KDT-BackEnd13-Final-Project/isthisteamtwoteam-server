@@ -451,16 +451,4 @@ public class ProjectServiceImpl implements ProjectService{
 
         return ProjectDetailResponse.Converter.from(project);
     }
-
-    // 삭제된 프로젝트 조회 (ADMIN만)
-    @Override
-    @Transactional(readOnly = true)
-    public List<ProjectTrashResponse> getTrashProject(Long loginUserId){
-        User user = userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
-
-        List<Project> deletedProjects = projectRepository.getDeletedProjects();
-
-        return ProjectTrashResponse.Converter.from(deletedProjects, loginUserId);
-    }
 }

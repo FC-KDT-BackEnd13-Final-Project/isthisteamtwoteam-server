@@ -19,12 +19,6 @@ public class ProjectTrashResponse {
                     .projectId(projectId)
                     .build();
         }
-
-        public static ProjectTrashResponse from(List<Project> projects){
-            return ProjectTrashResponse.builder()
-                    .projectId(projectId)
-                    .build();
-        }
     }
 
 }

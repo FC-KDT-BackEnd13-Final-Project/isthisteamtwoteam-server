@@ -158,14 +158,4 @@ public class ProjectController {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchClientMembers();
         return CommonResponse.success("고객사 사원 조회 성공", responses);
     }
-
-    // 삭제된 프로젝트 조회 API
-    @GetMapping("/trash")
-    public CommonResponse<List<ProjectTrashResponse>> getTrashProject(HttpSession session) {
-
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        List<ProjectTrashResponse> response = projectService.getTrashProject(loginUserId);
-
-        return CommonResponse.success("삭제된 프로젝트 조회 성공", response);
-    }
 }

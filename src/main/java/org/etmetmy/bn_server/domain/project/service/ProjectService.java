@@ -38,7 +38,4 @@ public interface ProjectService {
     // 프로젝트 진행단계 수정
     ProjectStageUpdateResponse updateProjectStage(Long projectId, ProjectStageUpdateRequest request, Long currentUserId);
     ProjectDetailResponse getProjectDetail(Long projectId);
-
-    // 삭제된 프로젝트 조회
-    List<ProjectTrashResponse> getTrashProject(Long loginUserId);
 }
