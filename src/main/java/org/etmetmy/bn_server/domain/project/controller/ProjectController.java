@@ -3,12 +3,15 @@ package org.etmetmy.bn_server.domain.project.controller;
 import jakarta.servlet.http.HttpSession;
 
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 
 import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.exception.custom.InvalidInputException;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
@@ -145,17 +148,62 @@ public class ProjectController {
     }
 
 
-    //프로젝트 생성 - 개발사 사원 조회
-    @GetMapping(value = "/users", params = "type=developers")
-    public CommonResponse<List<ProjectMemberSearchResponse>> searchDevelopersForCreate() {
-        List<ProjectMemberSearchResponse> responses = projectMemberService.searchDeveloperMembers();
-        return CommonResponse.success("개발사 사원 조회 성공", responses);
+    //프로젝트 생성 - 개발사/고객사 사원 조회
+    @GetMapping(value = "/users" )
+    public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForCreate(
+            @RequestParam("role") Role role
+    ) {
+        if (role == null) {
+            throw new InvalidInputException("role 파라미터는 필수입니다. (DEVELOPER 또는 CUSTOMER)");
+        }
+
+        if (role == Role.ADMIN) {
+            throw new InvalidInputException("관리자(ADMIN)는 조회할 수 없습니다.");
+        }
+
+        List<ProjectMemberSearchResponse> responses;
+
+        if (role == Role.DEVELOPER) {
+            // 개발사: 회사명 NULL, 이미 프로젝트에 속한 유저 제외
+            responses = projectMemberService.searchDeveloperMembers();
+            return CommonResponse.success("개발사 사원 조회 성공", responses);
+        } else if (role == Role.CUSTOMER) {
+            // 고객사: 회사명 포함, 이미 프로젝트에 속한 유저 제외
+            responses = projectMemberService.searchClientMembers();
+            return CommonResponse.success("고객사 사원 조회 성공", responses);
+        } else {
+            throw new InvalidInputException("유효하지 않은 role 값입니다. (DEVELOPER, CUSTOMER만 사용 가능)");
+        }
     }
-    //프로젝트 생성 - 고객사 사원 조회
-    @GetMapping(value = "/users", params = "type=clients")
-    public CommonResponse<List<ProjectMemberSearchResponse>> searchClientsForCreate() {
-        List<ProjectMemberSearchResponse> responses = projectMemberService.searchClientMembers();
-        return CommonResponse.success("고객사 사원 조회 성공", responses);
+
+
+    // 프로젝트 설정 - 개발사/고객사 담당자, 사원 조회
+    @GetMapping("/{projectId}/users")
+    public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(
+            @PathVariable Long projectId,
+            @RequestParam("role") Role role
+    ) {
+        if (role == null) {
+            throw new InvalidInputException("role 파라미터는 필수입니다. (DEVELOPER 또는 CUSTOMER)");
+        }
+
+        if (role == Role.ADMIN) {
+            throw new InvalidInputException("관리자(ADMIN)는 조회할 수 없습니다.");
+        }
+
+        List<ProjectMemberSearchResponse> responses;
+
+        if (role == Role.DEVELOPER) {
+            // 개발사: 회사명 NULL, 이미 프로젝트에 속한 유저 제외
+            responses = projectMemberService.searchDeveloperMembersForProject(projectId);
+            return CommonResponse.success("개발사 사원 조회 성공", responses);
+        } else if (role == Role.CUSTOMER) {
+            // 고객사: 회사명 포함, 이미 프로젝트에 속한 유저 제외
+            responses = projectMemberService.searchClientMembersForProject(projectId);
+            return CommonResponse.success("고객사 사원 조회 성공", responses);
+        } else {
+            throw new InvalidInputException("유효하지 않은 role 값입니다. (DEVELOPER, CUSTOMER만 사용 가능)");
+        }
     }
 
 }

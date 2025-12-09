@@ -3,6 +3,7 @@ package org.etmetmy.bn_server.domain.user.repository;
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -43,5 +44,31 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "FROM User u " +
             "WHERE u.company.type = :companyType")
     List<ProjectMemberSearchResponse> findByCompanyType(@Param("companyType") CompanyType companyType);
+
+    // 개발사 조회 - 회사명 NULL로 반환 (Admin 제외)
+    @Query("SELECT new org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse(" +
+            "u.id, u.name, u.email, c.companyId, NULL) " +    // 회사명 NULL
+            "FROM User u " +
+            "LEFT JOIN u.company c " +
+            "WHERE u.role <> org.etmetmy.bn_server.domain.user.entity.Role.ADMIN " +
+            "AND (" +
+            "       (c IS NOT NULL AND c.type = org.etmetmy.bn_server.domain.company.entity.CompanyType.DEVELOPER) " +
+            "    OR (c IS NULL AND u.role = org.etmetmy.bn_server.domain.user.entity.Role.DEVELOPER) " +
+            ")")
+    List<ProjectMemberSearchResponse> findDeveloperCandidates();
+
+    //고객사 조회 (관리자 제외, 회사 있으면 type=CLIENT, 없으면 role=CUSTOMER)
+
+    @Query("SELECT new org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse(" +
+            "u.id, u.name, u.email, c.companyId, c.companyName) " +  // 회사명 포함
+            "FROM User u " +
+            "LEFT JOIN u.company c " +
+            "WHERE u.role <> org.etmetmy.bn_server.domain.user.entity.Role.ADMIN " +
+            "AND (" +
+            "       (c IS NOT NULL AND c.type = org.etmetmy.bn_server.domain.company.entity.CompanyType.CLIENT) " +
+            "    OR (c IS NULL AND u.role = org.etmetmy.bn_server.domain.user.entity.Role.CUSTOMER) " +
+            ")")
+    List<ProjectMemberSearchResponse> findClientCandidates();
+
 
 }

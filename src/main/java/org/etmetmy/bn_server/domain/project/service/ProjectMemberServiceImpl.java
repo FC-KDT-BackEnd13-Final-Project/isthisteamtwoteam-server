@@ -5,6 +5,7 @@ import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse;
 import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,19 +40,35 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberSearchResponse> searchDeveloperMembers() {
-        CompanyType companyType = CompanyType.DEVELOPER;
-        return userRepository.findByCompanyType(companyType);
+        return userRepository.findDeveloperCandidates();
     }
-
     // 프로젝트 생성- 고객사 담당자, 사원 조회
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberSearchResponse> searchClientMembers() {
-        CompanyType companyType = CompanyType.CLIENT;
-        return userRepository.findByCompanyType(companyType);
+        return userRepository.findClientCandidates();
     }
 
+    // 프로젝트 설정 - 개발사 사원 조회 (프로젝트 멤버 + Admin 제외)
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProjectMemberSearchResponse> searchDeveloperMembersForProject(Long projectId) {
+        Set<Long> existingUserIds = getProjectMemberUserIds(projectId);
 
+        return userRepository.findDeveloperCandidates().stream()
+                .filter(dto -> dto.getUserId() != null && !existingUserIds.contains(dto.getUserId()))
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProjectMemberSearchResponse> searchClientMembersForProject(Long projectId) {
+        Set<Long> existingUserIds = getProjectMemberUserIds(projectId);
+
+        return userRepository.findClientCandidates().stream()
+                .filter(dto -> dto.getUserId() != null && !existingUserIds.contains(dto.getUserId()))
+                .collect(Collectors.toList());
+    }
 
 
     //프로젝트에 속한 유저
@@ -62,9 +79,5 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
                 .map(user -> user.getId())
                 .collect(Collectors.toSet());
     }
-
-
-
-
 
 }
