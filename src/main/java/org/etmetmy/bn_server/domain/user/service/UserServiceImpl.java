@@ -70,22 +70,22 @@ public class UserServiceImpl implements UserService{
         List<Company> allCompanies = companyRepository.findAll();
 
         // 3. 회원 목록 역할별 분리
-        List<DeveloperUserResponse> developerResponses = DeveloperUserResponse.fromList(allMembers);
+        List<DeveloperUserResponse> developerResponses = DeveloperUserResponse.Converter.fromList(allMembers);
 
-        List<CustomerUserResponse> customerResponses = CustomerUserResponse.fromList(allMembers);
+        List<CustomerUserResponse> customerResponses = CustomerUserResponse.Converter.fromList(allMembers);
 
         // 4. UserItems 객체 생성
-        UserItems<DeveloperUserResponse> developerItems = new UserItems<>(developerResponses);
-        UserItems<CustomerUserResponse> clientItems = new UserItems<>(customerResponses);
+        UserItems<DeveloperUserResponse> developerItems = UserItems.create(developerResponses);
+        UserItems<CustomerUserResponse> customerItems = UserItems.create(customerResponses);
 
-        // 5. 회사 목록 DTO 변환 -> UserItems 객체 생성
-        List<CompanySearchResponse> companyResponses = CompanySearchResponse.fromList(allCompanies);
+        // 5. 회사 목록 DTO 변환
+        List<CompanySearchResponse> companyResponses = CompanySearchResponse.Converter.fromList(allCompanies);
 
-        UserItems<CompanySearchResponse> companyItems = new UserItems<>(companyResponses);
+        UserItems<CompanySearchResponse> companyItems = UserItems.create(companyResponses);
 
-        return new UserDataResponse(
+        return UserDataResponse.create(
                 developerItems,
-                clientItems,
+                customerItems,
                 companyItems
         );
     }

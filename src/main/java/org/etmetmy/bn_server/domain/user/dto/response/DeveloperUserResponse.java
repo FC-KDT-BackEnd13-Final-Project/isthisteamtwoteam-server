@@ -18,18 +18,22 @@ public class DeveloperUserResponse {
     private final String phone;
 
 
-    public static DeveloperUserResponse from(User user) {
-        return DeveloperUserResponse.builder()
-                .name(user.getName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .build();
-    }
+    public static class Converter {
 
-    public static List<DeveloperUserResponse> fromList(List<User> users) {
-        return users.stream()
-                .filter(user -> user.getRole() == Role.DEVELOPER)
-                .map(DeveloperUserResponse::from)
-                .toList();
+        public static DeveloperUserResponse from(User user) {
+            return DeveloperUserResponse.builder()
+                    .name(user.getName())
+                    .email(user.getEmail())
+                    .phone(user.getPhone())
+                    .build();
+        }
+
+
+        public static List<DeveloperUserResponse> fromList(List<User> users) {
+            return users.stream()
+                    .filter(user -> user.getRole() == Role.DEVELOPER)
+                    .map(Converter::from)
+                    .toList();
+        }
     }
 }

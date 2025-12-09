@@ -18,19 +18,23 @@ public class CompanySearchResponse {
     private final String userPhone;
 
 
-    public static CompanySearchResponse from(Company company) {
-        return CompanySearchResponse.builder()
-                .id(company.getCompanyId())
-                .companyName(company.getCompanyName())
-                .address(company.getCompanyAddress())
-                .manager(company.getCompanyContactPerson())
-                .userPhone(company.getCompanyContactPhone())
-                .build();
-    }
+    public static class Converter {
 
-    public static List<CompanySearchResponse> fromList(List<Company> companies) {
-        return companies.stream()
-                .map(CompanySearchResponse::from)
-                .toList();
+        public static CompanySearchResponse from(Company company) {
+
+            return CompanySearchResponse.builder()
+                    .id(company.getCompanyId())
+                    .companyName(company.getCompanyName())
+                    .address(company.getCompanyAddress())
+                    .manager(company.getCompanyContactPerson())
+                    .userPhone(company.getCompanyContactPhone())
+                    .build();
+        }
+
+        public static List<CompanySearchResponse> fromList(List<Company> companies) {
+            return companies.stream()
+                    .map(Converter::from)
+                    .toList();
+        }
     }
 }
