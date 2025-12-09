@@ -9,8 +9,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static org.etmetmy.bn_server.domain.user.entity.QUser.user;
-
 @Repository
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Long> {
 
@@ -22,12 +20,12 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     boolean existsByProjectIdAndUserId(@Param("projectId") Long projectId,
                                        @Param("userId") Long userId);
 
-    // 프로젝트 + 유저 기준으로 매핑 삭제
-    long deleteByProjectIdAndUserId(Long projectId, Long userId);
-
     List<ProjectMember> findByProjectId(Long projectId);
     List<ProjectMember> findByProjectIdIn(List<Long> projectIds);
     ProjectMember findByUserIdAndProjectId(Long userId, Long projectId);
+
+    // 프로젝트 + 유저 기준으로 매핑 삭제
+    long deleteByProjectIdAndUserId(Long projectId, Long userId);
     
     // 권한이 있는 모든 프로젝트 조회
     @Query("""
