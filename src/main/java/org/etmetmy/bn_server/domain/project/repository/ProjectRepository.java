@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.project.repository;
 
+import org.etmetmy.bn_server.domain.project.dto.response.ProjectTrashResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
@@ -43,5 +45,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "WHERE p.id = :projectId")
     int updateProjectStage(@Param("projectId") Long projectId,
                            @Param("stageId") Long stageId);
+
+
 
 }

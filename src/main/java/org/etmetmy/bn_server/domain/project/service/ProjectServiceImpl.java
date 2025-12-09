@@ -13,6 +13,7 @@ import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
+import org.etmetmy.bn_server.domain.project.dto.response.ProjectTrashResponse;
 import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.project.repository.ProjectStageRepository;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
@@ -449,5 +450,17 @@ public class ProjectServiceImpl implements ProjectService{
                 .orElseThrow(ProjectNotFoundException::new);
 
         return ProjectDetailResponse.Converter.from(project);
+    }
+
+    // 삭제된 프로젝트 조회 (ADMIN만)
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProjectTrashResponse> getTrashProject(Long loginUserId){
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        List<Project> deletedProjects = projectRepository.getDeletedProjects();
+
+        return ProjectTrashResponse.Converter.from(deletedProjects, loginUserId);
     }
 }

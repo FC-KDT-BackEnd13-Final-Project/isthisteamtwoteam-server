@@ -6,7 +6,6 @@ import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectMemberRequest;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
-import org.etmetmy.bn_server.global.CommonResponse;
 
 import java.util.List;
 
@@ -40,6 +39,6 @@ public interface ProjectService {
     ProjectStageUpdateResponse updateProjectStage(Long projectId, ProjectStageUpdateRequest request, Long currentUserId);
     ProjectDetailResponse getProjectDetail(Long projectId);
 
-
-
+    // 삭제된 프로젝트 조회
+    List<ProjectTrashResponse> getTrashProject(Long loginUserId);
 }

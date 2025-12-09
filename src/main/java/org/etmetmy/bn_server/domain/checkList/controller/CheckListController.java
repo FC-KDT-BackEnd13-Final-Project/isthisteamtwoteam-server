@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/checklists")
+@RequestMapping("/api/v1/admin/checklists")
 public class CheckListController {
 
     private final CheckListService checkListService;

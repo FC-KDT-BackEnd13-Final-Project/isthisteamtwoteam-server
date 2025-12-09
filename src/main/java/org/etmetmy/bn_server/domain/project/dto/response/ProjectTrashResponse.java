@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.etmetmy.bn_server.domain.project.entity.Project;
 
 @Getter
 @NoArgsConstructor
@@ -14,6 +15,12 @@ public class ProjectTrashResponse {
 
     public static class Converter{
         public static ProjectTrashResponse from(Long projectId){
+            return ProjectTrashResponse.builder()
+                    .projectId(projectId)
+                    .build();
+        }
+
+        public static ProjectTrashResponse from(List<Project> projects){
             return ProjectTrashResponse.builder()
                     .projectId(projectId)
                     .build();
