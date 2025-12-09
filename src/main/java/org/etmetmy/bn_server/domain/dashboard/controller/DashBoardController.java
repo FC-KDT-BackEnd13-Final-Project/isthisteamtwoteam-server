@@ -2,11 +2,15 @@ package org.etmetmy.bn_server.domain.dashboard.controller;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.dashboard.dto.response.DashBoardStatusResponseDTO;
 import org.etmetmy.bn_server.domain.dashboard.service.DashBoardService;
+import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -15,11 +19,12 @@ public class DashBoardController {
 
     private final DashBoardService dashBoardService;
 
-    // 관리자 메인대시보드 상태 조회
+    // 관리자 메인대시보드 상태 조회 (STATUS_PENDING인 Post 목록)
     @GetMapping
-    public void getStatusDashboard(HttpSession session) {
+    public CommonResponse<List<DashBoardStatusResponseDTO>> getStatusDashboard(HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
-        dashBoardService.getStatusDashboard(loginUserId);
+        List<DashBoardStatusResponseDTO> result = dashBoardService.getStatusDashboard(loginUserId);
+        return CommonResponse.success("성공",result);
     }
 }
