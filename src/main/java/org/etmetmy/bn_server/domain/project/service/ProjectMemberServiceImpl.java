@@ -50,9 +50,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다");
         };
 
-        return users.stream()
-                .map(user -> convertToDto(user, role))
-                .toList();
+        return ProjectMemberSearchResponse.Converter.from(users, role);
     }
 
     @Transactional(readOnly = true)
@@ -66,22 +64,11 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             case CUSTOMER -> userRepository.findClientCandidates();
             default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다.");
         };
-        return users.stream()
+        List<User> filteredUsers =users.stream()
                 .filter(user -> !existingUserIds.contains(user.getId()))
-                .map(user -> convertToDto(user, role))
                 .toList();
-    }
 
-    private ProjectMemberSearchResponse convertToDto(User user, Role role) {
-        return ProjectMemberSearchResponse.builder()
-                .userId(user.getId())
-                .userName(user.getName())
-                .email(user.getEmail())
-                .companyId(user.getCompany() != null ? user.getCompany().getCompanyId() : null)
-                // 개발사는 회사명 NULL, 고객사는 회사명 포함
-                .companyName(role == Role.DEVELOPER ? null :
-                        (user.getCompany() != null ? user.getCompany().getCompanyName() : null))
-                .build();
+        return ProjectMemberSearchResponse.Converter.from(filteredUsers, role);
     }
 
     // 공통 검증 로직
