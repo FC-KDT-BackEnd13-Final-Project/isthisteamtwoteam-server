@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.project.service;
 
+import jakarta.servlet.http.HttpSession;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
@@ -38,4 +39,7 @@ public interface ProjectService {
     // 프로젝트 진행단계 수정
     ProjectStageUpdateResponse updateProjectStage(Long projectId, ProjectStageUpdateRequest request, Long currentUserId);
     ProjectDetailResponse getProjectDetail(Long projectId);
+
+    // (휴지통 페이지) 삭제된 프로젝트 조회
+    List<DeletedProjectResponse> getDeletedProjectList(Long loginUserId);
 }

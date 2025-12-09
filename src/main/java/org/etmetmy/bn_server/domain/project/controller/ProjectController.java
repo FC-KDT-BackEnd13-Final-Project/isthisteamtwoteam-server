@@ -12,6 +12,7 @@ import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
 
@@ -157,5 +158,15 @@ public class ProjectController {
     public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(@PathVariable Long projectId, @RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForProject(projectId, role);
             return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
+    }
+
+    //todo: 삭제된 프로젝트 목록 조회
+    @GetMapping("/trash")
+    public CommonResponse<List<DeletedProjectResponse>> getDeletedProjectList(HttpSession session)
+    {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        List<DeletedProjectResponse> response = projectService.getDeletedProjectList(loginUserId);
+
+        return CommonResponse.success("삭제된 프로젝트 목록 조회", response);
     }
 }

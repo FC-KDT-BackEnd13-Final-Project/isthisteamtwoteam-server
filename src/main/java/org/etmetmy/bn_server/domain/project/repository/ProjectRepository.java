@@ -63,5 +63,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "ORDER BY p.createdAt DESC")
     List<Project> findProjectsMaintenance();
 
+    // 삭제되지 않은 모든 프로젝트 조회
+    @Query("select p from Project p where (p.isDeleted IS NULL OR p.isDeleted = false)")
+    List<Project> findActiveProjects();
 
+    // 삭제된 프로젝트 조회
+    @Query("select p from Project p where p.isDeleted = true")
+    List<Project> findDeletedProjects();
 }
