@@ -43,5 +43,4 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "WHERE p.id = :projectId")
     int updateProjectStage(@Param("projectId") Long projectId,
                            @Param("stageId") Long stageId);
-
 }
