@@ -45,9 +45,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     int updateProjectStage(@Param("projectId") Long projectId,
                            @Param("stageId") Long stageId);
 
-    /**
-     * stage_id가 3~7 범위인 진행 중인 프로젝트 조회
-     */
+    // 진행중인 프로젝트 조회
     @Query("SELECT p FROM Project p " +
             "JOIN FETCH p.stage s " +
             "JOIN FETCH p.company c " +
@@ -56,9 +54,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "ORDER BY p.createdAt DESC")
     List<Project> findProjectsInProgress();
 
-    /**
-     * stage_id가 3~7 범위인 진행 중인 프로젝트 조회
-     */
+    // 유지보수 프로젝트 조회
     @Query("SELECT p FROM Project p " +
             "JOIN FETCH p.stage s " +
             "JOIN FETCH p.company c " +

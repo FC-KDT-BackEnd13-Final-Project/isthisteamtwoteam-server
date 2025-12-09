@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.checkList.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListCreateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 import org.etmetmy.bn_server.domain.checkList.service.CheckListService;
@@ -13,15 +14,15 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/checklists")
+@RequestMapping("/api/v1/admin/checklists")
 public class CheckListController {
 
     private final CheckListService checkListService;
 
     // todo : 체크리스트 생성
     @PostMapping
-    public CommonResponse<CheckListResponse> createCheckList() {
-        return CommonResponse.success("체크리스트를 생성했습니다", checkListService.save());
+    public CommonResponse<CheckListResponse> createCheckList(@RequestBody CheckListCreateRequest request) {
+        return CommonResponse.success("체크리스트를 생성했습니다", checkListService.save(request));
     }
 
     // todo : 체크리스트 수정
