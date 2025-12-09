@@ -26,7 +26,7 @@ public class DashBoardController {
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
         DashBoardResponse result = dashBoardService.getStatusDashboard(loginUserId);
-        return CommonResponse.success("성공", result);
+        return CommonResponse.success("상태 게시글 조회 성공", result);
     }
 
     //todo: 프로젝트 목록 조회 API
