@@ -20,11 +20,11 @@ public class DashBoardServiceImpl implements DashBoardService{
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
 
+    // 1. 프로젝트 목록 조회 (접근 권한 정보 제공)
     public List<ProjectListResponse> getProjectList(Long loginUserId){
 
         // 유저 검증
-        User user = userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
 
         // 모든 프로젝트 목록 조회
         List<Project> allProjects = projectRepository.findAll();
