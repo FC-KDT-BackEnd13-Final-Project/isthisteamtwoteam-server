@@ -1,13 +1,12 @@
 package org.etmetmy.bn_server.domain.user.repository;
 
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param; // Param import
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -38,37 +37,29 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
 
-     //회사 타입(개발사/고객사) 기준 전체 사원/담당자 조회
-    @Query("SELECT new org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse(" +
-            "u.id, u.name, u.email, u.company.companyId, u.company.companyName) " +
-            "FROM User u " +
+    // 회사 타입(개발사/고객사) 기준 전체 사원/담당자 조회
+    @Query("SELECT u FROM User u " +
+            "LEFT JOIN FETCH u.company " +
             "WHERE u.company.type = :companyType")
-    List<ProjectMemberSearchResponse> findByCompanyType(@Param("companyType") CompanyType companyType);
+    List<User> findByCompanyType(@Param("companyType") CompanyType companyType);
 
-    // 개발사 조회 - 회사명 NULL로 반환 (Admin 제외)
-    @Query("SELECT new org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse(" +
-            "u.id, u.name, u.email, c.companyId, NULL) " +    // 회사명 NULL
-            "FROM User u " +
-            "LEFT JOIN u.company c " +
-            "WHERE u.role <> org.etmetmy.bn_server.domain.user.entity.Role.ADMIN " +
+    // 개발사 조회 (Admin 제외, 회사 있으면 type=DEVELOPER, 없으면 role=DEVELOPER)
+    @Query("SELECT u FROM User u " +
+            "LEFT JOIN FETCH u.company c " +
+            "WHERE u.role <> Role.ADMIN " +
             "AND (" +
-            "       (c IS NOT NULL AND c.type = org.etmetmy.bn_server.domain.company.entity.CompanyType.DEVELOPER) " +
-            "    OR (c IS NULL AND u.role = org.etmetmy.bn_server.domain.user.entity.Role.DEVELOPER) " +
+            "    (c IS NOT NULL AND c.type = CompanyType.DEVELOPER) " +
+            "    OR (c IS NULL AND u.role = Role.DEVELOPER)" +
             ")")
-    List<ProjectMemberSearchResponse> findDeveloperCandidates();
+    List<User> findDeveloperCandidates();
 
-    //고객사 조회 (관리자 제외, 회사 있으면 type=CLIENT, 없으면 role=CUSTOMER)
-
-    @Query("SELECT new org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse(" +
-            "u.id, u.name, u.email, c.companyId, c.companyName) " +  // 회사명 포함
-            "FROM User u " +
-            "LEFT JOIN u.company c " +
-            "WHERE u.role <> org.etmetmy.bn_server.domain.user.entity.Role.ADMIN " +
+    // 고객사 조회 (관리자 제외, 회사 있으면 type=CLIENT, 없으면 role=CUSTOMER)
+    @Query("SELECT u FROM User u " +
+            "LEFT JOIN FETCH u.company c " +
+            "WHERE u.role <> Role.ADMIN " +
             "AND (" +
-            "       (c IS NOT NULL AND c.type = org.etmetmy.bn_server.domain.company.entity.CompanyType.CLIENT) " +
-            "    OR (c IS NULL AND u.role = org.etmetmy.bn_server.domain.user.entity.Role.CUSTOMER) " +
+            "    (c IS NOT NULL AND c.type = CompanyType.CLIENT) " +
+            "    OR (c IS NULL AND u.role = Role.CUSTOMER)" +
             ")")
-    List<ProjectMemberSearchResponse> findClientCandidates();
-
-
+    List<User> findClientCandidates();
 }

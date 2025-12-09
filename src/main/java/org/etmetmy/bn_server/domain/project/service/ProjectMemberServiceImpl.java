@@ -6,6 +6,7 @@ import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResp
 import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.user.entity.Role;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
 import org.springframework.stereotype.Service;
@@ -42,27 +43,45 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Override
     public List<ProjectMemberSearchResponse> searchUsersForCreate(Role role){
         validateRole(role);
-        return switch (role){
+
+        List<User> users = switch (role){
             case DEVELOPER -> userRepository.findDeveloperCandidates();
             case CUSTOMER -> userRepository.findClientCandidates();
             default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다");
         };
+
+        return users.stream()
+                .map(user -> convertToDto(user, role))
+                .toList();
     }
 
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberSearchResponse> searchUsersForProject(Long projectId, Role role) {
         validateRole(role);
-        Set<Long> existUserIds = getProjectMemberUserIds(projectId);
+        Set<Long> existingUserIds = getProjectMemberUserIds(projectId);
 
-        List<ProjectMemberSearchResponse> candidates = switch (role) {
+        List<User> users = switch (role) {
             case DEVELOPER -> userRepository.findDeveloperCandidates();
             case CUSTOMER -> userRepository.findClientCandidates();
             default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다.");
         };
-        return candidates.stream()
-                .filter(u -> !existUserIds.contains(u.getUserId()))
+        return users.stream()
+                .filter(user -> !existingUserIds.contains(user.getId()))
+                .map(user -> convertToDto(user, role))
                 .toList();
+    }
+
+    private ProjectMemberSearchResponse convertToDto(User user, Role role) {
+        return ProjectMemberSearchResponse.builder()
+                .userId(user.getId())
+                .userName(user.getName())
+                .email(user.getEmail())
+                .companyId(user.getCompany() != null ? user.getCompany().getCompanyId() : null)
+                // 개발사는 회사명 NULL, 고객사는 회사명 포함
+                .companyName(role == Role.DEVELOPER ? null :
+                        (user.getCompany() != null ? user.getCompany().getCompanyName() : null))
+                .build();
     }
 
     // 공통 검증 로직
