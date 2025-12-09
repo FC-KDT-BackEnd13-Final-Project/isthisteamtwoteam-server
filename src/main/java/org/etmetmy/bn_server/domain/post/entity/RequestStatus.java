@@ -1,5 +1,8 @@
 package org.etmetmy.bn_server.domain.post.entity;
 
+import lombok.Getter;
+
+@Getter
 public enum RequestStatus {
 
     STATUS_APPROVED(0, "승인"),
@@ -12,13 +15,5 @@ public enum RequestStatus {
     RequestStatus(int code, String description) {
         this.code = code;
         this.description = description;
-    }
-
-    public int getCode() {
-        return code;
-    }
-
-    public String getDescription() {
-        return description;
     }
 }

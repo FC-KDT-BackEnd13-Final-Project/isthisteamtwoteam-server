@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, Long> {
@@ -43,4 +44,24 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "WHERE p.id = :projectId")
     int updateProjectStage(@Param("projectId") Long projectId,
                            @Param("stageId") Long stageId);
+
+    // 진행중인 프로젝트 조회
+    @Query("SELECT p FROM Project p " +
+            "JOIN FETCH p.stage s " +
+            "JOIN FETCH p.company c " +
+            "WHERE p.stage.stageName in ('요구사항 정의', '화면 설계', '디자인, 퍼블리싱', '개발', '검수')" +
+            "AND p.isDeleted = false " +
+            "ORDER BY p.createdAt DESC")
+    List<Project> findProjectsInProgress();
+
+    // 유지보수 프로젝트 조회
+    @Query("SELECT p FROM Project p " +
+            "JOIN FETCH p.stage s " +
+            "JOIN FETCH p.company c " +
+            "WHERE p.stage.stageName = '유지보수'" +
+            "AND p.isDeleted = false " +
+            "ORDER BY p.createdAt DESC")
+    List<Project> findProjectsMaintenance();
+
+
 }

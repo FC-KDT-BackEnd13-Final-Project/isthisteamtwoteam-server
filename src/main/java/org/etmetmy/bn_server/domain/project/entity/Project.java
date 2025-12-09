@@ -27,6 +27,9 @@ public class Project extends BaseEntity {
     @Column(name = "project_id")
     private Long id;
 
+    @Column(name = "project_image_url")
+    private String projectImageUrl;
+
     @Column(name = "project_name", nullable = false, length = 255)
     private String projectName;
 
