@@ -1,11 +1,16 @@
 package org.etmetmy.bn_server.domain.user.dto.response;
 
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 
+import java.util.List;
+
 @Getter
+@Builder
 @RequiredArgsConstructor
 public class DeveloperUserResponse {
     private final String name;
@@ -13,10 +18,18 @@ public class DeveloperUserResponse {
     private final String phone;
 
 
-    public DeveloperUserResponse(User user) {
-        this.name = user.getName();
-        this.email = user.getEmail();
-        this.phone = user.getPhone();
+    public static DeveloperUserResponse from(User user) {
+        return DeveloperUserResponse.builder()
+                .name(user.getName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .build();
+    }
 
+    public static List<DeveloperUserResponse> fromList(List<User> users) {
+        return users.stream()
+                .filter(user -> user.getRole() == Role.DEVELOPER)
+                .map(DeveloperUserResponse::from)
+                .toList();
     }
 }

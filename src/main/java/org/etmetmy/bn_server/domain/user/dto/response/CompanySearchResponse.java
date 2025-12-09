@@ -1,10 +1,14 @@
 package org.etmetmy.bn_server.domain.user.dto.response;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 
+import java.util.List;
+
 @Getter
+@Builder
 @RequiredArgsConstructor
 public class CompanySearchResponse {
     private final Long id;
@@ -14,11 +18,19 @@ public class CompanySearchResponse {
     private final String userPhone;
 
 
-    public CompanySearchResponse(Company company) {
-        this.id = company.getCompanyId();
-        this.companyName = company.getCompanyName();
-        this.address = company.getCompanyAddress();
-        this.manager = company.getCompanyContactPerson();
-        this.userPhone = company.getCompanyContactPhone();
+    public static CompanySearchResponse from(Company company) {
+        return CompanySearchResponse.builder()
+                .id(company.getCompanyId())
+                .companyName(company.getCompanyName())
+                .address(company.getCompanyAddress())
+                .manager(company.getCompanyContactPerson())
+                .userPhone(company.getCompanyContactPhone())
+                .build();
+    }
+
+    public static List<CompanySearchResponse> fromList(List<Company> companies) {
+        return companies.stream()
+                .map(CompanySearchResponse::from)
+                .toList();
     }
 }
