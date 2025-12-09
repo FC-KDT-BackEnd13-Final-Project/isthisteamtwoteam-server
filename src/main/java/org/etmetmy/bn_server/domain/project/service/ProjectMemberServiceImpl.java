@@ -43,6 +43,13 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
         return userRepository.findByCompanyType(companyType);
     }
 
+    // 프로젝트 생성- 고객사 담당자, 사원 조회
+    @Transactional(readOnly = true)
+    @Override
+    public List<ProjectMemberSearchResponse> searchClientMembers() {
+        CompanyType companyType = CompanyType.CLIENT;
+        return userRepository.findByCompanyType(companyType);
+    }
 
 
 

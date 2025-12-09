@@ -254,7 +254,7 @@ public class PostServiceImpl implements PostService {
         }
 
         // 3. 작성자 권한 검증
-        if (!post.getUser().getId().equals(loginUserId)) {
+        if(!post.getUser().getId().equals(loginUserId)){
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
 

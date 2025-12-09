@@ -53,7 +53,7 @@ public class PostCreateResponse {
 
     public static class Converter {
         public static PostCreateResponse from(
-                Post post, List<File> files, List<Link> links
+            Post post, List<File> files, List<Link> links
         ) {
             // 파일 목록 변환 (삭제되지 않은 파일만)
             List<FileInfoDTO> fileInfos = FileInfoDTO.Converter.from(files);

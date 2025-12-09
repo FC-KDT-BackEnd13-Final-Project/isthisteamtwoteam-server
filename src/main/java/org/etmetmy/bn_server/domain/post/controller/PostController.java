@@ -53,6 +53,7 @@ public class PostController {
         ReplyPostCreateResponse response = postService.createReplyPost(projectId, requestDto, postId, loginUserId);
         return CommonResponse.success("게시글 작성 성공", response);
     }
+
     /**
      * 게시글 상세 조회
      */

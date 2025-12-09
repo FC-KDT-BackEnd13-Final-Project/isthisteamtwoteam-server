@@ -56,7 +56,6 @@ public class PostCreateRequest {
                     .isCompleted(false)
                     .build();
         }
-
         public static Post toReplyEntity(
                 Project project,
                 User user,

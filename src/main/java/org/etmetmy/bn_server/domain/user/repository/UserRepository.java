@@ -39,7 +39,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
      //회사 타입(개발사/고객사) 기준 전체 사원/담당자 조회
     @Query("SELECT new org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse(" +
-            "u.id, u.name, u.email) " +
+            "u.id, u.name, u.email, u.company.companyId, u.company.companyName) " +
             "FROM User u " +
             "WHERE u.company.type = :companyType")
     List<ProjectMemberSearchResponse> findByCompanyType(@Param("companyType") CompanyType companyType);
