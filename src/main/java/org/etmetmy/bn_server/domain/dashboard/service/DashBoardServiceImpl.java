@@ -32,9 +32,6 @@ public class DashBoardServiceImpl implements DashBoardService{
         // 권한이 있는 모든 프로젝트 조회
         List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
 
-        return allProjects.stream()
-                .map(project -> ProjectListResponse.Converter.from(
-                                project, myProjectIds.contains(project.getId())
-                                )).toList();
+        return ProjectListResponse.Converter.from(allProjects, myProjectIds);
     }
 }

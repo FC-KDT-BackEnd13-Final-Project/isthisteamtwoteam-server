@@ -5,12 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.user.entity.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
@@ -46,19 +50,20 @@ public class ProjectListResponse {
     private boolean hasPermission;
 
     public static class Converter {
-        public static ProjectListResponse from(Project project, Boolean hasPermission) {
-
-            return ProjectListResponse.builder()
-                    .projectId(project.getId())
-                    .projectImageUrl(project.getProjectImageUrl())
-                    .projectName(project.getProjectName())
-                    .companyName(project.getCompany().getCompanyName())
-                    .stage(project.getStage().getStageName())
-                    .startDate(project.getStartDate())
-                    .endDate(project.getEndDate())
-                    .updateAt(project.getUpdatedAt())
-                    .hasPermission(hasPermission)
-                    .build();
+        public static List<ProjectListResponse> from(List<Project> projects, List<Long> myProjectIds) {
+            return projects.stream()
+                    .map(project -> ProjectListResponse.builder()
+                            .projectId(project.getId())
+                            .projectImageUrl(project.getProjectImageUrl())
+                            .projectName(project.getProjectName())
+                            .companyName(project.getCompany().getCompanyName())
+                            .stage(project.getStage().getStageName())
+                            .startDate(project.getStartDate())
+                            .endDate(project.getEndDate())
+                            .updateAt(project.getUpdatedAt())
+                            .hasPermission(myProjectIds.contains(project.getId()))
+                            .build()
+                    ).toList();
         }
     }
 }
