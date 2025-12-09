@@ -26,10 +26,7 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     long deleteByProjectIdAndUserId(Long projectId, Long userId);
     
     // 권한이 있는 모든 프로젝트 조회
-    @Query("""
-    select pm.project.id
-    from ProjectMember pm
-    where pm.user.id = :userId
-    """)
+    @Query("select pm.project.id from ProjectMember pm " +
+            "where pm.user.id = :userId and pm.project.isDeleted != false")
     List<Long> findProjectIdsByUserId(@Param("userId") Long userId);
 }
