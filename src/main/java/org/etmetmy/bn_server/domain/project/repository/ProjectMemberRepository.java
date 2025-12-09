@@ -18,6 +18,14 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     List<ProjectMember> findByProjectIdIn(List<Long> projectIds);
     ProjectMember findByUserIdAndProjectId(Long userId, Long projectId);
 
+    //사용자가 특정 프로젝트의 멤버인지 확인
+    @Query("SELECT CASE WHEN COUNT(pm) > 0 THEN true ELSE false END " +
+           "FROM ProjectMember pm " +
+           "WHERE pm.project.id = :projectId " +
+           "AND pm.user.id = :userId")
+    boolean existsByProjectIdAndUserId(@Param("projectId") Long projectId,
+                                       @Param("userId") Long userId);
+
     // 프로젝트 + 유저 기준으로 매핑 삭제
     long deleteByProjectIdAndUserId(Long projectId, Long userId);
 
