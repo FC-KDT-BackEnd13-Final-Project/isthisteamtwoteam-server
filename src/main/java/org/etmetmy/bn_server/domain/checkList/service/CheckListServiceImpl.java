@@ -22,8 +22,8 @@ public class CheckListServiceImpl implements CheckListService {
     private final CheckListRepository checkListRepository;
 
     @Override
-    public CheckListResponse save() {
-        CheckList entity = CheckListCreateRequest.Converter.toEntity();
+    public CheckListResponse save(CheckListCreateRequest request) {
+        CheckList entity = CheckListCreateRequest.Converter.toEntity(request);
         CheckList saved = checkListRepository.save(entity);
         return CheckListResponse.Converter.from(saved);
     }
