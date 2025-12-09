@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.project.service;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.file.entity.File;
@@ -23,6 +24,7 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
@@ -30,6 +32,7 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
+import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -450,5 +453,52 @@ public class ProjectServiceImpl implements ProjectService{
                 .orElseThrow(ProjectNotFoundException::new);
 
         return ProjectDetailResponse.Converter.from(project);
+    }
+
+    // (휴지통 페이지) 삭제된 프로젝트 목록 조회
+    @Override
+    @Transactional(readOnly = true)
+    public List<DeletedProjectResponse> getDeletedProjectList(Long loginUserId)
+    {
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+
+        if (user.getRole() != Role.ADMIN) {
+            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
+        }
+        List<Project> projects = projectRepository.findDeletedProjects();
+
+        return DeletedProjectResponse.Converter.from(projects);
+    }
+
+    // 삭제된 프로젝트 복원
+    @Override
+    @Transactional
+    public ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request){
+
+        // 권한 검증
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        if (user.getRole() != Role.ADMIN) {
+            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
+        }
+
+        // 요청한 프로젝트 ID 조회
+        List<Long> projectIds = request.getProjectIds();
+        List<Project> projects = projectRepository.findAllById(projectIds);
+
+        // 1. 존재 개수 비교
+        if (projects.size() != projectIds.size()) {
+            throw new ProjectNotFoundException("존재하지 않는 프로젝트가 포함되어 있습니다.");
+        }
+
+        // 2. 삭제 여부 체크
+        projects.forEach(project -> {
+            if (!project.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.PROJECT_NOT_DELETED);
+            }
+            project.restore();
+        });
+
+        projectRepository.saveAll(projects);
+        return ProjectRestoreResponse.Converter.from(projects);
     }
 }

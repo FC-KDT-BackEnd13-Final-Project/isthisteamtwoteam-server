@@ -32,8 +32,8 @@ public class DashBoardServiceImpl implements DashBoardService {
         // 유저 검증
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
 
-        // 모든 프로젝트 목록 조회
-        List<Project> allProjects = projectRepository.findAll();
+        // 삭제되지 않은 모든 프로젝트 목록 조회
+        List<Project> allProjects = projectRepository.findActiveProjects();
 
         // 권한이 있는 모든 프로젝트 조회
         List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
@@ -51,7 +51,6 @@ public class DashBoardServiceImpl implements DashBoardService {
         // STATUS_PENDING(요청대기) 상태인 Post 목록
         List<Post> pendingPosts = postRepository.findPostsWithRequestStatus(RequestStatus.STATUS_PENDING);
         List<DashBoardStatusResponseDTO> pendingList = DashBoardStatusResponseDTO.Converter.toPostDTOList(pendingPosts, RequestStatus.STATUS_PENDING);
-
 
         // STATUS_REJECTED(반려) 상태인 Post 목록
         List<Post> rejectedPosts = postRepository.findPostsWithRequestStatus(RequestStatus.STATUS_REJECTED);

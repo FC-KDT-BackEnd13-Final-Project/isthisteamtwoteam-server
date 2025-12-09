@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.domain.project.controller;
 
 import jakarta.servlet.http.HttpSession;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
@@ -10,6 +11,7 @@ import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
 
@@ -156,5 +158,27 @@ public class ProjectController {
     public CommonResponse<List<ProjectMemberSearchResponse>> searchClientsForCreate() {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchClientMembers();
         return CommonResponse.success("고객사 사원 조회 성공", responses);
+    }
+
+    //todo: 삭제된 프로젝트 목록 조회
+    @GetMapping("/trash")
+    public CommonResponse<List<DeletedProjectResponse>> getDeletedProjectList(HttpSession session)
+    {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        List<DeletedProjectResponse> response = projectService.getDeletedProjectList(loginUserId);
+
+        return CommonResponse.success("삭제된 프로젝트 목록 조회 성공", response);
+    }
+
+    //todo: 삭제된 프로젝트 복원
+    @PatchMapping("/trash/restore")
+    public CommonResponse<ProjectRestoreResponse> restoreDeletedProject(
+            HttpSession session,
+            @Valid @RequestBody ProjectRestoreRequest request)
+    {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        ProjectRestoreResponse response = projectService.restoreDeletedProject(loginUserId, request);
+
+        return CommonResponse.success("삭제된 프로젝트 복원 성공", response);
     }
 }
