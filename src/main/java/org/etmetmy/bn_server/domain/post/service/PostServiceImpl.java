@@ -10,6 +10,7 @@ import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.RequestCreateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
@@ -72,7 +73,6 @@ public class PostServiceImpl implements PostService {
         currentRequest.updateStatus(approvingUserId, RequestStatus.STATUS_APPROVED, null);
     }
 
-
     // 3. 게시글 거절
     @Transactional
     public void rejectPost(Long postId, Long rejectingUserId, String rejectReason) {
@@ -106,7 +106,6 @@ public class PostServiceImpl implements PostService {
                 .toList();
     }
 
-
     private List<Post> getPostsByStageFilter(Long projectId, String stage) {
 
         if (stage.equals("all")) {
@@ -137,7 +136,7 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
 
-        // 1. 필요한 엔티티 조회
+        // 필요한 엔티티 조회
         User user = userRepository.findById(loginUserId)
                 .orElseThrow(UserNotFoundException::new);
         Project project = projectRepository.findById(projectId)
@@ -145,7 +144,7 @@ public class PostServiceImpl implements PostService {
         Stage stage = stageRepository.findById(requestDto.getStageId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
-        // 2. Counter Table로 프로젝트 내 게시글 번호 생성 (낙관적 락 적용)
+        // Counter Table로 프로젝트 내 게시글 번호 생성 (낙관적 락 적용)
         PostNumberCounter counter = postNumberCounterRepository.findByProjectId(projectId)
                 .orElseGet(() -> PostNumberCounter.builder()
                         .projectId(projectId)
@@ -154,11 +153,14 @@ public class PostServiceImpl implements PostService {
         Long postNumber = counter.getNextNumber();
         postNumberCounterRepository.save(counter);
 
-        // 3. Post 엔티티 생성 및 저장
+        // Post 엔티티 생성 및 저장
         Post post = PostCreateRequest.Converter.toEntity(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
         Post savedPost = postRepository.save(post);
 
-        // 4. 파일 처리
+        // Request 엔티티 생성 및 저장
+        requestRepository.save(RequestCreateRequest.Converter.toEntity(savedPost, loginUserId));
+
+        // 파일 처리
         List<File> savedFiles = new ArrayList<>();
         if (requestDto.getFileUrls() != null && !requestDto.getFileUrls().isEmpty()) {
             for (String fileUrl : requestDto.getFileUrls()) {
@@ -168,7 +170,7 @@ public class PostServiceImpl implements PostService {
             fileRepository.saveAll(savedFiles);
         }
 
-        // 5. 링크 처리
+        // 링크 처리
         List<Link> savedLinks = new ArrayList<>();
         if (requestDto.getLinkUrls() != null && !requestDto.getLinkUrls().isEmpty()) {
             for (String linkUrl : requestDto.getLinkUrls()) {
@@ -178,7 +180,7 @@ public class PostServiceImpl implements PostService {
             linkRepository.saveAll(savedLinks);
         }
 
-        // 6. 응답 반환
+        // 응답 반환
         return PostCreateResponse.Converter.from(savedPost, savedFiles, savedLinks);
     }
 
@@ -208,6 +210,9 @@ public class PostServiceImpl implements PostService {
         // 3. Post 엔티티 생성 및 저장
         Post replyPost = PostCreateRequest.Converter.toReplyEntity(project, user,post, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
         Post savedPost = postRepository.save(replyPost);
+
+        // Request 엔티티 생성 및 저장
+        requestRepository.save(RequestCreateRequest.Converter.toEntity(savedPost, loginUserId));
 
         // 4. 파일 처리
         List<File> savedFiles = new ArrayList<>();
@@ -315,6 +320,7 @@ public class PostServiceImpl implements PostService {
         // 완료 상태로 업데이트
         post.updateCompletedStatus(true);
     }
+
     // 프로젝트–게시글 소속 검증
     public static void validatePostBelongsToProject(Post post, Project project) {
         if (!post.getProject().getId().equals(project.getId())) {

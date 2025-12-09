@@ -5,16 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
-import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
-import org.etmetmy.bn_server.domain.user.entity.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor

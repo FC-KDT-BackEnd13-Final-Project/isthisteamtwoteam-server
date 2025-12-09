@@ -3,6 +3,7 @@ package org.etmetmy.bn_server.domain.post.repository;
 import jakarta.persistence.LockModeType;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -60,5 +61,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
      */
     @Query("SELECT MAX(p.postNumber) FROM Post p WHERE p.project.id = :projectId")
     Optional<Long> findMaxPostNumberByProjectId(@Param("projectId") Long projectId);
+
+    /**
+     * STATUS_PENDING 상태인 Request를 가진 Post 목록 조회
+     */
+    @Query("SELECT DISTINCT p FROM Post p " +
+            "join fetch p.user u " +
+            "join fetch p.stage s " +
+            "join fetch Request r ON r.post.postId = p.postId " +
+            "WHERE r.approveStatus = :status " +
+            "ORDER BY p.createdAt DESC")
+    List<Post> findPostsWithRequestStatus(@Param("status") RequestStatus status);
 
 }
