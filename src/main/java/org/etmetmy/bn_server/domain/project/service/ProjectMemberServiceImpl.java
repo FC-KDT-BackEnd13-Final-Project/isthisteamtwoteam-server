@@ -55,21 +55,20 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
         validateRole(role);
         Set<Long> existUserIds = getProjectMemberUserIds(projectId);
 
-        return switch (role) {
-            case DEVELOPER -> userRepository.findDeveloperCandidates().stream()
-                    .filter(u -> !existUserIds.contains(u.getUserId()))
-                    .toList();
-            case CUSTOMER -> userRepository.findClientCandidates().stream()
-                    .filter(u -> !existUserIds.contains(u.getUserId()))
-                    .toList();
+        List<ProjectMemberSearchResponse> candidates = switch (role) {
+            case DEVELOPER -> userRepository.findDeveloperCandidates();
+            case CUSTOMER -> userRepository.findClientCandidates();
             default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다.");
         };
+        return candidates.stream()
+                .filter(u -> !existUserIds.contains(u.getUserId()))
+                .toList();
     }
 
     // 공통 검증 로직
     private void validateRole(Role role) {
-        if (role == null) throw new InvalidInputException("role 파라미터는 필수입니다. (DEVELOPER 또는 CUSTOMER)");
-        if (role == Role.ADMIN) throw new InvalidInputException("관리자(ADMIN)는 조회할 수 없습니다.");
+        if (role == null){ throw new InvalidInputException("role 파라미터는 필수입니다. (DEVELOPER 또는 CUSTOMER)");}
+        if (role == Role.ADMIN){ throw new InvalidInputException("관리자(ADMIN)는 조회할 수 없습니다.");}
     }
 
     //프로젝트에 속한 유저
