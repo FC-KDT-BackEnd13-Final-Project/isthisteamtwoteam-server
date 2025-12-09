@@ -1,9 +1,7 @@
 package org.etmetmy.bn_server.domain.dashboard.service;
 
-import org.etmetmy.bn_server.domain.dashboard.dto.response.DashBoardStatusResponseDTO;
-
-import java.util.List;
+import org.etmetmy.bn_server.domain.dashboard.dto.response.DashBoardResponse;
 
 public interface DashBoardService {
-    List<DashBoardStatusResponseDTO> getStatusDashboard(Long loginUserId);
+    DashBoardResponse getStatusDashboard(Long loginUserId);
 }
