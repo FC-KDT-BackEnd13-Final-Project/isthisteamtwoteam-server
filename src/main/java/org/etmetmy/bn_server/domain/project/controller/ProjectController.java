@@ -10,6 +10,7 @@ import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,7 +36,6 @@ public class ProjectController {
     }
 
     //생성한 프로젝트 저장되어 노출
-    //CommonResponse 적용
     @GetMapping
     public CommonResponse<List<ProjectResponse>> getProjects(){
         List<ProjectResponse> responses = projectService.getAllProjects();
@@ -151,11 +151,11 @@ public class ProjectController {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchDeveloperMembers();
         return CommonResponse.success("개발사 사원 조회 성공", responses);
     }
+
     //프로젝트 생성 - 고객사 사원 조회
     @GetMapping(value = "/users", params = "type=clients")
     public CommonResponse<List<ProjectMemberSearchResponse>> searchClientsForCreate() {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchClientMembers();
         return CommonResponse.success("고객사 사원 조회 성공", responses);
     }
-
 }
