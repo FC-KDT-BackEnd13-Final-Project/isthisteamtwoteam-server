@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.etmetmy.bn_server.domain.project.entity.Project;
 
 @Getter
 @NoArgsConstructor
