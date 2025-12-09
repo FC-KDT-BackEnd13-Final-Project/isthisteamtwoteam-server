@@ -475,14 +475,22 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional
     public ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request){
 
+        // 권한 검증
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
-
         if (user.getRole() != Role.ADMIN) {
             throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
         }
+
+        // 요청한 프로젝트 ID 조회
         List<Long> projectIds = request.getProjectIds();
         List<Project> projects = projectRepository.findAllById(projectIds);
 
+        // 1. 존재 개수 비교
+        if (projects.size() != projectIds.size()) {
+            throw new ProjectNotFoundException("존재하지 않는 프로젝트가 포함되어 있습니다.");
+        }
+
+        // 2. 삭제 여부 체크
         projects.forEach(project -> {
             if (!project.getIsDeleted()) {
                 throw new BusinessException(ErrorCode.PROJECT_NOT_DELETED);
