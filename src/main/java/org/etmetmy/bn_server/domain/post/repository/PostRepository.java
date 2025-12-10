@@ -75,9 +75,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "ORDER BY p.createdAt DESC")
     List<Post> findPostsWithRequestStatus(@Param("status") RequestStatus status);
 
-    //프로젝트 삭제 시 soft delete
-    @Modifying
-    @Query("UPDATE Post p SET p.isDeleted = true, p.deletedAt = :deletedAt WHERE p.project.id = :projectId")
-    int softDeleteByProjectId(@Param("projectId") Long projectId, @Param("deletedAt") LocalDateTime deletedAt);
 
 }

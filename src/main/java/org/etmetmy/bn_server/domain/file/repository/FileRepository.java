@@ -27,8 +27,4 @@ public interface FileRepository extends JpaRepository<File, Long> {
            "AND f.isDeleted = false")
     List<File> findByProjectCheckListId(@Param("projectCheckListId") Long projectCheckListId);
 
-    //프로젝트 삭제 시 soft delete
-    @Modifying
-    @Query("UPDATE File f SET f.isDeleted = true, f.deletedAt = :deletedAt WHERE f.project.id = :projectId")
-    int softDeleteByProjectId(@Param("projectId") Long projectId, @Param("deletedAt") LocalDateTime deletedAt);
 }

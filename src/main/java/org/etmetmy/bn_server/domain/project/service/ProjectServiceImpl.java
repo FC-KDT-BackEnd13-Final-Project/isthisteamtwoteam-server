@@ -380,15 +380,6 @@ public class ProjectServiceImpl implements ProjectService{
             throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 삭제에 실패했습니다.");
         }
 
-        // 2. 관련 Post들 soft delete
-        postRepository.softDeleteByProjectId(projectId, deletedAt);
-
-        // 3. 관련 Comment들 soft delete
-        commentRepository.softDeleteByProjectId(projectId, deletedAt);
-
-        // 4. 관련 File들 soft delete
-        fileRepository.softDeleteByProjectId(projectId, deletedAt);
-
         return ProjectTrashResponse.Converter.from(projectId);
     }
 

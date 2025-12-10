@@ -32,8 +32,4 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "ORDER BY c.createdAt ASC")
     List<Comment> findAllByPostId(@Param("postId") Long postId);
 
-    //프로젝트 삭제 시 soft delete
-    @Modifying
-    @Query("UPDATE Comment c SET c.isDeleted = true, c.deletedAt = :deletedAt WHERE c.post.project.id = :projectId")
-    int softDeleteByProjectId(@Param("projectId") Long projectId, @Param("deletedAt") LocalDateTime deletedAt);
 }
