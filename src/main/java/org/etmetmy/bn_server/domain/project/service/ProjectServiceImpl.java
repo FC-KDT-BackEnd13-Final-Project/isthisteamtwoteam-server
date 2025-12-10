@@ -478,12 +478,6 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional
     public ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request){
 
-        // 권한 검증
-        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
-        if (user.getRole() != Role.ADMIN) {
-            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
-        }
-
         // 요청한 프로젝트 ID 조회
         List<Long> projectIds = request.getProjectIds();
         List<Project> projects = projectRepository.findAllById(projectIds);
@@ -510,16 +504,9 @@ public class ProjectServiceImpl implements ProjectService{
     @Transactional
     public ProjectPermanentDeleteResponse deleteDeletedProject(Long loginUserId, @Valid ProjectPermanentDeleteRequest request){
 
-        // 권한 검증
-        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
-        if (user.getRole() != Role.ADMIN) {
-            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
-        }
-
         // 요청한 프로젝트 ID 조회
         List<Long> projectIds = request.getProjectIds();
         List<Project> projects = projectRepository.findAllById(projectIds);
-
 
         // 1. 존재 개수 비교
         if (projects.size() != projectIds.size()) {
@@ -533,7 +520,7 @@ public class ProjectServiceImpl implements ProjectService{
             }
         });
 
-        // S3와 DB 에서 파일 삭제
+        // S3와 DB 에서 파일(게시글, 댓글, 체크리스트) 삭제
         List<File> files = fileRepository.findByProjectIds(projectIds);
         fileService.deleteFilesFromS3AndDb(files);
 

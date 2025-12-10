@@ -186,7 +186,7 @@ public class ProjectController {
         return CommonResponse.success("삭제된 프로젝트 복원 성공", response);
     }
 
-    //todo: 삭제된 프로젝트 영구삭제
+    //todo: 삭제된 프로젝트 영구삭제 (hard delete)
     @DeleteMapping("/trash")
     public CommonResponse<ProjectPermanentDeleteResponse> deleteDeletedProject(
             HttpSession session,
