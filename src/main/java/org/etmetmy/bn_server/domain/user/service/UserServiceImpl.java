@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService{
 
         UserItems<CompanySearchResponse> companyItems = UserItems.create(companyResponses);
 
-        return UserDataResponse.create(
+        return UserDataResponse.Converter.createResponse(
                 developerItems,
                 customerItems,
                 companyItems
