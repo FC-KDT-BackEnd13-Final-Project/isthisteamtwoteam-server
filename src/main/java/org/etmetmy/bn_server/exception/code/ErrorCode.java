@@ -7,14 +7,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ErrorCode {
 
-    // 인증 관련 에러
+    // 공통 에러
+    INVALID_INPUT_VALUE(400, "C001", "잘못된 입력값입니다."),
+    INVALID_TYPE_VALUE(400, "C002", "잘못된 타입입니다."),
+    INVALID_NOT_ALLOWED(405, "C003", "허용되지 않은 HTTP 메서드입니다."),
+    INTERNAL_SERVER_ERROR(500, "C004", "서버 오류가 발생했습니다."),
+    ENTITY_NOT_FOUND(404, "C005", "요청한 리소스를 찾을 수 없습니다."),
+
+    // 인증
     UNAUTHORIZED(401, "A001", "인증이 필요합니다."),
     FORBIDDEN(403, "A002", "접근 권한이 없습니다."),
     INVALID_TOKEN(401, "A003", "유효하지 않은 토큰입니다."),
     EXPIRED_TOKEN(401, "A004", "만료된 토큰입니다."),
     INVALID_PASSWORD(401, "A005", "비밀번호가 일치하지 않습니다."),
 
-    // 게시글 관련 에러
+    // 게시글
     BOARD_POST_NOT_FOUND(404, "B001", "게시글을 찾을 수 없습니다."),
     BOARD_COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),
     PARENT_COMMENT_NOT_FOUND(404, "B002_1", "부모 댓글을 찾을 수 없습니다."),
@@ -23,13 +30,7 @@ public enum ErrorCode {
     BOARD_INVALID_FILTER(400,"B005", "유효하지 않은 게시글 필터입니다."),
     POST_PROJECT_MISMATCH(400, "P014", "게시글이 해당 프로젝트에 속하지 않습니다."),
 
-
-    INVALID_INPUT_VALUE(400, "C001", "잘못된 입력값입니다."),
-    INVALID_TYPE_VALUE(400, "C002", "잘못된 타입입니다."),
-    INVALID_NOT_ALLOWED(405, "C003", "허용되지 않은 HTTP 메서드입니다."),
-    INTERNAL_SERVER_ERROR(500, "C004", "서버 오류가 발생했습니다."),
-    ENTITY_NOT_FOUND(404, "C005", "요청한 리소스를 찾을 수 없습니다."),
-
+    // 프로젝트
     PROJECT_NOT_FOUND(404, "P001", "프로젝트를 찾을 수 없습니다."),
     PROJECT_ALREADY_EXISTS(409, "P002", "이미 존재하는 프로젝트입니다."),  // ← 수정!
     PROJECT_PERMISSION_DENIED(403, "P003", "프로젝트 접근 권한이 없습니다."),
@@ -38,17 +39,18 @@ public enum ErrorCode {
     PROJECT_AND_USER_NOT_FOUND(404,"PU001", "사용자가 해당 프로젝트에 속해있지 않습니다."),
     DELETED_PROJECT_ACCESS_DENIED(403, "P006", "삭제된 프로젝트 접근 권한이 없습니다."),
     PROJECT_NOT_DELETED(400, "P007", "이미 삭제되지 않은 프로젝트입니다."),
+    PROJECT_ALREADY_DELETED(400, "P008", "이미 삭제된 프로젝트입니다."),
 
-    // 승인 관련 에러
+    // 승인
     REQUEST_PENDING_NOT_FOUND(404,"R001","해당 게시글에 승인 대기 중인 요청이 없습니다."),
 
-    // 유저 관련 에러
+    // 유저
     USER_NOT_FOUND(404, "U001", "사용자를 찾을 수 없습니다."),
     DUPLICATE_EMAIL(409, "U002", "이미 사용 중인 이메일입니다."),
     USER_ALREADY_DELETED(400, "U003", "이미 탈퇴한 사용자입니다."),
     USER_NOT_LOGIN(401,"Y004", "로그인이 필요합니다."),
 
-    //파일 관련 에러
+    //파일
     FILE_NOT_FOUND(404, "F001", "파일을 찾을 수 없습니다"),
     FILE_SIZE_EXCEEDED(400, "F002", "파일 크기가 제한을 초과했습니다"),
     INVALID_FILE_TYPE(400, "F003", "지원하지 않는 파일 형식입니다"),
@@ -57,17 +59,17 @@ public enum ErrorCode {
     INVALID_URL_FORMAT(400,"C005", "잘못된 URL 형식입니다."),
     FILE_DELETE_FAILED(500, "F006", "파일 삭제에 실패했습니다"),
 
-    // 체크리스트 관련 에러
+    // 체크리스트
     CHECKLIST_NOT_FOUND(404,"D001","체크리스트를 찾을 수 없습니다."),
 
-    //단계 관련 에러
+    // 단계
     STAGE_NOT_FOUND(404, "S001", "단계를 찾을 수 없습니다."),
 
-    // 페이지 응답
+    // 페이지
     NON_INDEX_PAGE(404, "P007","페이지가 없습니다"),
     NON_SIZE_PAGE(404,"P008","데이터가 없습니다."),
 
-    //memo 에러
+    // 메모
     MEMO_NOT_FOUND(404,"M001","존재하지 않는 메모입니다."),
 
     //회사 에러

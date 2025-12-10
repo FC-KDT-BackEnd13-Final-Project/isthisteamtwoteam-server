@@ -3,6 +3,7 @@ package org.etmetmy.bn_server.domain.file.service;
 import jakarta.servlet.http.HttpSession;
 import org.etmetmy.bn_server.domain.file.dto.request.FileDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.entity.File;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -20,4 +21,8 @@ public interface FileService {
 
     // 업로드 된 파일 삭제 (soft delete)
     void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId);
-}
+
+    // S3와 DB 에서 파일 삭제
+    void deleteFilesFromS3AndDb(List<File> files);
+
+    }

@@ -48,7 +48,7 @@ public class FileServiceImpl implements FileService {
     private final S3Client s3Client;
 
     @Value("${aws.s3.bucket-name}")
-    private String bucketName;
+    private static String bucketName;
 
     // 1. 프로젝트별 파일 목록 조회
     @Override
@@ -129,30 +129,7 @@ public class FileServiceImpl implements FileService {
                 throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
             }
         }
-
-        for (File file : files) {
-            try {
-                String fileUrl = file.getFilePath();
-                Long fileId = file.getFileId();
-
-                // S3 key 추출
-                String key = getKeyFromFileUrls(fileUrl);
-
-                // S3 삭제 요청
-                DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(key)
-                        .build();
-
-                s3Client.deleteObject(deleteRequest);
-
-                // DB 레코드 삭제
-                fileRepository.deleteById(fileId);
-
-            } catch (Exception e) {
-                throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
-            }
-        }
+        deleteFilesFromS3AndDb(files);
     }
 
     // 5. 업로드 된 파일 삭제 (soft delete)
@@ -225,7 +202,7 @@ public class FileServiceImpl implements FileService {
     }
 
     // 삭제에 필요한 key 반환
-    private String getKeyFromFileUrls(String fileUrl) {
+    private static String getKeyFromFileUrls(String fileUrl) {
         try{
             URL url = new URI(fileUrl).toURL();
             String decodedKey = URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8);
@@ -235,6 +212,34 @@ public class FileServiceImpl implements FileService {
         }
         catch (Exception e){
             throw new BusinessException(ErrorCode.INVALID_URL_FORMAT);
+        }
+    }
+
+    // S3에서 파일 삭제 후 DB 레코드도 삭제
+    @Override
+    public void deleteFilesFromS3AndDb(List<File> files) {
+        for (File file : files) {
+            try {
+                String fileUrl = file.getFilePath();
+                Long fileId = file.getFileId();
+
+                // S3 key 추출
+                String key = getKeyFromFileUrls(fileUrl);
+
+                // S3 삭제 요청
+                DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .build();
+
+                s3Client.deleteObject(deleteRequest);
+
+                // DB 레코드 삭제
+                fileRepository.deleteById(fileId);
+
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
+            }
         }
     }
 }

@@ -1,10 +1,12 @@
 package org.etmetmy.bn_server.domain.project.service;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.file.service.FileService;
+import org.etmetmy.bn_server.domain.file.service.FileServiceImpl;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
@@ -32,7 +34,6 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
-import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,6 +43,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @Service
@@ -57,6 +59,7 @@ public class ProjectServiceImpl implements ProjectService{
     private final CheckListRepository checkListRepository;
     private final FileRepository fileRepository;
     private final LinkRepository linkRepository;
+    private final FileService fileService;
 
     @Override
     @Transactional
@@ -500,5 +503,43 @@ public class ProjectServiceImpl implements ProjectService{
 
         projectRepository.saveAll(projects);
         return ProjectRestoreResponse.Converter.from(projects);
+    }
+
+    // 삭제된 프로젝트 영구삭제
+    @Override
+    @Transactional
+    public ProjectPermanentDeleteResponse deleteDeletedProject(Long loginUserId, @Valid ProjectPermanentDeleteRequest request){
+
+        // 권한 검증
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        if (user.getRole() != Role.ADMIN) {
+            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
+        }
+
+        // 요청한 프로젝트 ID 조회
+        List<Long> projectIds = request.getProjectIds();
+        List<Project> projects = projectRepository.findAllById(projectIds);
+
+
+        // 1. 존재 개수 비교
+        if (projects.size() != projectIds.size()) {
+            throw new ProjectNotFoundException("존재하지 않는 프로젝트가 포함되어 있습니다.");
+        }
+
+        // 2. 삭제 여부 체크
+        projects.forEach(project -> {
+            if (!project.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.PROJECT_NOT_DELETED);
+            }
+        });
+
+        // S3와 DB 에서 파일 삭제
+        List<File> files = fileRepository.findByProjectIds(projectIds);
+        fileService.deleteFilesFromS3AndDb(files);
+
+        // 프로젝트 삭제
+        projectRepository.deleteAll(projects);
+
+        return ProjectPermanentDeleteResponse.Converter.from(projects);
     }
 }

@@ -1,6 +1,6 @@
 package org.etmetmy.bn_server.domain.project.service;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
@@ -45,4 +45,7 @@ public interface ProjectService {
 
     // 삭제된 프로젝트 복원
     ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request);
+
+    // 삭제된 프로젝트 영구삭제
+    ProjectPermanentDeleteResponse deleteDeletedProject(Long loginUserId, @Valid ProjectPermanentDeleteRequest request);
 }

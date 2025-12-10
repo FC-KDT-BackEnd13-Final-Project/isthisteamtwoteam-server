@@ -181,4 +181,16 @@ public class ProjectController {
 
         return CommonResponse.success("삭제된 프로젝트 복원 성공", response);
     }
+
+    //todo: 삭제된 프로젝트 영구삭제
+    @DeleteMapping("/trash")
+    public CommonResponse<ProjectPermanentDeleteResponse> deleteDeletedProject(
+            HttpSession session,
+            @Valid @RequestBody ProjectPermanentDeleteRequest request)
+    {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        ProjectPermanentDeleteResponse response = projectService.deleteDeletedProject(loginUserId, request);
+
+        return CommonResponse.success("삭제된 프로젝트 영구삭제 성공", response);
+    }
 }
