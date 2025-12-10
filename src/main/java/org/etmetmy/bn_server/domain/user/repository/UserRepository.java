@@ -36,30 +36,31 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<UserProfileImgNameResponse> findProfileImgAndNameByUserId(@Param("userId") Long userId);
 
 
-
-    // 회사 타입(개발사/고객사) 기준 전체 사원/담당자 조회
-    @Query("SELECT u FROM User u " +
-            "LEFT JOIN FETCH u.company " +
-            "WHERE u.company.type = :companyType")
-    List<User> findByCompanyType(@Param("companyType") CompanyType companyType);
-
     // 개발사 조회 (Admin 제외, 회사 있으면 type=DEVELOPER, 없으면 role=DEVELOPER)
     @Query("SELECT u FROM User u " +
             "LEFT JOIN FETCH u.company c " +
-            "WHERE u.role <> Role.ADMIN " +
+            "WHERE u.role <> :adminRole " +
             "AND (" +
-            "    (c IS NOT NULL AND c.type = CompanyType.DEVELOPER) " +
-            "    OR (c IS NULL AND u.role = Role.DEVELOPER)" +
+            "    (c IS NOT NULL AND c.type = :developerCompanyType) " +
+            "    OR (c IS NULL AND u.role = :developerRole)" +
             ")")
-    List<User> findDeveloperCandidates();
+    List<User> findDeveloperCandidates(
+            @Param("adminRole") Role adminRole,
+            @Param("developerCompanyType") CompanyType developerCompanyType,
+            @Param("developerRole") Role developerRole
+    );
 
     // 고객사 조회 (관리자 제외, 회사 있으면 type=CLIENT, 없으면 role=CUSTOMER)
     @Query("SELECT u FROM User u " +
             "LEFT JOIN FETCH u.company c " +
-            "WHERE u.role <> Role.ADMIN " +
+            "WHERE u.role <> :adminRole " +
             "AND (" +
-            "    (c IS NOT NULL AND c.type = CompanyType.CLIENT) " +
-            "    OR (c IS NULL AND u.role = Role.CUSTOMER)" +
+            "    (c IS NOT NULL AND c.type = :clientCompanyType) " +
+            "    OR (c IS NULL AND u.role = :customerRole)" +
             ")")
-    List<User> findClientCandidates();
+    List<User> findClientCandidates(
+            @Param("adminRole") Role adminRole,
+            @Param("clientCompanyType") CompanyType clientCompanyType,
+            @Param("customerRole") Role customerRole
+    );
 }

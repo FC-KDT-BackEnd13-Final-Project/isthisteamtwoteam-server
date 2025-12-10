@@ -5,7 +5,10 @@ import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse;
 import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
+import org.etmetmy.bn_server.domain.user.entity.Role;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.exception.custom.InvalidInputException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,24 +38,40 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
         return hasRole;
     }
 
-    // 프로젝트 생성 - 개발사 담당자, 사원 조회
+    //
     @Transactional(readOnly = true)
     @Override
-    public List<ProjectMemberSearchResponse> searchDeveloperMembers() {
-        CompanyType companyType = CompanyType.DEVELOPER;
-        return userRepository.findByCompanyType(companyType);
+    public List<ProjectMemberSearchResponse> searchUsersForCreate(Role role){
+        validateRole(role);
+
+        List<User> users = switch (role){
+            case DEVELOPER -> userRepository.findDeveloperCandidates(Role.ADMIN, CompanyType.DEVELOPER, Role.DEVELOPER);
+            case CUSTOMER -> userRepository.findClientCandidates(Role.ADMIN, CompanyType.CUSTOMER, Role.CUSTOMER);
+            default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다");
+        };
+
+        return ProjectMemberSearchResponse.Converter.from(users, role);
     }
 
-    // 프로젝트 생성- 고객사 담당자, 사원 조회
     @Transactional(readOnly = true)
     @Override
-    public List<ProjectMemberSearchResponse> searchClientMembers() {
-        CompanyType companyType = CompanyType.CUSTOMER;
-        return userRepository.findByCompanyType(companyType);
+    public List<ProjectMemberSearchResponse> searchUsersForProject(Long projectId, Role role) {
+        validateRole(role);
+        Set<Long> existingUserIds = getProjectMemberUserIds(projectId);
+
+        List<User> users = switch (role) {
+            case DEVELOPER -> userRepository.findDeveloperCandidates(Role.ADMIN, CompanyType.DEVELOPER, Role.DEVELOPER);
+            case CUSTOMER -> userRepository.findClientCandidates(Role.ADMIN, CompanyType.CUSTOMER, Role.CUSTOMER);
+            default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다.");
+        };
+        return ProjectMemberSearchResponse.Converter.filteredUsers(users, role, existingUserIds);
     }
 
-
-
+    // 공통 검증 로직
+    private void validateRole(Role role) {
+        if (role == null){ throw new InvalidInputException("role 파라미터는 필수입니다. (DEVELOPER 또는 CUSTOMER)");}
+        if (role == Role.ADMIN){ throw new InvalidInputException("관리자(ADMIN)는 조회할 수 없습니다.");}
+    }
 
     //프로젝트에 속한 유저
     private Set<Long> getProjectMemberUserIds(Long projectId) {
@@ -62,9 +81,4 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
                 .map(user -> user.getId())
                 .collect(Collectors.toSet());
     }
-
-
-
-
-
 }
