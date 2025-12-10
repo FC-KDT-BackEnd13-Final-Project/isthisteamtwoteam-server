@@ -82,4 +82,8 @@ public class Post extends BaseEntity {
     public void updateCompletedStatus(Boolean isCompleted) {
         this.isCompleted = isCompleted;
     }
+
+    //삭제(프로젝트 삭제 시 soft delete)
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 }
