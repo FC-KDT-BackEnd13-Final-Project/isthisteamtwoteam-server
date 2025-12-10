@@ -48,7 +48,7 @@ public class FileServiceImpl implements FileService {
     private final S3Client s3Client;
 
     @Value("${aws.s3.bucket-name}")
-    private static String bucketName;
+    private String bucketName;
 
     // 1. 프로젝트별 파일 목록 조회
     @Override
