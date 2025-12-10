@@ -35,8 +35,8 @@ public class ProjectResponse {
 
     public static class Converter {
         public static ProjectResponse from(Project project,  List<ProjectMember> members) {
-            Memo memo = (project.getMemo() != null && !project.getMemo().isEmpty())
-                    ? project.getMemo().get(0)
+            Memo memo = (project.getMemos() != null && !project.getMemos().isEmpty())
+                    ? project.getMemos().get(0)
                     : null;
 
             List<Long> memberUserIds = members == null ? List.of()

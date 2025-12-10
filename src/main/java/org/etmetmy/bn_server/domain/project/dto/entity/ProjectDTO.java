@@ -29,8 +29,8 @@ public class ProjectDTO {
     public static class Converter {
 
         public static ProjectResponse toResponse(Project project, List<ProjectMember> members){
-            Memo memo = (project.getMemo() != null && !project.getMemo().isEmpty())
-                    ? project.getMemo().get(0)
+            Memo memo = (project.getMemos() != null && !project.getMemos().isEmpty())
+                    ? project.getMemos().get(0)
                     : null;
 
             // ProjectMember에서 userId만 추출하여 List<Long>으로 변환
