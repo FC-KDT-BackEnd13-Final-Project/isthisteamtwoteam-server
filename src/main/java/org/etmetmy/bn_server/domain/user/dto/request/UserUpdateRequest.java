@@ -8,7 +8,7 @@ import org.etmetmy.bn_server.domain.user.entity.Role;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MemberUpdateRequest {
+public class UserUpdateRequest {
     private String name;
     private String email;
     private Long companyId;

@@ -42,4 +42,7 @@ public interface ProjectService {
 
     // (휴지통 페이지) 삭제된 프로젝트 조회
     List<DeletedProjectResponse> getDeletedProjectList(Long loginUserId);
+
+    // 삭제된 프로젝트 복원
+    ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request);
 }

@@ -37,6 +37,7 @@ public enum ErrorCode {
     PROJECT_NAME_DUPLICATE(409, "P005", "중복된 프로젝트명입니다."),
     PROJECT_AND_USER_NOT_FOUND(404,"PU001", "사용자가 해당 프로젝트에 속해있지 않습니다."),
     DELETED_PROJECT_ACCESS_DENIED(403, "P006", "삭제된 프로젝트 접근 권한이 없습니다."),
+    PROJECT_NOT_DELETED(400, "P007", "이미 삭제되지 않은 프로젝트입니다."),
 
     // 승인 관련 에러
     REQUEST_PENDING_NOT_FOUND(404,"R001","해당 게시글에 승인 대기 중인 요청이 없습니다."),

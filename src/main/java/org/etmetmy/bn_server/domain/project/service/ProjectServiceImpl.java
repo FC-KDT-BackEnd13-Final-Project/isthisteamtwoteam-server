@@ -456,6 +456,8 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
     // (휴지통 페이지) 삭제된 프로젝트 목록 조회
+    @Override
+    @Transactional(readOnly = true)
     public List<DeletedProjectResponse> getDeletedProjectList(Long loginUserId)
     {
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
@@ -466,5 +468,37 @@ public class ProjectServiceImpl implements ProjectService{
         List<Project> projects = projectRepository.findDeletedProjects();
 
         return DeletedProjectResponse.Converter.from(projects);
+    }
+
+    // 삭제된 프로젝트 복원
+    @Override
+    @Transactional
+    public ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request){
+
+        // 권한 검증
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        if (user.getRole() != Role.ADMIN) {
+            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
+        }
+
+        // 요청한 프로젝트 ID 조회
+        List<Long> projectIds = request.getProjectIds();
+        List<Project> projects = projectRepository.findAllById(projectIds);
+
+        // 1. 존재 개수 비교
+        if (projects.size() != projectIds.size()) {
+            throw new ProjectNotFoundException("존재하지 않는 프로젝트가 포함되어 있습니다.");
+        }
+
+        // 2. 삭제 여부 체크
+        projects.forEach(project -> {
+            if (!project.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.PROJECT_NOT_DELETED);
+            }
+            project.restore();
+        });
+
+        projectRepository.saveAll(projects);
+        return ProjectRestoreResponse.Converter.from(projects);
     }
 }

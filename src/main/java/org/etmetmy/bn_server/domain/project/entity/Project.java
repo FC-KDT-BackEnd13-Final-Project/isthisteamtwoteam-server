@@ -53,10 +53,15 @@ public class Project extends BaseEntity {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Memo> memo;
 
-    //프로젝트 삭제(휴지통으로 이동)을 위한 엔티티 추가
-    @Column(name = "is_deleted")
+    @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
+
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+
+    public void restore() {
+        isDeleted = false;
+        deletedAt = null;
+    }
 }
