@@ -64,11 +64,7 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             case CUSTOMER -> userRepository.findClientCandidates();
             default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다.");
         };
-        List<User> filteredUsers =users.stream()
-                .filter(user -> !existingUserIds.contains(user.getId()))
-                .toList();
-
-        return ProjectMemberSearchResponse.Converter.from(filteredUsers, role);
+        return ProjectMemberSearchResponse.Converter.filteredUsers(users, role, existingUserIds);
     }
 
     // 공통 검증 로직
