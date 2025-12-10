@@ -30,11 +30,20 @@ public class PostCreateRequest {
     @NotNull(message = "단계 ID는 필수입니다.")
     private Long stageId;
 
-    // S3에 업로드된 임시 파일 URL 목록 (선택 사항)
-    private List<String> fileUrls;
+    // S3에 업로드된 파일 정보 목록 (선택 사항)
+    private List<FileInfo> fileInfos;
 
     // 링크 URL 목록 (선택 사항)
     private List<String> linkUrls;
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class FileInfo {
+        private String fileUrl;
+        private Long fileSize;
+    }
 
     public static class Converter {
         public static Post toEntity(
@@ -77,4 +86,5 @@ public class PostCreateRequest {
                     .build();
         }
     }
+
 }

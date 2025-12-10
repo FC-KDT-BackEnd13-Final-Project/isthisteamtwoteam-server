@@ -117,9 +117,7 @@ public class PostServiceImpl implements PostService {
         return postRepository.findByProjectIdAndStageId(projectId, stageEntity.getId());
     }
 
-    /**
-     * 필터에 따라 게시글 조회
-     */
+    // 필터에 따라 게시글 조회
     private List<Post> getPostsByFilter(Long projectId, String filter) {
         return switch (filter.toLowerCase()) {
             case "all" -> postRepository.findAllByProjectId(projectId);
@@ -129,20 +127,15 @@ public class PostServiceImpl implements PostService {
         };
     }
 
-    /**
-     * 게시글 작성 API
-     */
+    // 게시글 작성
     @Override
     @Transactional
     public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
 
         // 필요한 엔티티 조회
-        User user = userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-        Stage stage = stageRepository.findById(requestDto.getStageId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+        Stage stage = stageRepository.findById(requestDto.getStageId()).orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
         // Counter Table로 프로젝트 내 게시글 번호 생성 (낙관적 락 적용)
         PostNumberCounter counter = postNumberCounterRepository.findByProjectId(projectId)
@@ -162,9 +155,14 @@ public class PostServiceImpl implements PostService {
 
         // 파일 처리
         List<File> savedFiles = new ArrayList<>();
-        if (requestDto.getFileUrls() != null && !requestDto.getFileUrls().isEmpty()) {
-            for (String fileUrl : requestDto.getFileUrls()) {
-                File file = FileCreateRequest.Converter.toEntity(fileUrl, savedPost, loginUserId);
+        if (requestDto.getFileInfos() != null && !requestDto.getFileInfos().isEmpty()) {
+            for (PostCreateRequest.FileInfo fileInfo : requestDto.getFileInfos()) {
+                File file = FileCreateRequest.Converter.toEntity(
+                        fileInfo.getFileUrl(),
+                        fileInfo.getFileSize(),
+                        savedPost,
+                        loginUserId
+                );
                 savedFiles.add(file);
             }
             fileRepository.saveAll(savedFiles);
@@ -189,14 +187,10 @@ public class PostServiceImpl implements PostService {
     public ReplyPostCreateResponse createReplyPost(Long projectId, PostCreateRequest requestDto, Long postId, Long loginUserId) {
 
         // 1. 필요한 엔티티 조회
-        User user = userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-        Stage stage = stageRepository.findById(requestDto.getStageId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
-        Post post = postRepository.findById(postId)
-                .orElseThrow(BoardNotFoundException::new);
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+        Stage stage = stageRepository.findById(requestDto.getStageId()).orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
+        Post post = postRepository.findById(postId).orElseThrow(BoardNotFoundException::new);
 
         // 2. Counter Table로 프로젝트 내 게시글 번호 생성 (낙관적 락 적용)
         PostNumberCounter counter = postNumberCounterRepository.findByProjectId(projectId)
@@ -216,9 +210,14 @@ public class PostServiceImpl implements PostService {
 
         // 4. 파일 처리
         List<File> savedFiles = new ArrayList<>();
-        if (requestDto.getFileUrls() != null && !requestDto.getFileUrls().isEmpty()) {
-            for (String fileUrl : requestDto.getFileUrls()) {
-                File file = FileCreateRequest.Converter.toEntity(fileUrl, savedPost, loginUserId);
+        if (requestDto.getFileInfos() != null && !requestDto.getFileInfos().isEmpty()) {
+            for (PostCreateRequest.FileInfo fileInfo : requestDto.getFileInfos()) {
+                File file = FileCreateRequest.Converter.toEntity(
+                        fileInfo.getFileUrl(),
+                        fileInfo.getFileSize(),
+                        savedPost,
+                        loginUserId
+                );
                 savedFiles.add(file);
             }
             fileRepository.saveAll(savedFiles);
