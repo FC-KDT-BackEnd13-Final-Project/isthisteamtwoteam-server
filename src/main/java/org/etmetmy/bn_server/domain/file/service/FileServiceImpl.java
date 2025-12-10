@@ -202,7 +202,7 @@ public class FileServiceImpl implements FileService {
     }
 
     // 삭제에 필요한 key 반환
-    private static String getKeyFromFileUrls(String fileUrl) {
+    private String getKeyFromFileUrls(String fileUrl) {
         try{
             URL url = new URI(fileUrl).toURL();
             String decodedKey = URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8);
