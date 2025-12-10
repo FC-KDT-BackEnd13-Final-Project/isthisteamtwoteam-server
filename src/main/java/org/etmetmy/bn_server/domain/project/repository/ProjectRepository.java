@@ -49,7 +49,11 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p " +
             "JOIN FETCH p.stage s " +
             "JOIN FETCH p.company c " +
-            "WHERE p.stage.stageName in ('요구사항 정의', '화면 설계', '디자인, 퍼블리싱', '개발', '검수')" +
+            "WHERE p.stage.stageType in (org.etmetmy.bn_server.domain.post.entity.StageType.REQUIREMENTS, " +
+            "org.etmetmy.bn_server.domain.post.entity.StageType.SCREEN_DESIGN, " +
+            "org.etmetmy.bn_server.domain.post.entity.StageType.DESIGN_PUBLISHING, " +
+            "org.etmetmy.bn_server.domain.post.entity.StageType.DEVELOPMENT, " +
+            "org.etmetmy.bn_server.domain.post.entity.StageType.QA) " +
             "AND p.isDeleted = false " +
             "ORDER BY p.createdAt DESC")
     List<Project> findProjectsInProgress();
@@ -58,7 +62,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("SELECT p FROM Project p " +
             "JOIN FETCH p.stage s " +
             "JOIN FETCH p.company c " +
-            "WHERE p.stage.stageName = '유지보수'" +
+            "WHERE p.stage.stageType = org.etmetmy.bn_server.domain.post.entity.StageType.MAINTENANCE " +
             "AND p.isDeleted = false " +
             "ORDER BY p.createdAt DESC")
     List<Project> findProjectsMaintenance();

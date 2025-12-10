@@ -111,7 +111,15 @@ public class PostServiceImpl implements PostService {
         if (stage.equals("all")) {
             return postRepository.findAllByProjectId(projectId);
         }
-        Stage stageEntity = stageRepository.findByStageName(stage)
+        // String을 StageType enum으로 변환
+        StageType stageType;
+        try {
+            stageType = StageType.valueOf(stage.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(ErrorCode.STAGE_NOT_FOUND);
+        }
+
+        Stage stageEntity = stageRepository.findByStageType(stageType)
                 .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
         return postRepository.findByProjectIdAndStageId(projectId, stageEntity.getId());

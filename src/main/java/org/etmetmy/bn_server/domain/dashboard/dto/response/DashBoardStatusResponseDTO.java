@@ -39,7 +39,7 @@ public class DashBoardStatusResponseDTO {
             return DashBoardStatusResponseDTO.builder()
                     .postId(post.getPostId())
                     .title(post.getTitle())
-                    .postStageName(post.getStage().getStageName())
+                    .postStageName(post.getStage().getStageType().getDescription())
                     .requestStatus(requestStatus)
                     .createdAt(post.getCreatedAt())
                     .projectName(post.getProject().getProjectName())
@@ -60,7 +60,7 @@ public class DashBoardStatusResponseDTO {
                     .projectId(project.getId())
                     .projectName(project.getProjectName())
                     .companyName(project.getCompany().getCompanyName())
-                    .projectStageName(project.getStage().getStageName())
+                    .projectStageName(project.getStage().getStageType().getDescription())
                     .build();
         }
 

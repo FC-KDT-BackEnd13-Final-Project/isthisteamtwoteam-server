@@ -52,7 +52,7 @@ public class ProjectListResponse {
                             .projectImageUrl(project.getProjectImageUrl())
                             .projectName(project.getProjectName())
                             .companyName(project.getCompany().getCompanyName())
-                            .stage(project.getStage().getStageName())
+                            .stage(project.getStage().getStageType().getDescription())
                             .startDate(project.getStartDate())
                             .endDate(project.getEndDate())
                             .updateAt(project.getUpdatedAt())

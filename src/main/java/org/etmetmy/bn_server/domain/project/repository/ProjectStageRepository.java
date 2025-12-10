@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.project.repository;
 
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.post.entity.StageType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -11,9 +12,6 @@ import java.util.Optional;
 
 @Repository
 public interface ProjectStageRepository extends JpaRepository<Stage, Long> {
-    Optional<Stage> findByStageName(String stageName);
-
-    @Query("SELECT s FROM Stage s WHERE LOWER(REPLACE(s.stageName, ' ', '')) = LOWER(REPLACE(:stageName, ' ', ''))")
-    Optional<Stage> findByStageNameNormalized(@Param("stageName") String stageName);
+    Optional<Stage> findByStageType(StageType stageType);
 }
 

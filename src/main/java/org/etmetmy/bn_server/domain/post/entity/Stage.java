@@ -19,6 +19,8 @@ public class Stage {
     @Column(name = "stage_id")
     private Long id;
 
-    @Column(name = "stage_name", length = 255)
-    private String stageName;
+    @Convert(converter = StageTypeConverter.class)
+    @Column(name = "stage_type")
+    private StageType stageType;
+
 }

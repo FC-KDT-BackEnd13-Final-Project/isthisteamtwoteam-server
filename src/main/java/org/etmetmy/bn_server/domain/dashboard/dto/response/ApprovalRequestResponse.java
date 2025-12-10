@@ -37,7 +37,7 @@ public class ApprovalRequestResponse {
                     .postTitle(post.getTitle())
                     .projectName(post.getProject().getProjectName())
                     .companyName(post.getProject().getCompany().getCompanyName())
-                    .postStageName(post.getStage().getStageName())
+                    .postStageName(post.getStage().getStageType().getDescription())
                     .createdAt(post.getCreatedAt())
                     .requestStatus(post.getRequest().getApproveStatus())
                     .build();

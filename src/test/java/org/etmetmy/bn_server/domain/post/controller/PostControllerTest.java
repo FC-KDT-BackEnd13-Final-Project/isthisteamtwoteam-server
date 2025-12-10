@@ -5,6 +5,7 @@ import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.post.entity.StageType;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.repository.StageRepository;
 import org.etmetmy.bn_server.domain.project.entity.Project;
@@ -96,13 +97,13 @@ public class PostControllerTest {
 
         // 4. 스테이지 생성
         stage1 = Stage.builder()
-                .stageName("요구사항 정의")
+                .stageType(StageType.REQUIREMENTS)
                 .build();
         stage2 = Stage.builder()
-                .stageName("화면 설계")
+                .stageType(StageType.SCREEN_DESIGN)
                 .build();
         stage3 = Stage.builder()
-                .stageName("개발")
+                .stageType(StageType.DEVELOPMENT)
                 .build();
         stageRepository.saveAndFlush(stage1);
         stageRepository.saveAndFlush(stage2);

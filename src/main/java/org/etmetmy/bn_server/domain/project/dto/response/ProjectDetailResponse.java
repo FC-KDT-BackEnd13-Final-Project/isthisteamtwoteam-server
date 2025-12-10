@@ -42,7 +42,7 @@ public class ProjectDetailResponse {
             return ProjectDetailResponse.builder()
                     .projectId(project.getId())
                     .name(project.getProjectName())
-                    .stage(project.getStage() != null ? project.getStage().getStageName() : null)
+                    .stage(project.getStage().getStageType().getDescription())
                     .coverImage(null) // TODO: 커버 이미지 구현 필요
                     .build();
         }

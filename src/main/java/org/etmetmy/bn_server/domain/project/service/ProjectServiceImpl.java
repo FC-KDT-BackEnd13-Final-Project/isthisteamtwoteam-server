@@ -10,6 +10,7 @@ import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.post.entity.StageType;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
@@ -142,9 +143,14 @@ public class ProjectServiceImpl implements ProjectService{
     private Stage getStartStage(String stageName) {
         String normalized = normalizeStageName(stageName);
 
-        return projectStageRepository.findByStageName(normalized)
-                .or(() -> projectStageRepository.findByStageNameNormalized(normalized))
-                .orElseGet(() -> createStage(normalized));
+        // String을 StageType enum으로 변환
+        StageType stageType = StageType.fromDescription(normalized);
+        if (stageType == null) {
+            throw new InvalidInputException("유효하지 않은 프로젝트 단계입니다: " + normalized);
+        }
+
+        return projectStageRepository.findByStageType(stageType)
+                .orElseGet(() -> createStage(stageType));
     }
 
     private String normalizeStageName(String stageName) {
@@ -156,9 +162,9 @@ public class ProjectServiceImpl implements ProjectService{
         return normalized;
     }
 
-    private Stage createStage(String stageName) {
+    private Stage createStage(StageType stageType) {
         Stage newStage = Stage.builder()
-                .stageName(stageName)
+                .stageType(stageType)
                 .build();
         return projectStageRepository.save(newStage);
     }

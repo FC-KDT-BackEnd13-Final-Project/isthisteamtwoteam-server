@@ -24,9 +24,10 @@ public class PostDetailResponse {
     public static class Converter {
         public static PostDetailResponse fromEntity(Post post, User author) {
 
-            String calculatedStageName = (post.getStage().getStageName() != null)
-                    ? post.getStage().getStageName() // ID가 있으면 "ID: 99" 등으로 표시
-                    : "미정";
+/*            String calculatedStageName = (post.getStage() != null && post.getStage().getStageType() != null)
+                    ? post.getStage().getStageType().getDescription()
+                    : "미정";*/
+            String calculatedStageName =  post.getStage().getStageType().getDescription();
 
             return PostDetailResponse.builder()
                     .postId(post.getPostId())

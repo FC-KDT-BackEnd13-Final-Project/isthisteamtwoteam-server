@@ -45,7 +45,8 @@ public class ProjectDTO {
                     .startDate(project.getStartDate())
                     .endDate(project.getEndDate())
                     .stageId(project.getStage() != null ? project.getStage().getId().intValue() : null)
-                    .stageName(project.getStage() != null ? project.getStage().getStageName() : null)
+                    .stageName(project.getStage() != null && project.getStage().getStageType() != null
+                            ? project.getStage().getStageType().getDescription() : null)
                     .memoContent(memo != null ? memo.getContent() : null)
                     .members(memberUserIds)  // userId 리스트로 설정
                     .createdAt(project.getCreatedAt())

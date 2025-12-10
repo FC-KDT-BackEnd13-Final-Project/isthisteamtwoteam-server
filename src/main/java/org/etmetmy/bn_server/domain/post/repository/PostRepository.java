@@ -72,18 +72,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findPostsWithRequestStatus(@Param("status") RequestStatus status);
 
     /**
-     * 특정 stageId의 Post와 연결된 Request 함께 조회
+     * 특정 stageType의 Post와 연결된 Request 함께 조회
      */
-    // stageName에 따라 조회
+    // stageType에 따라 조회
     @Query("SELECT p FROM Post p " +
             "join fetch p.user u " +
             "join fetch p.stage s " +
             "join fetch p.project pr " +
             "join fetch pr.company c " +
             "left join fetch p.request " +
-            "WHERE p.stage.stageName = :stageName " +
+            "WHERE p.stage.stageType = :stageType " +
             "ORDER BY p.createdAt DESC")
-    List<Post> findPostsByStageName(@Param("stageName") String stageName);
+    List<Post> findPostsByStageType(@Param("stageType") org.etmetmy.bn_server.domain.post.entity.StageType stageType);
 
     /**
      * Request가 있는 모든 Post 조회 (승인 요청이 있는 게시글만)

@@ -70,10 +70,7 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public ApprovalRequestListResponse getApprovalRequest(Long loginUserId) {
-        // 유저 검증
-        userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
+    public ApprovalRequestListResponse getApprovalRequest() {
 
         // Request가 있는 모든 Post 조회 (상태별, 단계별 카운팅 및 리스트 생성용)
         List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequest();

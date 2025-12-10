@@ -32,7 +32,7 @@ public class PostListResponse {
                 .content(post.getContent())
                 .isCompleted(post.getIsCompleted())
                 .stageId(post.getStage().getId())
-                .stageName(post.getStage().getStageName())
+                .stageName(post.getStage().getStageType().getDescription())
                 .createdIp(post.getCreatedIp())
                 .parentId(post.getParentPostId())
                 .build();

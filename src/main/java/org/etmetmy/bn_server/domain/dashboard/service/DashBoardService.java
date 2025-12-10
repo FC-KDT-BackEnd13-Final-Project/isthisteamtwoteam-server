@@ -13,5 +13,5 @@ public interface DashBoardService {
 
     DashBoardResponse getStatusDashboard(Long loginUserId);
 
-    ApprovalRequestListResponse getApprovalRequest(Long loginUserId);
+    ApprovalRequestListResponse getApprovalRequest();
 }

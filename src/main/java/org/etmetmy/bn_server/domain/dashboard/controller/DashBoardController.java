@@ -43,10 +43,9 @@ public class DashBoardController {
 
     // todo: 승인대기 화면 리스트들 조회
     @GetMapping("/approval-requests")
-    public CommonResponse<ApprovalRequestListResponse> getApprovalRequests(HttpSession session) {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
+    public CommonResponse<ApprovalRequestListResponse> getApprovalRequests() {
 
-        ApprovalRequestListResponse result = dashBoardService.getApprovalRequest(loginUserId);
+        ApprovalRequestListResponse result = dashBoardService.getApprovalRequest();
 
         return CommonResponse.success("승인 요청 알림 조회 성공", result);
     }

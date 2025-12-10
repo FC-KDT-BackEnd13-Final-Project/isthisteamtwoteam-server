@@ -3,6 +3,7 @@ package org.etmetmy.bn_server.domain.project.service;
 import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.post.entity.StageType;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectDateUpdateRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectNameUpdateRequest;
@@ -75,7 +76,7 @@ class ProjectServiceImplTest {
         Long stageId = 2L;
         Long userId = 10L;
 
-        Stage stage = Stage.builder().id(stageId).stageName("검수").build();
+        Stage stage = Stage.builder().id(stageId).stageType(StageType.QA).build();
         Project project = Project.builder()
                 .id(projectId)
                 .projectName("프로젝트")
@@ -116,7 +117,7 @@ class ProjectServiceImplTest {
         Long stageId = 3L;
         Long userId = 20L;
 
-        Stage stage = Stage.builder().id(stageId).stageName("개발").build();
+        Stage stage = Stage.builder().id(stageId).stageType(StageType.DEVELOPMENT).build();
         Project project = Project.builder()
                 .id(projectId)
                 .projectName("프로젝트")
@@ -156,7 +157,7 @@ class ProjectServiceImplTest {
         Long projectId = 5L;
         Long stageId = 6L;
 
-        Stage stage = Stage.builder().id(stageId).stageName("검수").build();
+        Stage stage = Stage.builder().id(stageId).stageType(StageType.QA).build();
         Project project = Project.builder()
                 .id(projectId)
                 .projectName("프로젝트")
