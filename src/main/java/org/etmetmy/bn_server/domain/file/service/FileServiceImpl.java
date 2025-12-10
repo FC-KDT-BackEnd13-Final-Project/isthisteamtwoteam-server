@@ -249,15 +249,4 @@ public class FileServiceImpl implements FileService {
             }
         }
     }
-    // 9. URL 에서 파일명 추출
-    public static String extractFileName(String url) {
-        int lastSlash = url.lastIndexOf('/');
-        return lastSlash >= 0 ? url.substring(lastSlash + 1) : "unknown";
-    }
-
-    // 10. URL 에서 파일 확장자 추출
-    public static String extractFileType(String url) {
-        int lastDot = url.lastIndexOf('.');
-        return lastDot >= 0 ? url.substring(lastDot + 1).toLowerCase() : "unknown";
-    }
 }
