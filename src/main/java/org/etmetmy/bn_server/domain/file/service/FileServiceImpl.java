@@ -242,4 +242,29 @@ public class FileServiceImpl implements FileService {
             }
         }
     }
+
+    // S3에서 파일 삭제
+    @Override
+    public void deleteFilesFromS3(List<File> files) {
+        for (File file : files) {
+            try {
+                String fileUrl = file.getFilePath();
+                Long fileId = file.getFileId();
+
+                // S3 key 추출
+                String key = getKeyFromFileUrls(fileUrl);
+
+                // S3 삭제 요청
+                DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                        .bucket(bucketName)
+                        .key(key)
+                        .build();
+
+                s3Client.deleteObject(deleteRequest);
+
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
+            }
+        }
+    }
 }

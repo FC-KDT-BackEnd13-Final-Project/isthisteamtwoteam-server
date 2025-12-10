@@ -25,4 +25,6 @@ public interface FileService {
     // S3와 DB 에서 파일 삭제
     void deleteFilesFromS3AndDb(List<File> files);
 
-    }
+    // S3에서 파일 삭제
+    void deleteFilesFromS3(List<File> files);
+}

@@ -20,11 +20,10 @@ public interface FileRepository extends JpaRepository<File, Long> {
     List<File> findByProjectId(@Param("projectId") Long projectId);
 
     // 다중 프로젝트의 게시글, 댓글, 체크리스트에 속한 파일 조회
-    @Query("SELECT f FROM File f " +
-            "left join f.post p " +
-            "left join f.comment c " +
-            "left join f.projectCheckList pcl " +
-            "WHERE (p.project.id in :projectIds) or (c.post.project.id in :projectIds) or (pcl.project.id in :projectIds)")
+    @Query("SELECT DISTINCT f FROM File f " +
+            "WHERE f.post.project.id IN :projectIds " +
+            "   OR f.comment.post.project.id IN :projectIds " +
+            "   OR f.projectCheckList.project.id IN :projectIds")
     List<File> findByProjectIds(@Param("projectIds") List<Long> projectIds);
 
     List<File> findByPost(Post post);

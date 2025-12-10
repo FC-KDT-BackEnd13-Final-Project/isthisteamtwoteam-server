@@ -499,32 +499,31 @@ public class ProjectServiceImpl implements ProjectService{
         return ProjectRestoreResponse.Converter.from(projects);
     }
 
-    // 삭제된 프로젝트 영구삭제
+    // 삭제된 프로젝트 영구 삭제 (hard delete)
     @Override
     @Transactional
     public ProjectPermanentDeleteResponse deleteDeletedProject(Long loginUserId, @Valid ProjectPermanentDeleteRequest request){
 
-        // 요청한 프로젝트 ID 조회
+        // 1. 삭제 요청한 프로젝트 ID 목록 조회
         List<Long> projectIds = request.getProjectIds();
         List<Project> projects = projectRepository.findAllById(projectIds);
 
-        // 1. 존재 개수 비교
+        // 2. 존재 개수 비교
         if (projects.size() != projectIds.size()) {
             throw new ProjectNotFoundException("존재하지 않는 프로젝트가 포함되어 있습니다.");
         }
 
-        // 2. 삭제 여부 체크
+        // 3. 삭제 여부 체크
         projects.forEach(project -> {
             if (!project.getIsDeleted()) {
-                throw new BusinessException(ErrorCode.PROJECT_NOT_DELETED);
-            }
+                throw new BusinessException(ErrorCode.PROJECT_NOT_DELETED);}
         });
 
-        // S3와 DB 에서 파일(게시글, 댓글, 체크리스트) 삭제
+        // 4. S3 파일 삭제
         List<File> files = fileRepository.findByProjectIds(projectIds);
-        fileService.deleteFilesFromS3AndDb(files);
+        fileService.deleteFilesFromS3(files);
 
-        // 프로젝트 삭제
+        // 5. 프로젝트 삭제 (Cascade로 연관 엔티티도 삭제)
         projectRepository.deleteAll(projects);
 
         return ProjectPermanentDeleteResponse.Converter.from(projects);

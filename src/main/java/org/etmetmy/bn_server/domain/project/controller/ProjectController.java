@@ -27,7 +27,7 @@ public class ProjectController {
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
 
-    // todo: 프로젝트 생성
+    // Todo: 프로젝트 생성
     @PostMapping
     public CommonResponse<Long> createProject(HttpSession session, @RequestBody ProjectCreateRequest request) {
         Long currentUserId = (Long) session.getAttribute("userId");
@@ -55,7 +55,7 @@ public class ProjectController {
         return CommonResponse.success("프로젝트 멤버 조회 성공", responses);
     }
 
-    // todo: 프로젝트 멤버 추가
+    // Todo: 프로젝트 멤버 추가
     @PostMapping("/{projectId}/members")
     public CommonResponse<Integer> addProjectMembers(
             HttpSession session,
@@ -67,7 +67,7 @@ public class ProjectController {
         return CommonResponse.success("프로젝트 멤버 추가 성공", addedCount);
     }
 
-    // todo: 프로젝트에 체크리스트 할당
+    // Todo: 프로젝트에 체크리스트 할당
     @PostMapping("/{projectId}/checklists")
     public CommonResponse<List<ProjectAddCheckListResponse>> addCheckLists(@PathVariable Long projectId,
                                                                            @RequestBody ProjectAddCheckListRequest request) {
@@ -75,7 +75,7 @@ public class ProjectController {
 
     }
 
-    // Todo : 단일 프로젝트 체크리스트 전체 조회
+    // Todo: 단일 프로젝트 체크리스트 전체 조회
     @GetMapping("/{projectId}/checklists")
     public CommonResponse<List<ProjectCheckListAllResponse>> getCheckLists(
             @PathVariable Long projectId
@@ -83,7 +83,7 @@ public class ProjectController {
         return CommonResponse.success("프로젝트 체크리스트를 불러왔습니다.",projectService.getCheckLists(projectId));
     }
 
-    // Todo : 프로젝트 제목 수정
+    // Todo: 프로젝트 제목 수정
     @PatchMapping("/{projectId}/projectName")
     public CommonResponse<ProjectUpdateResponse> updateProjectName(
             @PathVariable Long projectId,
@@ -93,7 +93,7 @@ public class ProjectController {
         return CommonResponse.success("프로젝트 제목 수정 성공", response);
     }
 
-    // Todo : 프로젝트 날짜 수정
+    // Todo: 프로젝트 날짜 수정
     @PatchMapping("/{projectId}/date")
     public CommonResponse<ProjectUpdateResponse> updateProjectDate(
             @PathVariable Long projectId,
@@ -103,14 +103,14 @@ public class ProjectController {
         return CommonResponse.success("프로젝트 날짜 수정 성공", response);
     }
 
-    // Todo : 프로젝트 삭제 (soft delete)
+    // Todo: 프로젝트 삭제 (soft delete)
     @DeleteMapping("/{projectId}")
     public CommonResponse<ProjectTrashResponse> deleteProject(@PathVariable Long projectId) {
         ProjectTrashResponse response = projectService.deleteProject(projectId); // ✅ 인스턴스 사용
         return CommonResponse.success("프로젝트 휴지통 이동 완료", response);
     }
 
-    // Todo : 프로젝트 멤버 삭제
+    // Todo: 프로젝트 멤버 삭제
     @DeleteMapping("/{projectId}/members/{userId}")
     public CommonResponse<Long> removeProjectMember(
             @PathVariable Long projectId,
@@ -121,7 +121,7 @@ public class ProjectController {
     }
 
 
-    // Todo : 프로젝트 진행단계 수정
+    // Todo: 프로젝트 진행단계 수정
     @PatchMapping("/{projectId}/stage")
     public CommonResponse<ProjectStageUpdateResponse> updateProjectStage(
             HttpSession session,
@@ -142,7 +142,7 @@ public class ProjectController {
         return CommonResponse.success("프로젝트 진행단계 수정 성공", response);
     }
 
-    // Todo : 개별 프로젝트 게시판 기본정보 조회
+    // Todo: 개별 프로젝트 게시판 기본정보 조회
     @GetMapping("/{projectId}")
     public CommonResponse<ProjectDetailResponse> getProjectDetail(
             @PathVariable Long projectId
@@ -151,21 +151,21 @@ public class ProjectController {
         return CommonResponse.success("프로젝트 조회 성공", response);
     }
 
-    //프로젝트 생성 - 개발사/고객사 사원 조회
+    // Todo: 프로젝트 생성 - 개발사/고객사 사원 조회
     @GetMapping(value = "/users" )
     public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForCreate(@RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForCreate(role);
             return CommonResponse.success("프로젝트 생성 사원 조회 성공", responses);
 
     }
-    // 프로젝트 설정 - 개발사/고객사 담당자, 사원 조회
+    // Todo: 프로젝트 설정 - 개발사/고객사 담당자, 사원 조회
     @GetMapping("/{projectId}/users")
     public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(@PathVariable Long projectId, @RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForProject(projectId, role);
             return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
     }
 
-    //todo: 삭제된 프로젝트 목록 조회
+    // Todo: 삭제된 프로젝트 목록 조회
     @GetMapping("/trash")
     public CommonResponse<List<DeletedProjectResponse>> getDeletedProjectList(HttpSession session)
     {
@@ -175,7 +175,7 @@ public class ProjectController {
         return CommonResponse.success("삭제된 프로젝트 목록 조회 성공", response);
     }
 
-    //todo: 삭제된 프로젝트 복원
+    // Todo: 삭제된 프로젝트 복원
     @PatchMapping("/trash/restore")
     public CommonResponse<ProjectRestoreResponse> restoreDeletedProject(
             HttpSession session,
@@ -187,7 +187,7 @@ public class ProjectController {
         return CommonResponse.success("삭제된 프로젝트 복원 성공", response);
     }
 
-    //todo: 삭제된 프로젝트 영구삭제 (hard delete)
+    // Todo: 삭제된 프로젝트 영구삭제 (hard delete)
     @DeleteMapping("/trash")
     public CommonResponse<ProjectPermanentDeleteResponse> deleteDeletedProject(
             HttpSession session,
