@@ -4,9 +4,11 @@ import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -24,4 +26,9 @@ public interface FileRepository extends JpaRepository<File, Long> {
            "WHERE f.projectCheckList.projectCheckListId = :projectCheckListId " +
            "AND f.isDeleted = false")
     List<File> findByProjectCheckListId(@Param("projectCheckListId") Long projectCheckListId);
+
+    //프로젝트 삭제 시 soft delete
+    @Modifying
+    @Query("UPDATE File f SET f.isDeleted = true, f.deletedAt = :deletedAt WHERE f.project.id = :projectId")
+    int softDeleteByProjectId(@Param("projectId") Long projectId, @Param("deletedAt") LocalDateTime deletedAt);
 }

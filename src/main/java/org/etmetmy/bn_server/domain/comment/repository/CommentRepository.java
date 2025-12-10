@@ -2,9 +2,11 @@ package org.etmetmy.bn_server.domain.comment.repository;
 
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
@@ -29,4 +31,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "WHERE c.post.postId = :postId " +
             "ORDER BY c.createdAt ASC")
     List<Comment> findAllByPostId(@Param("postId") Long postId);
+
+    //프로젝트 삭제 시 soft delete
+    @Modifying
+    @Query("UPDATE Comment c SET c.isDeleted = true, c.deletedAt = :deletedAt WHERE c.post.project.id = :projectId")
+    int softDeleteByProjectId(@Param("projectId") Long projectId, @Param("deletedAt") LocalDateTime deletedAt);
 }
