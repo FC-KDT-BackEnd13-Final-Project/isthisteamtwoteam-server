@@ -23,12 +23,12 @@ public class FileCreateRequest {
         /**
          * File 엔티티 생성
          */
-        public static File toEntity(String fileUrl, Post post, Long uploadedBy) {
+        public static File toEntity(String fileUrl, Long fileSize, Post post, Long uploadedBy) {
             return File.builder()
                     .post(post)
                     .fileTitle(extractFileName(fileUrl))
                     .filePath(fileUrl)
-                    .fileSize(0L)
+                    .fileSize(fileSize)
                     .fileType(extractFileType(fileUrl))
                     .uploadedBy(uploadedBy)
                     .isDeleted(false)

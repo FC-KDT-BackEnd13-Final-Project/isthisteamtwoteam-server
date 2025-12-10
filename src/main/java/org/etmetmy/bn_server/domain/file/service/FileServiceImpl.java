@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.domain.file.service;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
@@ -89,21 +90,12 @@ public class FileServiceImpl implements FileService {
             // S3 업로드
             String fileUrl = uploadToS3(file);
 
-            // 파일명, 확장자 추출
-            String savedFileName = extractFileName(fileUrl);
-            String fileType = extractFileType(fileUrl);
+            // DTO Converter를 통한 엔티티 생성
+            File fileEntity = FileCreateRequest.Converter.toEntity(
+                    fileUrl, file.getSize(), post, post.getUser().getId());
 
             // DB에 저장
-            File saved = fileRepository.save(File.builder()
-                    .fileTitle(savedFileName) // 원본 파일명
-                    .filePath(fileUrl)
-                    .fileSize(file.getSize())
-                    .fileType(fileType)
-                    .post(post)
-                    .uploadedBy(post.getUser().getId())
-                    .isDeleted(false)
-                    .build());
-
+            File saved = fileRepository.save(fileEntity);
             savedFiles.add(saved);
         }
         return ActiveFileListDTO.Converter.from(savedFiles);
@@ -164,19 +156,7 @@ public class FileServiceImpl implements FileService {
         fileRepository.save(file);
     }
 
-    // 5. URL 에서 파일명 추출
-    public static String extractFileName(String url) {
-        int lastSlash = url.lastIndexOf('/');
-        return lastSlash >= 0 ? url.substring(lastSlash + 1) : "unknown";
-    }
-
-    // 6. URL 에서 파일 확장자 추출
-    public static String extractFileType(String url) {
-        int lastDot = url.lastIndexOf('.');
-        return lastDot >= 0 ? url.substring(lastDot + 1).toLowerCase() : "unknown";
-    }
-
-    // 7. S3 업로드 메서드
+    // 5. S3 업로드 메서드
     @Override
     public String uploadToS3(MultipartFile file) {
 
@@ -202,7 +182,7 @@ public class FileServiceImpl implements FileService {
                 .toString();
     }
 
-    // 8. 삭제에 필요한 key 반환
+    // 6. 삭제에 필요한 key 반환
     @Override
     public String getKeyFromFileUrls(String fileUrl) {
         try{
@@ -217,7 +197,7 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    // S3에서 파일 삭제 후 DB 레코드도 삭제
+    // 7. S3에서 파일 삭제 후 DB 레코드도 삭제
     @Override
     public void deleteFilesFromS3AndDb(List<File> files) {
         for (File file : files) {
@@ -245,7 +225,7 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    // S3에서 파일 삭제
+    // 8. S3에서 파일 삭제
     @Override
     public void deleteFilesFromS3(List<File> files) {
         for (File file : files) {
@@ -268,5 +248,16 @@ public class FileServiceImpl implements FileService {
                 throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
             }
         }
+    }
+    // 9. URL 에서 파일명 추출
+    public static String extractFileName(String url) {
+        int lastSlash = url.lastIndexOf('/');
+        return lastSlash >= 0 ? url.substring(lastSlash + 1) : "unknown";
+    }
+
+    // 10. URL 에서 파일 확장자 추출
+    public static String extractFileType(String url) {
+        int lastDot = url.lastIndexOf('.');
+        return lastDot >= 0 ? url.substring(lastDot + 1).toLowerCase() : "unknown";
     }
 }
