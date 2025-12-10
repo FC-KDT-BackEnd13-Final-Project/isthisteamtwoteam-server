@@ -9,7 +9,9 @@ import org.etmetmy.bn_server.domain.project.dto.response.*;
 
 import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.exception.custom.InvalidInputException;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
@@ -145,19 +147,18 @@ public class ProjectController {
         return CommonResponse.success("프로젝트 조회 성공", response);
     }
 
+    //프로젝트 생성 - 개발사/고객사 사원 조회
+    @GetMapping(value = "/users" )
+    public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForCreate(@RequestParam("role") Role role) {
+        List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForCreate(role);
+            return CommonResponse.success("프로젝트 생성 사원 조회 성공", responses);
 
-    //프로젝트 생성 - 개발사 사원 조회
-    @GetMapping(value = "/users", params = "type=developers")
-    public CommonResponse<List<ProjectMemberSearchResponse>> searchDevelopersForCreate() {
-        List<ProjectMemberSearchResponse> responses = projectMemberService.searchDeveloperMembers();
-        return CommonResponse.success("개발사 사원 조회 성공", responses);
     }
-
-    //프로젝트 생성 - 고객사 사원 조회
-    @GetMapping(value = "/users", params = "type=clients")
-    public CommonResponse<List<ProjectMemberSearchResponse>> searchClientsForCreate() {
-        List<ProjectMemberSearchResponse> responses = projectMemberService.searchClientMembers();
-        return CommonResponse.success("고객사 사원 조회 성공", responses);
+    // 프로젝트 설정 - 개발사/고객사 담당자, 사원 조회
+    @GetMapping("/{projectId}/users")
+    public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(@PathVariable Long projectId, @RequestParam("role") Role role) {
+        List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForProject(projectId, role);
+            return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
     }
 
     //todo: 삭제된 프로젝트 목록 조회

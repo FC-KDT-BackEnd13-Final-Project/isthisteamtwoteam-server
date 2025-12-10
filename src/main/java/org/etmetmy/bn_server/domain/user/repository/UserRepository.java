@@ -1,12 +1,12 @@
 package org.etmetmy.bn_server.domain.user.repository;
 
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param; // Param import
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -36,12 +36,31 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<UserProfileImgNameResponse> findProfileImgAndNameByUserId(@Param("userId") Long userId);
 
 
+    // 개발사 조회 (Admin 제외, 회사 있으면 type=DEVELOPER, 없으면 role=DEVELOPER)
+    @Query("SELECT u FROM User u " +
+            "LEFT JOIN FETCH u.company c " +
+            "WHERE u.role <> :adminRole " +
+            "AND (" +
+            "    (c IS NOT NULL AND c.type = :developerCompanyType) " +
+            "    OR (c IS NULL AND u.role = :developerRole)" +
+            ")")
+    List<User> findDeveloperCandidates(
+            @Param("adminRole") Role adminRole,
+            @Param("developerCompanyType") CompanyType developerCompanyType,
+            @Param("developerRole") Role developerRole
+    );
 
-     //회사 타입(개발사/고객사) 기준 전체 사원/담당자 조회
-    @Query("SELECT new org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberSearchResponse(" +
-            "u.id, u.name, u.email, u.company.companyId, u.company.companyName) " +
-            "FROM User u " +
-            "WHERE u.company.type = :companyType")
-    List<ProjectMemberSearchResponse> findByCompanyType(@Param("companyType") CompanyType companyType);
-
+    // 고객사 조회 (관리자 제외, 회사 있으면 type=CLIENT, 없으면 role=CUSTOMER)
+    @Query("SELECT u FROM User u " +
+            "LEFT JOIN FETCH u.company c " +
+            "WHERE u.role <> :adminRole " +
+            "AND (" +
+            "    (c IS NOT NULL AND c.type = :clientCompanyType) " +
+            "    OR (c IS NULL AND u.role = :customerRole)" +
+            ")")
+    List<User> findClientCandidates(
+            @Param("adminRole") Role adminRole,
+            @Param("clientCompanyType") CompanyType clientCompanyType,
+            @Param("customerRole") Role customerRole
+    );
 }
