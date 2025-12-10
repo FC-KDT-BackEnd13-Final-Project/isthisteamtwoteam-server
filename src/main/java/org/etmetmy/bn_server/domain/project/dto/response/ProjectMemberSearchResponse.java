@@ -1,5 +1,7 @@
 package org.etmetmy.bn_server.domain.project.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,12 +17,15 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProjectMemberSearchResponse {
     private Long userId;
     private String userName;
     private String email;
     private Long companyId;
     private String companyName;
+    @JsonIgnore
+    private boolean selected;
 
     public static class Converter{
         public static ProjectMemberSearchResponse from(Long userId, String userName, String email, Long companyId, String companyName){
@@ -30,32 +35,31 @@ public class ProjectMemberSearchResponse {
                     .email(email)
                     .companyId(companyId)
                     .companyName(companyName)
+                    .selected(false)
                     .build();
         }
-        // 새로운 메서드 (List<User>를 받아서 변환)
+        private static ProjectMemberSearchResponse from(User user, Role role, boolean selected) {
+            return ProjectMemberSearchResponse.builder()
+                    .userId(user.getId())
+                    .userName(user.getName())
+                    .email(user.getEmail())
+                    .companyId(user.getCompany() != null ? user.getCompany().getCompanyId() : null)
+                    .companyName(
+                            role == Role.CUSTOMER && user.getCompany() != null
+                                    ? user.getCompany().getCompanyName()
+                                    : null   // DEVELOPER 이면 항상 null
+                    )
+                    .selected(selected)
+                    .build();
+        }
         public static List<ProjectMemberSearchResponse> from(List<User> users, Role role) {
             return users.stream()
-                    .map(user -> ProjectMemberSearchResponse.builder()
-                            .userId(user.getId())
-                            .userName(user.getName())
-                            .email(user.getEmail())
-                            .companyId(user.getCompany() != null ? user.getCompany().getCompanyId() : null)
-                            .companyName(role == Role.DEVELOPER ? null :
-                                    (user.getCompany() != null ? user.getCompany().getCompanyName() : null))
-                            .build())
+                    .map(user -> from(user, role, false))
                     .toList();
         }
         public static List<ProjectMemberSearchResponse> filteredUsers(List<User> users, Role role, Set<Long> excludeUserIds) {
             return users.stream()
-                    .filter(user -> !excludeUserIds.contains(user.getId()))
-                    .map(user -> ProjectMemberSearchResponse.builder()
-                            .userId(user.getId())
-                            .userName(user.getName())
-                            .email(user.getEmail())
-                            .companyId(user.getCompany() != null ? user.getCompany().getCompanyId() : null)
-                            .companyName(role == Role.DEVELOPER ? null :
-                                    (user.getCompany() != null ? user.getCompany().getCompanyName() : null))
-                            .build())
+                    .map(user -> from(user, role, excludeUserIds.contains(user.getId())))
                     .toList();
         }
     }

@@ -37,13 +37,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 
     // 개발사 조회 (Admin 제외, role=DEVELOPER)
-    @Query("SELECT u FROM User u " +
-            "WHERE u.role = 'DEVELOPER' ")
+    @Query("SELECT u FROM User u WHERE u.role = 'DEVELOPER' ")
     List<User> findDeveloperCandidates();
 
     // 고객사 조회 (관리자 제외, role=CUSTOMER)
-    @Query("SELECT DISTINCT u FROM User u "  +
-            "LEFT JOIN FETCH u.company c " +
-            "WHERE u.role = 'CUSTOMER' ")
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.company c WHERE u.role = 'CUSTOMER' ")
     List<User> findClientCandidates();
 }
