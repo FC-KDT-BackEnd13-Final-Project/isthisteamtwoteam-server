@@ -6,9 +6,11 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -72,5 +74,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE r.approveStatus = :status " +
             "ORDER BY p.createdAt DESC")
     List<Post> findPostsWithRequestStatus(@Param("status") RequestStatus status);
+
 
 }

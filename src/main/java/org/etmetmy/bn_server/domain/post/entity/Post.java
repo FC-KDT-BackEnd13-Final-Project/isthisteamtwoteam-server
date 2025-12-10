@@ -9,6 +9,7 @@ import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +69,12 @@ public class Post extends BaseEntity {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 
+    //삭제(프로젝트 삭제 시 soft delete)
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     // 게시글 업데이트 메서드
     public void updateTitle(String title) {
@@ -82,4 +89,6 @@ public class Post extends BaseEntity {
     public void updateCompletedStatus(Boolean isCompleted) {
         this.isCompleted = isCompleted;
     }
+
+
 }

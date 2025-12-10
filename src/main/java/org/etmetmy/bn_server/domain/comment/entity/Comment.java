@@ -11,6 +11,7 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +44,13 @@ public class Comment extends BaseEntity {
 
     @Column(name = "comment_id2")
     private Long commentId2;
+
+    //삭제(프로젝트 삭제 시 soft delete)
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     //파일 목록
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
