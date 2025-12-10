@@ -42,8 +42,6 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberSearchResponse> searchUsersForCreate(Role role){
-        validateRole(role);
-
         List<User> users = switch (role){
             case DEVELOPER -> userRepository.findDeveloperCandidates(Role.ADMIN, CompanyType.DEVELOPER, Role.DEVELOPER);
             case CUSTOMER -> userRepository.findClientCandidates(Role.ADMIN, CompanyType.CUSTOMER, Role.CUSTOMER);
@@ -56,7 +54,6 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberSearchResponse> searchUsersForProject(Long projectId, Role role) {
-        validateRole(role);
         Set<Long> existingUserIds = getProjectMemberUserIds(projectId);
 
         List<User> users = switch (role) {
@@ -65,12 +62,6 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
             default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다.");
         };
         return ProjectMemberSearchResponse.Converter.filteredUsers(users, role, existingUserIds);
-    }
-
-    // 공통 검증 로직
-    private void validateRole(Role role) {
-        if (role == null){ throw new InvalidInputException("role 파라미터는 필수입니다. (DEVELOPER 또는 CUSTOMER)");}
-        if (role == Role.ADMIN){ throw new InvalidInputException("관리자(ADMIN)는 조회할 수 없습니다.");}
     }
 
     //프로젝트에 속한 유저
