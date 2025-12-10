@@ -75,6 +75,10 @@ public class Post extends BaseEntity {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+    //요청 (1:1 관계)
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Request request;
+
 
     // 게시글 업데이트 메서드
     public void updateTitle(String title) {
@@ -89,6 +93,4 @@ public class Post extends BaseEntity {
     public void updateCompletedStatus(Boolean isCompleted) {
         this.isCompleted = isCompleted;
     }
-
-
 }

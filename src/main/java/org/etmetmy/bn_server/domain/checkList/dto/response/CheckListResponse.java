@@ -15,7 +15,6 @@ public class CheckListResponse {
     private String content;
     private Boolean checked;
 
-
     public static class Converter{
 
         public static CheckListResponse from(CheckList checkList){
@@ -31,6 +30,4 @@ public class CheckListResponse {
                     .toList();
         }
     }
-
-
 }
