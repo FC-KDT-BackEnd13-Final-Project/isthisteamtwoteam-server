@@ -30,7 +30,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
                            @Param("startDate") LocalDate startDate,
                            @Param("endDate") LocalDate endDate);
 
-    //프로젝트 삭제(휴지통이동)
+    // 프로젝트 삭제(휴지통이동)
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Project p SET p.isDeleted = TRUE, p.deletedAt = :deletedAt WHERE p.id = :projectId")
     int moveToTrash(@Param("projectId") Long projectId,

@@ -28,7 +28,7 @@ public interface ProjectService {
     // 프로젝트 날짜 수정
     ProjectUpdateResponse updateProjectDate(Long projectId, ProjectDateUpdateRequest request);
 
-    //프로젝트 삭제(흊지통이동)
+    //프로젝트 삭제 (soft delete)
     ProjectTrashResponse deleteProject(Long projectId);
 
     // 프로젝트 멤버 삭제

@@ -356,7 +356,7 @@ public class ProjectServiceImpl implements ProjectService{
         }
     }
 
-    //프로젝트 삭제(휴지통이동)
+    // 프로젝트 삭제 (휴지통이동)
     @Transactional
     @Override
     public ProjectTrashResponse deleteProject(Long projectId) {

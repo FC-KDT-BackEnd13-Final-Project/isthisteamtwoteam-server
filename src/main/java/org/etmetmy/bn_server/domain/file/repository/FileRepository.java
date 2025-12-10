@@ -19,15 +19,12 @@ public interface FileRepository extends JpaRepository<File, Long> {
            "AND f.isDeleted = false")
     List<File> findByProjectId(@Param("projectId") Long projectId);
 
-    // 다중 프로젝트의 게시글, 댓글, 체크리스트에 속한 삭제된 파일 조회
+    // 다중 프로젝트의 게시글, 댓글, 체크리스트에 속한 파일 조회
     @Query("SELECT f FROM File f " +
             "left join f.post p " +
             "left join f.comment c " +
             "left join f.projectCheckList pcl " +
-            "WHERE f.isDeleted = true " +
-            "and (" +
-            "(p.project.id in :projectIds) or (c.post.project.id in :projectIds) or (pcl.project.id in :projectIds)" +
-            ")")
+            "WHERE (p.project.id in :projectIds) or (c.post.project.id in :projectIds) or (pcl.project.id in :projectIds)")
     List<File> findByProjectIds(@Param("projectIds") List<Long> projectIds);
 
     List<File> findByPost(Post post);
