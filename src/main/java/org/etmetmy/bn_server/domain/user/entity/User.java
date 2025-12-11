@@ -43,9 +43,6 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "profile_img")
-    private String profileImg;
-
     public void updateInfo(String name, String email, String phoneNumber, Company company, Role role) {
         this.name = name;
         this.email = email;
