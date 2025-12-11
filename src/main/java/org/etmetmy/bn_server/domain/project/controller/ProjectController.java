@@ -31,19 +31,14 @@ public class ProjectController {
     // todo: 프로젝트 생성
     @PostMapping
     @ActivityLogger(action = "CREATE", targetType = "Project")
-    public CommonResponse<Long> createProject(HttpSession session, @RequestBody ProjectCreateRequest request) {
-        Long currentUserId = (Long) session.getAttribute("userId");
-
-        Long projectId = projectService.createProject(request, currentUserId);
-
-        ProjectResponse response = projectService.getProjectById(projectId);
-
-        return CommonResponse.success("프로젝트 생성 성공", projectId);
+    public void createProject(HttpSession session, @RequestBody ProjectCreateRequest request) {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        projectService.createProject(request, loginUserId);
     }
 
     // todo: 프로젝트 전체 조회
     @GetMapping
-    public CommonResponse<List<ProjectResponse>> getProjects(){
+    public CommonResponse<List<ProjectResponse>> getProjects() {
         List<ProjectResponse> responses = projectService.getAllProjects();
 
         return CommonResponse.success("프로젝트 목록조회 성공", responses);
@@ -51,7 +46,7 @@ public class ProjectController {
 
     // todo: 개별 프로젝트 멤버 조회
     @GetMapping("/{projectId}/members")
-    public CommonResponse<List<ProjectMemberResponse>> getProjectMembers(@PathVariable Long projectId){
+    public CommonResponse<List<ProjectMemberResponse>> getProjectMembers(@PathVariable Long projectId) {
         List<ProjectMemberResponse> responses = projectService.getProjectMembers(projectId);
 
         return CommonResponse.success("프로젝트 멤버 조회 성공", responses);
@@ -81,8 +76,8 @@ public class ProjectController {
     @GetMapping("/{projectId}/checklists")
     public CommonResponse<List<ProjectCheckListAllResponse>> getCheckLists(
             @PathVariable Long projectId
-    ){
-        return CommonResponse.success("프로젝트 체크리스트를 불러왔습니다.",projectService.getCheckLists(projectId));
+    ) {
+        return CommonResponse.success("프로젝트 체크리스트를 불러왔습니다.", projectService.getCheckLists(projectId));
     }
 
     // todo: 개별 프로젝트 제목 수정
@@ -155,10 +150,10 @@ public class ProjectController {
     }
 
     // todo: 프로젝트 생성 - 개발사/고객사 사원 조회
-    @GetMapping(value = "/users" )
+    @GetMapping(value = "/users")
     public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForCreate(@RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForCreate(role);
-            return CommonResponse.success("프로젝트 생성 사원 조회 성공", responses);
+        return CommonResponse.success("프로젝트 생성 사원 조회 성공", responses);
 
     }
 
@@ -166,13 +161,12 @@ public class ProjectController {
     @GetMapping("/{projectId}/users")
     public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(@PathVariable Long projectId, @RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForProject(projectId, role);
-            return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
+        return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
     }
 
     //todo: 삭제된 프로젝트 목록 조회
     @GetMapping("/trash")
-    public CommonResponse<List<DeletedProjectResponse>> getDeletedProjectList(HttpSession session)
-    {
+    public CommonResponse<List<DeletedProjectResponse>> getDeletedProjectList(HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
         List<DeletedProjectResponse> response = projectService.getDeletedProjectList(loginUserId);
 
@@ -184,8 +178,7 @@ public class ProjectController {
     @ActivityLogger(action = "UPDATE", targetType = "Project")
     public CommonResponse<ProjectRestoreResponse> restoreDeletedProject(
             HttpSession session,
-            @Valid @RequestBody ProjectRestoreRequest request)
-    {
+            @Valid @RequestBody ProjectRestoreRequest request) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
         ProjectRestoreResponse response = projectService.restoreDeletedProject(loginUserId, request);
 

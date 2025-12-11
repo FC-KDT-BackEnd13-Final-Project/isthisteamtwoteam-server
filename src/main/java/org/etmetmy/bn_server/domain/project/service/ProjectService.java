@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface ProjectService {
 
-    Long createProject(ProjectCreateRequest request, Long createdById);
+    void createProject(ProjectCreateRequest request, Long loginUserId);
 
     int addProjectMembers(Long projectId, List<ProjectMemberRequest> members, Long createdById);
 
