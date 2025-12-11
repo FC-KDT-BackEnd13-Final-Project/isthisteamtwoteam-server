@@ -10,6 +10,8 @@ import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
+
 @EntityListeners(AuditingEntityListener.class)
 @Entity
 @Table(name = "activity_log", indexes = {
@@ -36,6 +38,12 @@ public class ActivityLog extends BaseEntity {
     @Column(name = "user_id", nullable = false, updatable = false)
     private Long userId;
 
+    @Column(name = "user_name")
+    private String userName;
+
+    @Column(name = "project_name")
+    private String projectName;
+
     // 2. 행위의 종류 (create, update, delete, comment_add)
     @Enumerated(EnumType.STRING)
     @Column(name = "action", nullable = false, length = 255, updatable = false)
@@ -50,10 +58,13 @@ public class ActivityLog extends BaseEntity {
     private Long targetId;
 
     //변경 상세 내용 JSON 형태로 저장
-    @Lob
-    @Column(name = "detail",columnDefinition = "TEXT", updatable = false)
+    @Column(name = "detail", columnDefinition = "JSON", updatable = false)
     private String detail;
 
     @Column(name = "ip_address", length = 45, nullable = false, updatable = false)
     private String ipAddress;
+
+    @Column(name = "description", length = 500)
+    private String description;
+
 }

@@ -10,7 +10,9 @@ public enum ActivityAction {
     CREATE("생성"),
     UPDATE("수정"),
     DELETE("삭제"),
-
+    APPROVE ("승인"),
+    REJECT("거절"),
+    COMPLETE("완료 처리"),
     // 프로젝트 관리용
     ASSIGN("담당자 배정"),
     UNASSIGN("담당자 해제"),
