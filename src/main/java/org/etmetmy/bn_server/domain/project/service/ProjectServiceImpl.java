@@ -271,10 +271,6 @@ public class ProjectServiceImpl implements ProjectService {
         return projectCheckLists.stream()
                 .map(projectCheckList -> {
                     Long projectCheckListId = projectCheckList.getProjectCheckListId();
-                    Long checkListId = projectCheckList.getCheckListId();
-
-                    // CheckList 조회
-                    CheckList checkList = checkListRepository.findById(checkListId).orElse(null);
 
                     // File 조회 및 DTO 변환
                     List<File> files = fileRepository.findByProjectCheckListId(projectCheckListId);
@@ -285,7 +281,7 @@ public class ProjectServiceImpl implements ProjectService {
                     List<LinkInfoDTO> linkDTOs = LinkInfoDTO.Converter.from(links);
 
                     // Response 생성
-                    return ProjectCheckListAllResponse.Converter.from(projectCheckList, checkList, fileDTOs, linkDTOs);
+                    return ProjectCheckListAllResponse.Converter.from(projectCheckList, fileDTOs, linkDTOs);
                 })
                 .toList();
     }

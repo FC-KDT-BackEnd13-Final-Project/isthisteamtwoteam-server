@@ -27,8 +27,9 @@ public class ProjectCheckList extends BaseEntity {
     @Column(name = "project_check_list_id")
     private Long projectCheckListId;
 
-    @Column(name = "check_list_id")
-    private Long checkListId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "check_list_id")
+    private CheckList checkListId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")

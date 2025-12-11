@@ -21,7 +21,7 @@ public class ProjectAddCheckListRequest {
         public static ProjectCheckList toEntity(Project project, CheckList checklist) {
             return ProjectCheckList.builder()
                     .project(project)
-                    .checkList(checklist)
+                    .checkListId(checklist)
                     .answererId(null)
                     .checked(false)
                     .build();
