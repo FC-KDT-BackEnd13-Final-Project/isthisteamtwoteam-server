@@ -29,7 +29,6 @@ public class ProjectCreateRequest {
 
     //내부 converter
     public static class Converter{
-
         public static Project toEntity(ProjectCreateRequest request, Long createdBy, Stage startStage) {
             return Project.builder()
                     .projectName(request.getProjectName())

@@ -13,9 +13,7 @@ import java.util.List;
 public interface PostService {
     PostDetailResponse getPostDetail(Long postId);
 
-
     void approvePost(Long postId, Long approvingUserId);
-
 
     void rejectPost(Long postId, Long rejectingUserId, String rejectReason);
 
