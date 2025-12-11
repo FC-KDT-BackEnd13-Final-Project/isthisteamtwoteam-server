@@ -56,12 +56,12 @@ public class ProjectMemberServiceImpl implements ProjectMemberService {
     public List<ProjectMemberSearchResponse> searchUsersForProject(Long projectId, Role role) {
         Set<Long> existingUserIds = getProjectMemberUserIds(projectId);
 
-        List<User> users = switch (role) {
+        List<User> allUsers = switch (role) {
             case DEVELOPER -> userRepository.findDeveloperCandidates();
             case CUSTOMER -> userRepository.findClientCandidates();
             default -> throw new InvalidInputException("role은 DEVELOPER 또는 CUSTOMER만 가능합니다.");
         };
-        return ProjectMemberSearchResponse.Converter.filteredUsers(users, role, existingUserIds);
+        return ProjectMemberSearchResponse.Converter.filteredUsers(allUsers, role, existingUserIds);
     }
 
     //프로젝트에 속한 유저

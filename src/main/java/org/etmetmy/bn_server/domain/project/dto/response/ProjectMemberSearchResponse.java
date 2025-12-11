@@ -24,8 +24,7 @@ public class ProjectMemberSearchResponse {
     private String email;
     private Long companyId;
     private String companyName;
-    @JsonIgnore
-    private boolean selected;
+
 
     public static class Converter{
         public static ProjectMemberSearchResponse from(Long userId, String userName, String email, Long companyId, String companyName){
@@ -35,10 +34,9 @@ public class ProjectMemberSearchResponse {
                     .email(email)
                     .companyId(companyId)
                     .companyName(companyName)
-                    .selected(false)
                     .build();
         }
-        private static ProjectMemberSearchResponse from(User user, Role role, boolean selected) {
+        private static ProjectMemberSearchResponse from(User user, Role role) {
             return ProjectMemberSearchResponse.builder()
                     .userId(user.getId())
                     .userName(user.getName())
@@ -49,17 +47,18 @@ public class ProjectMemberSearchResponse {
                                     ? user.getCompany().getCompanyName()
                                     : null   // DEVELOPER 이면 항상 null
                     )
-                    .selected(selected)
                     .build();
         }
         public static List<ProjectMemberSearchResponse> from(List<User> users, Role role) {
             return users.stream()
-                    .map(user -> from(user, role, false))
+                    .map(user -> from(user, role))
                     .toList();
         }
+        // 이미 등록된 사용자를 제외하고 반환
         public static List<ProjectMemberSearchResponse> filteredUsers(List<User> users, Role role, Set<Long> excludeUserIds) {
             return users.stream()
-                    .map(user -> from(user, role, excludeUserIds.contains(user.getId())))
+                    .filter(user -> !excludeUserIds.contains(user.getId()))
+                    .map(user -> from(user, role))
                     .toList();
         }
     }
