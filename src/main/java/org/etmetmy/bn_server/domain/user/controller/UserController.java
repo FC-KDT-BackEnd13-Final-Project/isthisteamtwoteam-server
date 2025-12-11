@@ -76,7 +76,7 @@ public class UserController {
     }
 
 
-    //회원 조회
+    //todo: 회원 조회
     @GetMapping("/admin/users")
     public CommonResponse<UserDataResponse> searchUsers(
             @RequestParam(required = false) String name,
@@ -88,14 +88,14 @@ public class UserController {
         return CommonResponse.success("대시보드 데이터를 성공적으로 조회하였습니다.", usersBoardData);
     }
 
-    //회원 삭제 (DELETE)
+    //todo: 회원 삭제 (DELETE)
     @DeleteMapping("/admin/users/{memberId}")
     public CommonResponse<Long> deleteMember(@PathVariable Long memberId) {
         Long userId = userService.deleteMember(memberId);
         return CommonResponse.success("회원 삭제 완료",userId);
     }
 
-    //회원 정보 수정 (PUT)
+    //todo: 회원 정보 수정 (PUT)
     @PutMapping("/admin/users/{memberId}")
     public CommonResponse<Long> updateMember(
             @PathVariable Long memberId,

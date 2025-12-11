@@ -31,17 +31,22 @@ public class UserServiceImpl implements UserService{
     private final PasswordEncoder passwordEncoder;
 
     // 회원 정보 수정 (Update)
+    @Override
     @Transactional
     public Long updateMember(Long memberId, UserUpdateRequest request) {
         // 1. 회원 찾기
         User user = userRepository.findById(memberId)
                 .orElseThrow(UserNotFoundException::new);
         // 2. 바꿀 회사 찾기
-        Company company = companyRepository.findById(request.getCompanyId())
+        Company company = companyRepository.findByCompanyName(request.getCompanyName())
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
 
         // 3. 정보 변경 (dirty checking)
-        user.updateInfo(request.getName(), request.getEmail(), company, request.getRole());
+        user.updateInfo(request.getName(), request.getEmail(), request.getPhoneNumber(), company, request.getRole());
+
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
 
         return user.getId();
     }
