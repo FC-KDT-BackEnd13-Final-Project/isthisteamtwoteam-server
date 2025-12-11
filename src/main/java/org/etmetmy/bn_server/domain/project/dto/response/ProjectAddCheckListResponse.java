@@ -23,8 +23,8 @@ public class ProjectAddCheckListResponse {
             return ProjectAddCheckListResponse.builder()
                     .id(projectCheckList.getProjectCheckListId())
                     .projectId(projectCheckList.getProject().getId())
-                    .checklistId(projectCheckList.getCheckList().getCheckListId())
-                    .checklistContent(projectCheckList.getCheckList().getContent())
+                    .checklistId(projectCheckList.getCheckListId().getCheckListId())
+                    .checklistContent(projectCheckList.getCheckListId().getContent())
                     .answererId(projectCheckList.getAnswererId() != null ? projectCheckList.getAnswererId().getId() : null)
                     .checked(projectCheckList.getChecked())
                     .build();

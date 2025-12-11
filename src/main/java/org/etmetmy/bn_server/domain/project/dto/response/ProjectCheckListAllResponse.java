@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.domain.project.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
@@ -27,8 +28,8 @@ public class ProjectCheckListAllResponse {
          return ProjectCheckListAllResponse.builder()
                  .id(projectCheckList.getProjectCheckListId())
                  .projectId(projectCheckList.getProject().getId())
-                 .checkListId(projectCheckList.getCheckList().getCheckListId())
-                 .checkListContent(projectCheckList.getCheckList().getContent())
+                 .checkListId(projectCheckList.getCheckListId().getCheckListId())
+                 .checkListContent(projectCheckList.getCheckListId().getContent())
                  .checked(projectCheckList.getChecked())
                  .files(files)
                  .links(links)

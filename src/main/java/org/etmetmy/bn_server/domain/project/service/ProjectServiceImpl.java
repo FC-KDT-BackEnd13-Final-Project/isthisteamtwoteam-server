@@ -267,17 +267,17 @@ public class ProjectServiceImpl implements ProjectService {
 
         List<ProjectCheckList> projectCheckLists = projectChecklistRepository.findByProject(project);
 
-        // 각 ProjectCheckList에 대해 File과 Link를 조회하여 Response 생성
+        // 각 ProjectCheckList에 대해 CheckList, File, Link를 조회하여 Response 생성
         return projectCheckLists.stream()
                 .map(projectCheckList -> {
-                    Long checkListId = projectCheckList.getProjectCheckListId();
+                    Long projectCheckListId = projectCheckList.getProjectCheckListId();
 
-                    // File 조회 및 DTO 변환 (ID 기반 조회로 변경)
-                    List<File> files = fileRepository.findByProjectCheckListId(checkListId);
+                    // File 조회 및 DTO 변환
+                    List<File> files = fileRepository.findByProjectCheckListId(projectCheckListId);
                     List<FileInfoDTO> fileDTOs = FileInfoDTO.Converter.from(files);
 
-                    // Link 조회 및 DTO 변환 (ID 기반 조회로 변경)
-                    List<Link> links = linkRepository.findByProjectCheckListId(checkListId);
+                    // Link 조회 및 DTO 변환
+                    List<Link> links = linkRepository.findByProjectCheckListId(projectCheckListId);
                     List<LinkInfoDTO> linkDTOs = LinkInfoDTO.Converter.from(links);
 
                     // Response 생성

@@ -28,8 +28,8 @@ public class ProjectCheckList extends BaseEntity {
     private Long projectCheckListId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "check_list_id", nullable = false)
-    private CheckList checkList;
+    @JoinColumn(name = "check_list_id")
+    private CheckList checkListId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
@@ -49,9 +49,4 @@ public class ProjectCheckList extends BaseEntity {
     //링크 목록
     @OneToMany(mappedBy = "projectCheckList", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Link> links = new ArrayList<>();
-
-    @PrePersist
-    protected void onCreateCheckList() {
-        if (checked == null) checked = false;
-    }
 }
