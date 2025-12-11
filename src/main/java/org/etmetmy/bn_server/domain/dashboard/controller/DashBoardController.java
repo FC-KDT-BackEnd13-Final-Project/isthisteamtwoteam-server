@@ -2,6 +2,8 @@ package org.etmetmy.bn_server.domain.dashboard.controller;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestListResponse;
+import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.ProjectListResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.DashBoardResponse;
 import org.etmetmy.bn_server.domain.dashboard.service.DashBoardService;
@@ -37,5 +39,15 @@ public class DashBoardController {
         List<ProjectListResponse> response = dashBoardService.getProjectList(loginUserId);
 
         return CommonResponse.success("프로젝트 목록 조회 성공", response);
+    }
+
+    // todo: 승인대기 화면 리스트들 조회
+    @GetMapping("/approval-requests")
+    public CommonResponse<ApprovalRequestListResponse> getApprovalRequests(HttpSession session) {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+        ApprovalRequestListResponse result = dashBoardService.getApprovalRequest(loginUserId);
+
+        return CommonResponse.success("승인 요청 알림 조회 성공", result);
     }
 }

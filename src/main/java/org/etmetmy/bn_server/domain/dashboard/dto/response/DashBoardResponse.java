@@ -27,23 +27,25 @@ public class DashBoardResponse {
         private int maintenance;
     }
 
-    public static DashBoardResponse of(List<DashBoardStatusResponseDTO> pendingList,
-                                       List<DashBoardStatusResponseDTO> rejectedList,
-                                       List<DashBoardStatusResponseDTO> inProgressList,
-                                       List<DashBoardStatusResponseDTO> maintenanceList) {
-        Stats stats = Stats.builder()
-                .pendingApproval(pendingList.size())
-                .rejected(rejectedList.size())
-                .inProgress(inProgressList.size())
-                .maintenance(maintenanceList.size())
-                .build();
+    public static class Converter{
+        public static DashBoardResponse of(List<DashBoardStatusResponseDTO> pendingList,
+                                           List<DashBoardStatusResponseDTO> rejectedList,
+                                           List<DashBoardStatusResponseDTO> inProgressList,
+                                           List<DashBoardStatusResponseDTO> maintenanceList) {
+            Stats stats = Stats.builder()
+                    .pendingApproval(pendingList.size())
+                    .rejected(rejectedList.size())
+                    .inProgress(inProgressList.size())
+                    .maintenance(maintenanceList.size())
+                    .build();
 
-        return DashBoardResponse.builder()
-                .stats(stats)
-                .pendingList(pendingList)
-                .rejectedList(rejectedList)
-                .inProgressList(inProgressList)
-                .maintenanceList(maintenanceList)
-                .build();
+            return DashBoardResponse.builder()
+                    .stats(stats)
+                    .pendingList(pendingList)
+                    .rejectedList(rejectedList)
+                    .inProgressList(inProgressList)
+                    .maintenanceList(maintenanceList)
+                    .build();
+        }
     }
 }

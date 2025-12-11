@@ -46,7 +46,7 @@ public class Company extends BaseEntity {
     @Column(name = "business_registration", length = 500)
     private String businessRegistration;
 
-    @Enumerated(EnumType.STRING) // DB에 "DEVELOPER", "CLIENT" 로 저장됨
+    @Enumerated(EnumType.STRING) // DB에 "DEVELOPER", "CUSTOMER" 로 저장됨
     @Column(name = "company_type")
     private CompanyType type;
 }

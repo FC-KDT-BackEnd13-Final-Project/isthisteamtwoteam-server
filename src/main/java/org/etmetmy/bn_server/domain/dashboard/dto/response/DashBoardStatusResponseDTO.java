@@ -34,7 +34,6 @@ public class DashBoardStatusResponseDTO {
     private String companyName;             // 회사 이름
 
     public static class Converter {
-
         // Post 반환
         public static DashBoardStatusResponseDTO toDTO(Post post, RequestStatus requestStatus) {
             return DashBoardStatusResponseDTO.builder()
