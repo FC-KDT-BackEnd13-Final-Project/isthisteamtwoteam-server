@@ -18,10 +18,10 @@ public class ProjectAddCheckListRequest {
 
     public static class Converter{
 
-        public static ProjectCheckList toEntity(Project project, CheckList checklist) {
+        public static ProjectCheckList toEntity(Project project, Long checkListId) {
             return ProjectCheckList.builder()
                     .project(project)
-                    .checkListId(checklist)
+                    .checkListId(checkListId)
                     .answererId(null)
                     .checked(false)
                     .build();
