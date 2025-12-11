@@ -52,7 +52,7 @@ public class PostCreateResponse {
 
 
     public static class Converter {
-        public static PostCreateResponse from(
+        /*public static PostCreateResponse from(
             Post post, List<File> files, List<Link> links
         ) {
             // 파일 목록 변환 (삭제되지 않은 파일만)
@@ -71,6 +71,19 @@ public class PostCreateResponse {
                     .updatedAt(post.getUpdatedAt())
                     .files(fileInfos)
                     .linkUrls(linkUrls)
+                    .build();
+        }*/
+        public static PostCreateResponse from(Post post){
+            return PostCreateResponse.builder()
+                    .postId(post.getPostId())
+                    .title(post.getTitle())
+                    .content(post.getContent())
+                    .stageId(post.getStage().getId())
+                    .createdByUserId(post.getUser().getId())
+                    .createdAt(post.getCreatedAt())
+                    .updatedAt(post.getUpdatedAt())
+                    .files(FileInfoDTO.Converter.from(post.getFiles()))
+                    .linkUrls(LinkInfoDTO.Converter.toUrlList(post.getLinks()))
                     .build();
         }
     }

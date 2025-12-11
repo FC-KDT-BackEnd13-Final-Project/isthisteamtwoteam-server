@@ -23,8 +23,6 @@ public interface PostService {
 
     PostCreateResponse createPost(Long projectId, @Valid PostCreateRequest requestDto, Long loginUserId);
 
-    ReplyPostCreateResponse createReplyPost(Long projectId, @Valid PostCreateRequest requestDto, Long postId, Long loginUserId);
-
     List<PostListResponse> getPostListByStage(Long projectId, String stage);
 
     PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId);

@@ -23,6 +23,18 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "where p.postId = :postId")
     Optional<Post> findByIdWithDetails(@Param("postId") Long postId);
 
+    // 게시글 조회 (files 포함)
+    @Query("select distinct p from Post p " +
+            "left join fetch p.files " +
+            "where p.postId = :postId")
+    Optional<Post> findByIdWithFiles(@Param("postId") Long postId);
+
+    // 게시글 조회 (links 포함)
+    @Query("select distinct p from Post p " +
+            "left join fetch p.links " +
+            "where p.postId = :postId")
+    Optional<Post> findByIdWithLinks(@Param("postId") Long postId);
+
     // 전체 게시글 조회 (User + Stage 함께 조회)
     @Query("select p from Post p " +
             "join fetch p.user u " +
@@ -99,5 +111,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE p.request IS NOT NULL " +
             "ORDER BY p.createdAt DESC")
     List<Post> findAllPostsWithRequest();
-
 }

@@ -30,6 +30,8 @@ public class PostCreateRequest {
     @NotNull(message = "단계 ID는 필수입니다.")
     private Long stageId;
 
+    private Long parentId;
+
     // S3에 업로드된 파일 정보 목록 (선택 사항)
     private List<FileInfo> fileInfos;
 
@@ -46,45 +48,18 @@ public class PostCreateRequest {
     }
 
     public static class Converter {
-        public static Post toEntity(
-                Project project,
-                User user,
-                String title,
-                String content,
-                Stage stage,
-                Long postNumber) {
+        public static Post toEntity(Project project, User user, Stage stage, Long postNumber, Post parent, PostCreateRequest requestDto) {
 
             return Post.builder()
                     .project(project)
                     .user(user)
-                    .parentPostId(null) //일반 게시글은 부모 없음
-                    .title(title)
-                    .content(content)
-                    .stage(stage)
-                    .postNumber(postNumber)
-                    .isCompleted(false)
-                    .build();
-        }
-        public static Post toReplyEntity(
-                Project project,
-                User user,
-                Post post,
-                String title,
-                String content,
-                Stage stage,
-                Long postNumber) {
-
-            return Post.builder()
-                    .project(project)
-                    .user(user)
-                    .parentPostId(post.getPostId()) //일반 게시글은 부모 없음
-                    .title(title)
-                    .content(content)
+                    .parentPostId(parent != null ? parent.getPostId() : null)
+                    .title(requestDto.getTitle())
+                    .content(requestDto.getContent())
                     .stage(stage)
                     .postNumber(postNumber)
                     .isCompleted(false)
                     .build();
         }
     }
-
 }

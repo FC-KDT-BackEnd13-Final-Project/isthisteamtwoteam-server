@@ -5,8 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.link.dto.LinkCreateRequest;
+import org.etmetmy.bn_server.domain.link.entity.Link;
+import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
@@ -91,8 +95,7 @@ public class FileServiceImpl implements FileService {
             String fileUrl = uploadToS3(file);
 
             // DTO Converter를 통한 엔티티 생성
-            File fileEntity = FileCreateRequest.Converter.toEntity(
-                    fileUrl, file.getSize(), post, post.getUser().getId());
+            File fileEntity = FileCreateRequest.Converter.toEntity(post, fileUrl, file, post.getUser().getId());
 
             // DB에 저장
             File saved = fileRepository.save(fileEntity);
@@ -248,5 +251,14 @@ public class FileServiceImpl implements FileService {
                 throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
             }
         }
+    }
+
+    // S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
+    public void saveFiles(Post post, List<PostCreateRequest.FileInfo> fileInfos, Long uploadedBy){
+        if (fileInfos == null || fileInfos.isEmpty()) {
+            return;
+        }
+        List<File> newFiles = FileCreateRequest.Converter.toEntity(post, fileInfos, uploadedBy);
+        fileRepository.saveAll(newFiles);
     }
 }
