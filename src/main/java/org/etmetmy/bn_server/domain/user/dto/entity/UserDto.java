@@ -30,7 +30,7 @@ public class UserDto {
             return User.builder()
                     .name(userDto.getName())
                     .email(userDto.getEmail())
-                    .phone(userDto.getPhone())
+                    .phoneNumber(userDto.getPhone())
                     .company(company)
                     .role(userDto.getRole())
                     .build();
