@@ -34,16 +34,12 @@ public class ProjectCreateRequest {
                     .projectName(request.getProjectName())
                     .startDate(parseDate(request.getStartDate()))
                     .endDate(parseDate(request.getEndDate()))
-                    .company(isValidCompanyId(request.getCompanyId())
+                    .company((request.getCompanyId())
                             ? Company.builder().companyId(request.getCompanyId()).build()
                             : null)
                     .stage(startStage)
                     .createdBy(createdBy)
                     .build();
-        }
-
-        private static boolean isValidCompanyId(Long companyId) {
-            return companyId != null && companyId > 0;
         }
 
         private static LocalDate parseDate(String date) {
