@@ -1,80 +1,105 @@
 package org.etmetmy.bn_server.domain.activityLog.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.etmetmy.bn_server.domain.activityLog.dto.ActivityLogResponse;
-import org.etmetmy.bn_server.domain.activityLog.dto.LogDetail;
+import org.etmetmy.bn_server.domain.activityLog.dto.request.ActivityLogCreateRequest;
+import org.etmetmy.bn_server.domain.activityLog.dto.response.ActivityLogResponse;
 import org.etmetmy.bn_server.domain.activityLog.entity.ActivityLog;
 import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 import org.etmetmy.bn_server.domain.activityLog.repository.ActivityLogRepository;
+import org.etmetmy.bn_server.domain.activityLog.util.ActivityDescriptionGenerator;
+import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
 
-@Slf4j // 로그 출력을 위해 추가
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ActivityLogServiceImpl implements ActivityLogService {
 
     private final ActivityLogRepository activityLogRepository;
-    private final ObjectMapper objectMapper; // JSON 변환기
+    private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
+    private final ActivityDescriptionGenerator descriptionGenerator;
 
+    @Override
     @Transactional
-    public void saveLog(Long projectId, Long userId, ActivityAction action,
-                        String targetType, Long targetId, List<LogDetail> details) {
-
-        // 1. JSON 변환 (내 담당 로직 테스트)
-        String jsonDetail = null;
+    public void saveLog(ActivityLogCreateRequest request) {
         try {
-            if (details != null && !details.isEmpty()) {
-                jsonDetail = objectMapper.writeValueAsString(details);
-            }
-        } catch (JsonProcessingException e) {
-            log.error(">>> JSON 변환 실패", e);
+            User user = userRepository.findById(request.userId()).orElse(null);
+            Project project = projectRepository.findById(request.projectId()).orElse(null);
+
+            String description = descriptionGenerator.generate(
+                    request.action(),
+                    request.targetType(),
+                    request.targetId(),
+                    user,
+                    project
+            );
+
+            ActivityLog logEntity = ActivityLogCreateRequest.Converter.toEntity(
+                    request,
+                    user,
+                    project,
+                    description
+            );
+
+            activityLogRepository.save(logEntity);
+            log.debug("활동 로그 저장 완료: {}", logEntity.getDescription());
+
+        } catch (Exception e) {
+            log.error("활동 로그 저장 실패: projectId={}, targetId={}, error={}",
+                    request.projectId(), request.targetId(), e.getMessage(), e);
         }
-
-        // 2. 엔티티 생성 (Project 객체 조회 없이 바로 ID 저장)
-        ActivityLog logEntity = ActivityLog.builder()
-                .projectId(projectId) // 👈 객체 대신 숫자(ID)를 바로 넣음
-                .userId(userId)
-                .action(action)
-                .targetType(targetType)
-                .targetId(targetId)
-                .detail(jsonDetail)
-                .ipAddress("127.0.0.1")
-                .build();
-
-        // 3. 저장
-        activityLogRepository.save(logEntity);
     }
 
+
+    @Override
     @Transactional(readOnly = true)
-    public List<ActivityLogResponse> getProjectLogs(Long projectId) {
-        // 1. DB에서 최신순으로 가져오기
-        List<ActivityLog> logs = activityLogRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
+    public Page<ActivityLogResponse> getProjectLogsWithPaging(Long projectId, Pageable pageable) {
+        Page<ActivityLog> logs = activityLogRepository.findByProjectId(projectId, pageable);
+        return logs.map(ActivityLogResponse.Converter::from);
+    }
 
-        // 2. 엔티티 -> DTO 변환 (JSON 파싱 포함)
-        return logs.stream().map(entity-> {
-            List<LogDetail> parsedDetails = new ArrayList<>();
+    @Override
+    @Transactional(readOnly = true)
+    public List<ActivityLogResponse> getProjectLogsByAction(Long projectId, ActivityAction action) {
+        List<ActivityLog> logs = activityLogRepository.findByProjectIdAndActionOrderByCreatedAtDesc(projectId, action);
+        return ActivityLogResponse.Converter.fromList(logs);
+    }
 
-            // JSON String -> List<LogDetail> 변환 로직
-            if (entity.getDetail() != null && !entity.getDetail().isEmpty()) {
-                try {
-                    parsedDetails = objectMapper.readValue(
-                            entity.getDetail(),
-                            new TypeReference<List<LogDetail>>() {} // 리스트 타입으로 변환
-                    );
-                } catch (JsonProcessingException e) {
-                    // 파싱 실패해도 전체 로직이 죽으면 안 되니까 빈 리스트 반환하고 로그만 남김
-                    log.error("로그 상세 파싱 실패 logId={}", entity.getLogId(), e);
-                }
-            }
-            return ActivityLogResponse.Converter.from(entity, parsedDetails);
-        }).toList();
+    @Override
+    @Transactional(readOnly = true)
+    public List<ActivityLogResponse> getProjectLogsByUser(Long projectId, Long userId) {
+        List<ActivityLog> logs = activityLogRepository.findByProjectIdAndUserIdOrderByCreatedAtDesc(projectId, userId);
+        return ActivityLogResponse.Converter.fromList(logs);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ActivityLogResponse> getProjectLogsByDateRange(
+            Long projectId,
+            LocalDateTime startDate,
+            LocalDateTime endDate
+    ) {
+        List<ActivityLog> logs = activityLogRepository.findByProjectIdAndCreatedAtBetweenOrderByCreatedAtDesc(
+                projectId, startDate, endDate
+        );
+        return ActivityLogResponse.Converter.fromList(logs);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ActivityLogResponse> getAllLogsWithPaging(Pageable pageable) {
+        Page<ActivityLog> logs = activityLogRepository.findAll(pageable);
+        return logs.map(ActivityLogResponse.Converter::from);
     }
 }

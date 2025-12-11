@@ -3,6 +3,7 @@ package org.etmetmy.bn_server.domain.post.controller;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
 import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
@@ -13,6 +14,7 @@ import org.etmetmy.bn_server.domain.post.dto.response.ReplyPostCreateResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,8 +31,9 @@ public class PostController {
      * 게시글 작성 API
      */
     @PostMapping("/{projectId}/posts")
+    @ActivityLogger(targetType = "Post", action = "CREATE")
     public CommonResponse<PostCreateResponse> createPost(
-            @PathVariable Long projectId,
+            @PathVariable("projectId") Long projectId,
             @Valid @RequestBody PostCreateRequest requestDto,
             HttpSession session) {
 
@@ -42,6 +45,7 @@ public class PostController {
 
     // todo: reply 게시글 작성 API
     @PostMapping("/{projectId}/posts/{postId}")
+    @ActivityLogger(targetType = "Post", action = "COMMENT_ADD")
     public CommonResponse<ReplyPostCreateResponse> createReplyPost(
             @PathVariable Long projectId,
             @Valid @RequestBody PostCreateRequest requestDto,
@@ -134,6 +138,7 @@ public class PostController {
     }
 
     @PatchMapping("/{projectId}/posts/{postId}")
+    @ActivityLogger(targetType = "Post", action = "UPDATE")
     public CommonResponse<PostCreateResponse> updatePost(
             @PathVariable Long projectId,
             @PathVariable Long postId,

@@ -1,11 +1,13 @@
 spring:
   application:
     name: isThisTeamTwoTeam
+  profiles:
+    active: rds
 
   datasource:
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: ${RDS_DB_URL}
+    username: ${RDS_DB_USERNAME}
+    password: ${RDS_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:

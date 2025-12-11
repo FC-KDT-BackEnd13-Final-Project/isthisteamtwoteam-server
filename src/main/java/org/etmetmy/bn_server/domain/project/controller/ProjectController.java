@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpSession;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 
@@ -28,6 +29,7 @@ public class ProjectController {
     private final ProjectMemberService projectMemberService;
 
     @PostMapping
+    @ActivityLogger(action = "CREATE", targetType = "Project")
     public CommonResponse<Long> createProject(HttpSession session, @RequestBody ProjectCreateRequest request) {
         Long currentUserId = (Long) session.getAttribute("userId");
 
@@ -102,6 +104,7 @@ public class ProjectController {
 
     //프로젝트 삭제 (휴지통으로 이동)
     @DeleteMapping("/{projectId}")
+    @ActivityLogger(action = "DELETE", targetType = "Project")
     public CommonResponse<ProjectTrashResponse> deleteProject(@PathVariable Long projectId) {
         ProjectTrashResponse response = projectService.deleteProject(projectId); // ✅ 인스턴스 사용
         return CommonResponse.success("프로젝트 휴지통 이동 완료", response);
@@ -120,6 +123,7 @@ public class ProjectController {
 
     // 프로젝트 진행단계 수정
     @PatchMapping("/{projectId}/stage")
+    @ActivityLogger(action = "UPDATE", targetType = "Project")
     public CommonResponse<ProjectStageUpdateResponse> updateProjectStage(
             HttpSession session,
             @PathVariable Long projectId,
@@ -173,6 +177,7 @@ public class ProjectController {
 
     //todo: 삭제된 프로젝트 복원
     @PatchMapping("/trash/restore")
+    @ActivityLogger(action = "UPDATE", targetType = "Project")
     public CommonResponse<ProjectRestoreResponse> restoreDeletedProject(
             HttpSession session,
             @Valid @RequestBody ProjectRestoreRequest request)
