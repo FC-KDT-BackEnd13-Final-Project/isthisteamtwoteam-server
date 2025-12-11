@@ -16,37 +16,40 @@ import org.etmetmy.bn_server.global.entity.BaseEntity;
 @AllArgsConstructor
 @SuperBuilder
 public class User extends BaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="user_id")
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id", nullable = false)
-    private Company company;
+
+    @Column(name = "name", nullable = false, length = 100)
+    private String name;
 
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
 
     @JsonIgnore
     @Column(name = "password", nullable = false, length = 255)
     private String password;
 
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
 
     @Column(name = "role", nullable = false, length = 255)
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name = "phone", length = 20)
-    private String phone;
-
     @Column(name = "profile_img")
     private String profileImg;
 
-    public void updateInfo(String name, String email, Company company, Role role) {
+    public void updateInfo(String name, String email, String phoneNumber, Company company, Role role) {
         this.name = name;
         this.email = email;
+        this.phoneNumber = phoneNumber;
         this.company = company; // 회사 이동 가능
         this.role = role;       // 관리자 권한 부여 가능
     }

@@ -36,31 +36,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<UserProfileImgNameResponse> findProfileImgAndNameByUserId(@Param("userId") Long userId);
 
 
-    // 개발사 조회 (Admin 제외, 회사 있으면 type=DEVELOPER, 없으면 role=DEVELOPER)
-    @Query("SELECT u FROM User u " +
-            "LEFT JOIN FETCH u.company c " +
-            "WHERE u.role <> :adminRole " +
-            "AND (" +
-            "    (c IS NOT NULL AND c.type = :developerCompanyType) " +
-            "    OR (c IS NULL AND u.role = :developerRole)" +
-            ")")
-    List<User> findDeveloperCandidates(
-            @Param("adminRole") Role adminRole,
-            @Param("developerCompanyType") CompanyType developerCompanyType,
-            @Param("developerRole") Role developerRole
-    );
+    // 개발사 조회 (Admin 제외, role=DEVELOPER)
+    @Query("SELECT u FROM User u WHERE u.role = 'DEVELOPER' ")
+    List<User> findDeveloperCandidates();
 
-    // 고객사 조회 (관리자 제외, 회사 있으면 type=CLIENT, 없으면 role=CUSTOMER)
-    @Query("SELECT u FROM User u " +
-            "LEFT JOIN FETCH u.company c " +
-            "WHERE u.role <> :adminRole " +
-            "AND (" +
-            "    (c IS NOT NULL AND c.type = :clientCompanyType) " +
-            "    OR (c IS NULL AND u.role = :customerRole)" +
-            ")")
-    List<User> findClientCandidates(
-            @Param("adminRole") Role adminRole,
-            @Param("clientCompanyType") CompanyType clientCompanyType,
-            @Param("customerRole") Role customerRole
-    );
+    // 고객사 조회 (관리자 제외, role=CUSTOMER)
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.company c WHERE u.role = 'CUSTOMER' ")
+    List<User> findClientCandidates();
 }

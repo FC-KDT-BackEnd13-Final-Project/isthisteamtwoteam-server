@@ -24,7 +24,7 @@ public class DeveloperUserResponse {
             return DeveloperUserResponse.builder()
                     .name(user.getName())
                     .email(user.getEmail())
-                    .phone(user.getPhone())
+                    .phone(user.getPhoneNumber())
                     .build();
         }
 
