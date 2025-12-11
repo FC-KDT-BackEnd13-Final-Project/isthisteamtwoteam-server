@@ -23,30 +23,20 @@ public class ActivityLogController {
 
     private final ActivityLogService activityLogService;
 
-    // Todo: 프로젝트의 모든 활동 로그 조회 (최신순)
+    // Todo: 프로젝트별 활동 로그 조회 (최신순, 페이지네이션)
     // GET /api/v1/projects/{projectId}/logs
 
     @GetMapping("/projects/{projectId}/logs")
-    public CommonResponse<List<ActivityLogResponse>> getProjectLogs(
-            @PathVariable Long projectId
-    ) {
-        List<ActivityLogResponse> logs = activityLogService.getProjectLogs(projectId);
-        return CommonResponse.success("프로젝트 활동 로그 조회 성공", logs);
-    }
-
-    // Todo: 프로젝트의 활동 로그 조회 (페이지네이션)
-    //GET /api/v1/projects/{projectId}/logs/paged?page=0&size=20
-
-    @GetMapping("/projects/{projectId}/logs/paged")
-    public CommonResponse<Page<ActivityLogResponse>> getProjectLogsWithPaging(
+    public CommonResponse<Page<ActivityLogResponse>> getProjectLogs(
             @PathVariable Long projectId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    ) {g
+        Pageable pageable = PageRequest.of(page, size);
         Page<ActivityLogResponse> logs = activityLogService.getProjectLogsWithPaging(projectId, pageable);
-        return CommonResponse.success("프로젝트 활동 로그 조회 성공 (페이지네이션)", logs);
+        return CommonResponse.success("활동 로그 조회 성공", logs);
     }
+
 
     // Todo: 액션 타입 필터
     //GET /api/v1/projects/{projectId}/logs/by-action?action=CREATE

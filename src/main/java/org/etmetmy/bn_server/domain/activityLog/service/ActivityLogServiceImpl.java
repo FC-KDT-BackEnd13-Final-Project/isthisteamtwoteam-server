@@ -31,8 +31,6 @@ public class ActivityLogServiceImpl implements ActivityLogService {
     @Override
     @Transactional
     public void saveLog(ActivityLogCreateRequest request) {
-
-
         ActivityLog logEntity = ActivityLogCreateRequest.Converter.toEntityWithRepositories(
                 request,
                 userRepository,
@@ -47,13 +45,6 @@ public class ActivityLogServiceImpl implements ActivityLogService {
             log.error("활동 로그 저장 실패: projectId={}, targetId={}, error={}",
                     request.projectId(), request.targetId(), e.getMessage(), e);
         }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ActivityLogResponse> getProjectLogs(Long projectId) {
-        List<ActivityLog> logs = activityLogRepository.findByProjectIdOrderByCreatedAtDesc(projectId);
-        return ActivityLogResponse.Converter.fromList(logs);
     }
 
     @Override

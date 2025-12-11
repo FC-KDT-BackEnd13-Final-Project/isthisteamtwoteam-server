@@ -17,32 +17,27 @@ public interface ActivityLogService {
     void saveLog(ActivityLogCreateRequest request);
 
     /**
-     * 최신순
-     */
-    List<ActivityLogResponse> getProjectLogs(Long projectId);
-
-    /**
-     * 페이지네이션
+     * 프로젝트의 활동 로그 조회 (페이지네이션, 최신순)
      */
     Page<ActivityLogResponse> getProjectLogsWithPaging(Long projectId, Pageable pageable);
 
     /**
-     * 액션 타입 필터링
+     * 프로젝트의 활동 로그 조회 (액션 타입 필터링)
      */
     List<ActivityLogResponse> getProjectLogsByAction(Long projectId, ActivityAction action);
 
     /**
-     * 사용자 필터링
+     * 프로젝트의 활동 로그 조회 (사용자 필터링)
      */
     List<ActivityLogResponse> getProjectLogsByUser(Long projectId, Long userId);
 
     /**
-     * 기간 필터링
+     * 프로젝트의 활동 로그 조회 (기간 필터링)
      */
     List<ActivityLogResponse> getProjectLogsByDateRange(Long projectId, LocalDateTime startDate, LocalDateTime endDate);
 
     /**
-     * 전체 활동 로그 조회
+     * 전체 활동 로그 조회 (관리자용)
      */
     Page<ActivityLogResponse> getAllLogsWithPaging(Pageable pageable);
 }
