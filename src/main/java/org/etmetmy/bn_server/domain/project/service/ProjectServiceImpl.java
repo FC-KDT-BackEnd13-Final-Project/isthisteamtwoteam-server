@@ -92,6 +92,25 @@ public class ProjectServiceImpl implements ProjectService {
                 projectMemberRepository.saveAll(projectMembers);
             }
         }
+
+        // 5. 체크리스트 생성 및 저장
+        if (request.getSelectedChecklistIds() != null && !request.getSelectedChecklistIds().isEmpty()) {
+            List<ProjectCheckList> projectCheckLists = request.getSelectedChecklistIds().stream()
+                    .map(checkListId -> {
+                        Long checkListIdLong = checkListId.longValue();
+                        // CheckList 존재 여부 확인
+                        checkListRepository.findById(checkListIdLong)
+                                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+
+                        // ProjectAddCheckListRequest.Converter 재사용
+                        return ProjectAddCheckListRequest.Converter.toEntity(savedProject, checkListIdLong);
+                    })
+                    .toList();
+
+            if (!projectCheckLists.isEmpty()) {
+                projectChecklistRepository.saveAll(projectCheckLists);
+            }
+        }
     }
 
     @Override
