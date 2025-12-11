@@ -8,7 +8,9 @@ import org.etmetmy.bn_server.domain.activityLog.entity.ActivityLog;
 import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 import org.etmetmy.bn_server.domain.activityLog.repository.ActivityLogRepository;
 import org.etmetmy.bn_server.domain.activityLog.util.ActivityDescriptionGenerator;
+import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,21 +33,34 @@ public class ActivityLogServiceImpl implements ActivityLogService {
     @Override
     @Transactional
     public void saveLog(ActivityLogCreateRequest request) {
-        ActivityLog logEntity = ActivityLogCreateRequest.Converter.toEntityWithRepositories(
-                request,
-                userRepository,
-                projectRepository,
-                descriptionGenerator
-        );
-
         try {
+            User user = userRepository.findById(request.userId()).orElse(null);
+            Project project = projectRepository.findById(request.projectId()).orElse(null);
+
+            String description = descriptionGenerator.generate(
+                    request.action(),
+                    request.targetType(),
+                    request.targetId(),
+                    user,
+                    project
+            );
+
+            ActivityLog logEntity = ActivityLogCreateRequest.Converter.toEntity(
+                    request,
+                    user,
+                    project,
+                    description
+            );
+
             activityLogRepository.save(logEntity);
             log.debug("활동 로그 저장 완료: {}", logEntity.getDescription());
+
         } catch (Exception e) {
             log.error("활동 로그 저장 실패: projectId={}, targetId={}, error={}",
                     request.projectId(), request.targetId(), e.getMessage(), e);
         }
     }
+
 
     @Override
     @Transactional(readOnly = true)

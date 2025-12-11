@@ -3,20 +3,28 @@ package org.etmetmy.bn_server.domain.activityLog.util;
 import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.global.CustomException;
+import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Component;
 
 /**
- * 활동 로그에 기록될 한글 설명을 생성하
+ * 활동 로그에 기록될 한글 설명을 생성
  */
 @Component
 public class ActivityDescriptionGenerator {
 
-
     public String generate(ActivityAction action, String targetType, Long targetId,
                            User user, Project project) {
 
-        String userName = user != null ? user.getName() : "알 수 없는 사용자";
-        String projectName = project != null ? project.getProjectName() : "알 수 없는 프로젝트";
+        if (user == null) {
+            throw new CustomException(StatusCode.USER_NOT_FOUND);
+        }
+        if (project == null) {
+            throw new CustomException(StatusCode.PROJECT_NOT_FOUND);
+        }
+
+        String userName = user.getName();
+        String projectName = project.getProjectName();
 
         // targetType을 한글로 변환
         String targetTypeKorean = convertTargetTypeToKorean(targetType);

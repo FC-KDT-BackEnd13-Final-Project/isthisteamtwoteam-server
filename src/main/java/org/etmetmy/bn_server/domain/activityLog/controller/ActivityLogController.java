@@ -31,7 +31,7 @@ public class ActivityLogController {
             @PathVariable Long projectId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
-    ) {g
+    ) {
         Pageable pageable = PageRequest.of(page, size);
         Page<ActivityLogResponse> logs = activityLogService.getProjectLogsWithPaging(projectId, pageable);
         return CommonResponse.success("활동 로그 조회 성공", logs);

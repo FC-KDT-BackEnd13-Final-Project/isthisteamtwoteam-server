@@ -58,27 +58,23 @@ public record ActivityLogCreateRequest(
         }
 
 
-        public static ActivityLog toEntityWithRepositories(
+        public static ActivityLog toEntity(
                 ActivityLogCreateRequest request,
-                UserRepository userRepository,
-                ProjectRepository projectRepository,
-                ActivityDescriptionGenerator descriptionGenerator
+                User user,
+                Project project,
+                String description
         ) {
-            // 1. 필요한 엔티티 조회
-            User user = userRepository.findById(request.userId()).orElse(null);
-            Project project = projectRepository.findById(request.projectId()).orElse(null);
-
-            // 2. 한글 설명 생성
-            String description = descriptionGenerator.generate(
-                    request.action(),
-                    request.targetType(),
-                    request.targetId(),
-                    user,
-                    project
-            );
-
-            // 3. Entity 생성
-            return toEntityWithDetail(request, description, user, project);
+            return ActivityLog.builder()
+                    .projectId(request.projectId())
+                    .projectName(project != null ? project.getProjectName() : "알 수 없는 프로젝트")
+                    .userId(request.userId())
+                    .userName(user != null ? user.getName() : "알 수 없는 사용자")
+                    .action(request.action())
+                    .targetType(request.targetType())
+                    .targetId(request.targetId())
+                    .ipAddress(request.ipAddress())
+                    .description(description)
+                    .build();
         }
     }
 }
