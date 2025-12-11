@@ -30,10 +30,10 @@ public class CompanyServiceImpl implements CompanyService {
         return savedCompany.getCompanyId();
     }
 
-    // 전체 회사 목록 조회
-    public List<CompanyResponse> getAllCompanies() {
-        List<Company> companies = companyRepository.findAll().stream().toList();
+    // 전체 회사 이름 목록 조회
+    public List<CompanyResponse> getAllCompanyNames() {
 
+        List<Company> companies = companyRepository.findAll().stream().toList();
         return CompanyResponse.Converter.from(companies);
     }
 
