@@ -92,6 +92,25 @@ public class ProjectServiceImpl implements ProjectService {
                 projectMemberRepository.saveAll(projectMembers);
             }
         }
+
+        // 5. 체크리스트 생성 및 저장
+        if (request.getSelectedChecklistIds() != null && !request.getSelectedChecklistIds().isEmpty()) {
+            List<ProjectCheckList> projectCheckLists = request.getSelectedChecklistIds().stream()
+                    .map(checkListId -> {
+                        Long checkListIdLong = checkListId.longValue();
+                        // CheckList 존재 여부 확인
+                        checkListRepository.findById(checkListIdLong)
+                                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+
+                        // ProjectAddCheckListRequest.Converter 재사용
+                        return ProjectAddCheckListRequest.Converter.toEntity(savedProject, checkListIdLong);
+                    })
+                    .toList();
+
+            if (!projectCheckLists.isEmpty()) {
+                projectChecklistRepository.saveAll(projectCheckLists);
+            }
+        }
     }
 
     @Override
@@ -241,23 +260,22 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
+        // CheckList 조회 및 Map 생성
+        Map<Long, CheckList> checkListMap = request.getChecklistIds().stream()
+                .map(checkListId -> checkListRepository.findById(checkListId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND)))
+                .collect(Collectors.toMap(CheckList::getCheckListId, checkList -> checkList));
+
         // 여러 checklistId에 대해 ProjectChecklist 엔티티 생성
         List<ProjectCheckList> projectCheckLists = request.getChecklistIds().stream()
-                .map(checkListId -> {
-                    // 각 CheckList 조회
-                    CheckList checkList = checkListRepository.findById(checkListId)
-                            .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
-
-                    // ProjectCheckList 엔티티 생성
-                    return ProjectAddCheckListRequest.Converter.toEntity(project, checkList);
-                })
+                .map(checkListId -> ProjectAddCheckListRequest.Converter.toEntity(project, checkListId))
                 .toList();
 
         // 일괄 저장
         List<ProjectCheckList> savedCheckLists = projectChecklistRepository.saveAll(projectCheckLists);
 
         // Response 변환 후 반환
-        return ProjectAddCheckListResponse.Converter.from(savedCheckLists);
+        return ProjectAddCheckListResponse.Converter.from(savedCheckLists, checkListMap);
     }
 
     @Override
@@ -271,6 +289,11 @@ public class ProjectServiceImpl implements ProjectService {
         return projectCheckLists.stream()
                 .map(projectCheckList -> {
                     Long projectCheckListId = projectCheckList.getProjectCheckListId();
+                    Long checkListId = projectCheckList.getCheckListId();
+
+                    // CheckList 조회
+                    CheckList checkList = checkListRepository.findById(checkListId)
+                            .orElseThrow(()-> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
 
                     // File 조회 및 DTO 변환
                     List<File> files = fileRepository.findByProjectCheckListId(projectCheckListId);
@@ -281,7 +304,7 @@ public class ProjectServiceImpl implements ProjectService {
                     List<LinkInfoDTO> linkDTOs = LinkInfoDTO.Converter.from(links);
 
                     // Response 생성
-                    return ProjectCheckListAllResponse.Converter.from(projectCheckList, fileDTOs, linkDTOs);
+                    return ProjectCheckListAllResponse.Converter.from(projectCheckList, checkList, fileDTOs, linkDTOs);
                 })
                 .toList();
     }
