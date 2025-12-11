@@ -70,6 +70,7 @@ public class Post extends BaseEntity {
     private List<Comment> comments = new ArrayList<>();
 
     //삭제(프로젝트 삭제 시 soft delete)
+    @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 

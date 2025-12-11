@@ -1,9 +1,8 @@
-package org.etmetmy.bn_server.domain.activityLog.dto;
+package org.etmetmy.bn_server.domain.activityLog.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
 import org.etmetmy.bn_server.domain.activityLog.entity.ActivityLog;
-import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,14 +12,14 @@ import java.util.List;
 public class ActivityLogResponse {
 
     private Long logId;
-    private Long userId;          // 누가?
-    private String action;        // 뭘 했나? (한글 설명으로 변환해서 줄 예정)
-    private String targetType;    // 대상 (Post, Member)
-    private Long targetId;        // 대상 ID
+    private Long userId;
+    private String action;
+    private String targetType;
+    private Long targetId;
     private LocalDateTime createdAt;
 
     public static class Converter {
-        // 엔티티 -> DTO 변환 편의 메서드 (detail은 서비스에서 변환해서 넣어줌)
+        // 엔티티 -> DTO 변환 편의 메서드
         public static ActivityLogResponse from(ActivityLog log) {
             return ActivityLogResponse.builder()
                     .logId(log.getLogId())
@@ -30,6 +29,12 @@ public class ActivityLogResponse {
                     .targetId(log.getTargetId())
                     .createdAt(log.getCreatedAt())
                     .build();
+        }
+
+        public static List<ActivityLogResponse> fromList(List<ActivityLog> logs) {
+            return logs.stream()
+                    .map(ActivityLogResponse.Converter::from)
+                    .toList();
         }
     }
 }

@@ -67,7 +67,4 @@ public class ActivityLog extends BaseEntity {
     @Column(name = "description", length = 500)
     private String description;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
 }
