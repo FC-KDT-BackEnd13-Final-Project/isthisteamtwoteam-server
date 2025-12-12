@@ -21,6 +21,7 @@ public class ProjectResponse {
 
     private Long projectId;
     private String projectName;
+    private String projectImageUrl;
     private LocalDate startDate;
     private LocalDate endDate;
 
@@ -36,7 +37,7 @@ public class ProjectResponse {
     public static class Converter {
         public static ProjectResponse from(Project project,  List<ProjectMember> members) {
             Memo memo = (project.getMemos() != null && !project.getMemos().isEmpty())
-                    ? project.getMemos().get(0)
+                    ? project.getMemos().getFirst()
                     : null;
 
             List<Long> memberUserIds = members == null ? List.of()
@@ -48,17 +49,13 @@ public class ProjectResponse {
             return ProjectResponse.builder()
                     .projectId(project.getId())
                     .projectName(project.getProjectName())
+                    .projectImageUrl(project.getProjectImageUrl())
                     .startDate(project.getStartDate())
                     .endDate(project.getEndDate())
                     .stageId(project.getStage() != null ? project.getStage().getId().intValue() : null)
                     .stageName(project.getStage() != null ? project.getStage().getStageName() : null)
                     .memoContent(memo != null ? memo.getContent() : null)
                     .members(memberUserIds)
-//                    .members(
-//                            members.stream()
-//                                    .map(pm -> pm.getUser().getId())
-//                                    .toList()
-//                    )
                     .createdAt(project.getCreatedAt())
                     .updatedAt(project.getUpdatedAt())
                     .createdBy(project.getCreatedBy())
