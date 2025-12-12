@@ -12,7 +12,6 @@ import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
-import org.etmetmy.bn_server.exception.custom.InvalidInputException;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
@@ -23,7 +22,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/projects")
-public class ProjectController {
+public class ProjectAdminController {
 
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;

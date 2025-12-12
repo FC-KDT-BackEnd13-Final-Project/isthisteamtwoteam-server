@@ -47,11 +47,21 @@ public class User extends BaseEntity {
     private String profileImg;
 
     public void updateInfo(String name, String email, String phone, Company company, Role role) {
-        this.name = name;
-        this.email = email;
-        this.phone = phone;
-        this.company = company; // 회사 이동 가능
-        this.role = role;       // 관리자 권한 부여 가능
+        if (name != null) {
+            this.name = name;
+        }
+        if (email != null) {
+            this.email = email;
+        }
+        if (phone != null) {
+            this.phone = phone;
+        }
+        if (company != null) {
+            this.company = company; // 회사 이동 가능
+        }
+        if (role != null) {
+            this.role = role;       // 관리자 권한 부여 가능
+        }
     }
 
     public void setPassword(String password) {

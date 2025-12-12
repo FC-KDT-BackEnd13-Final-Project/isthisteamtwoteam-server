@@ -24,9 +24,13 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
 
     // 프로젝트 + 유저 기준으로 매핑 삭제
     long deleteByProjectIdAndUserId(Long projectId, Long userId);
+
+    // 유저 기준으로 모든 프로젝트 멤버 삭제
+    long deleteByUserId(Long userId);
     
-    // 권한이 있는 모든 프로젝트 조회
+    // 권한이 있는 모든 프로젝트 조회 (삭제되지 않은 프로젝트만)
+
     @Query("select pm.project.id from ProjectMember pm " +
-            "where pm.user.id = :userId and pm.project.isDeleted != false")
+            "where pm.user.id = :userId and pm.project.isDeleted = false")
     List<Long> findProjectIdsByUserId(@Param("userId") Long userId);
 }
