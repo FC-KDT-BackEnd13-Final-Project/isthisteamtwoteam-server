@@ -18,7 +18,7 @@ public class UserDto {
     private String name;
     private String email;
     private String password;
-    private String phoneNumber;
+    private String phone;
     private String company;
 
     @Enumerated(EnumType.STRING)
@@ -30,7 +30,7 @@ public class UserDto {
             return User.builder()
                     .name(userDto.getName())
                     .email(userDto.getEmail())
-                    .phoneNumber(userDto.getPhoneNumber())
+                    .phone(userDto.getPhone())
                     .company(company)
                     .role(userDto.getRole())
                     .build();

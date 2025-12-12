@@ -1,20 +1,18 @@
 package org.etmetmy.bn_server.domain.project.service;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.etmetmy.bn_server.domain.comment.repository.CommentRepository;
+import org.etmetmy.bn_server.domain.company.entity.Company;
+import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
-import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
-import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectTrashResponse;
@@ -35,7 +33,6 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
-import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,12 +41,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ProjectServiceImpl implements ProjectService{
+public class ProjectServiceImpl implements ProjectService {
 
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
@@ -60,16 +58,18 @@ public class ProjectServiceImpl implements ProjectService{
     private final CheckListRepository checkListRepository;
     private final FileRepository fileRepository;
     private final LinkRepository linkRepository;
-    private final PostRepository postRepository;
-    private final CommentRepository commentRepository;
+    private final CompanyRepository companyRepository;
 
     @Override
     @Transactional
-    public Long createProject(ProjectCreateRequest request, Long createdById){
+    public void createProject(ProjectCreateRequest request, Long loginUserId) {
         Stage startStage = getStartStage(request.getStage());
 
+        Company company = companyRepository.findById(request.getCompanyId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
+
         // 2. Project 생성 및 저장 (시작 단계 설정 포함)
-        Project project = ProjectCreateRequest.Converter.toEntity(request, createdById, startStage);
+        Project project = ProjectCreateRequest.Converter.toEntity(request, company, loginUserId, startStage);
         Project savedProject = projectRepository.save(project);
 
         // 3. Memo 생성 및 저장
@@ -85,14 +85,32 @@ public class ProjectServiceImpl implements ProjectService{
             List<ProjectMember> projectMembers = createProjectMembers(
                     memberRequests,
                     savedProject,
-                    createdById
+                    loginUserId
             );
             // 빈 리스트가 아닐 때만 저장
             if (!projectMembers.isEmpty()) {
                 projectMemberRepository.saveAll(projectMembers);
             }
         }
-        return savedProject.getId();
+
+        // 5. 체크리스트 생성 및 저장
+        if (request.getSelectedChecklistIds() != null && !request.getSelectedChecklistIds().isEmpty()) {
+            List<ProjectCheckList> projectCheckLists = request.getSelectedChecklistIds().stream()
+                    .map(checkListId -> {
+                        Long checkListIdLong = checkListId.longValue();
+                        // CheckList 존재 여부 확인
+                        checkListRepository.findById(checkListIdLong)
+                                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+
+                        // ProjectAddCheckListRequest.Converter 재사용
+                        return ProjectAddCheckListRequest.Converter.toEntity(savedProject, checkListIdLong);
+                    })
+                    .toList();
+
+            if (!projectCheckLists.isEmpty()) {
+                projectChecklistRepository.saveAll(projectCheckLists);
+            }
+        }
     }
 
     @Override
@@ -242,23 +260,22 @@ public class ProjectServiceImpl implements ProjectService{
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
+        // CheckList 조회 및 Map 생성
+        Map<Long, CheckList> checkListMap = request.getChecklistIds().stream()
+                .map(checkListId -> checkListRepository.findById(checkListId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND)))
+                .collect(Collectors.toMap(CheckList::getCheckListId, checkList -> checkList));
+
         // 여러 checklistId에 대해 ProjectChecklist 엔티티 생성
         List<ProjectCheckList> projectCheckLists = request.getChecklistIds().stream()
-                .map(checkListId ->{
-                    // 각 CheckList 조회
-                    CheckList checkList = checkListRepository.findById(checkListId)
-                            .orElseThrow(()-> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
-
-                    // ProjectCheckList 엔티티 생성
-                    return ProjectAddCheckListRequest.Converter.toEntity(project, checkList);
-                })
+                .map(checkListId -> ProjectAddCheckListRequest.Converter.toEntity(project, checkListId))
                 .toList();
 
         // 일괄 저장
         List<ProjectCheckList> savedCheckLists = projectChecklistRepository.saveAll(projectCheckLists);
 
         // Response 변환 후 반환
-        return ProjectAddCheckListResponse.Converter.from(savedCheckLists);
+        return ProjectAddCheckListResponse.Converter.from(savedCheckLists, checkListMap);
     }
 
     @Override
@@ -268,21 +285,26 @@ public class ProjectServiceImpl implements ProjectService{
 
         List<ProjectCheckList> projectCheckLists = projectChecklistRepository.findByProject(project);
 
-        // 각 ProjectCheckList에 대해 File과 Link를 조회하여 Response 생성
+        // 각 ProjectCheckList에 대해 CheckList, File, Link를 조회하여 Response 생성
         return projectCheckLists.stream()
                 .map(projectCheckList -> {
-                    Long checkListId = projectCheckList.getProjectCheckListId();
+                    Long projectCheckListId = projectCheckList.getProjectCheckListId();
+                    Long checkListId = projectCheckList.getCheckListId();
 
-                    // File 조회 및 DTO 변환 (ID 기반 조회로 변경)
-                    List<File> files = fileRepository.findByProjectCheckListId(checkListId);
+                    // CheckList 조회
+                    CheckList checkList = checkListRepository.findById(checkListId)
+                            .orElseThrow(()-> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+
+                    // File 조회 및 DTO 변환
+                    List<File> files = fileRepository.findByProjectCheckListId(projectCheckListId);
                     List<FileInfoDTO> fileDTOs = FileInfoDTO.Converter.from(files);
 
-                    // Link 조회 및 DTO 변환 (ID 기반 조회로 변경)
-                    List<Link> links = linkRepository.findByProjectCheckListId(checkListId);
+                    // Link 조회 및 DTO 변환
+                    List<Link> links = linkRepository.findByProjectCheckListId(projectCheckListId);
                     List<LinkInfoDTO> linkDTOs = LinkInfoDTO.Converter.from(links);
 
                     // Response 생성
-                    return ProjectCheckListAllResponse.Converter.from(projectCheckList, fileDTOs, linkDTOs);
+                    return ProjectCheckListAllResponse.Converter.from(projectCheckList, checkList, fileDTOs, linkDTOs);
                 })
                 .toList();
     }
@@ -350,9 +372,9 @@ public class ProjectServiceImpl implements ProjectService{
     }
 
     //날짜 형식 변경
-    private  LocalDate parseDate(String dateStr){
+    private LocalDate parseDate(String dateStr) {
         if (dateStr.contains("T")) {
-            return LocalDate.parse(dateStr.substring(0,10));
+            return LocalDate.parse(dateStr.substring(0, 10));
         } else {
             return LocalDate.parse(dateStr);
         }
@@ -463,8 +485,7 @@ public class ProjectServiceImpl implements ProjectService{
     // (휴지통 페이지) 삭제된 프로젝트 목록 조회
     @Override
     @Transactional(readOnly = true)
-    public List<DeletedProjectResponse> getDeletedProjectList(Long loginUserId)
-    {
+    public List<DeletedProjectResponse> getDeletedProjectList(Long loginUserId) {
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
 
         if (user.getRole() != Role.ADMIN) {
@@ -478,7 +499,7 @@ public class ProjectServiceImpl implements ProjectService{
     // 삭제된 프로젝트 복원
     @Override
     @Transactional
-    public ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request){
+    public ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request) {
 
         // 권한 검증
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);

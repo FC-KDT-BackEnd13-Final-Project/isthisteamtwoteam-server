@@ -1,7 +1,10 @@
 package org.etmetmy.bn_server.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
+
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
+import org.etmetmy.bn_server.domain.comment.entity.Comment;
+import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.file.service.FileService;
@@ -46,18 +49,26 @@ public class PostServiceImpl implements PostService {
     private final LinkRepository linkRepository; //todo: 게시글 수정 브랜치 다시 파서 지울 예정
     private final FileRepository fileRepository; //todo: 게시글 수정 브랜치 다시 파서 지울 예정
     private final ProjectMemberRepository projectMemberRepository;
+
     private final LinkService linkService;
     private final FileService fileService;
 
+    private final FileRepository fileRepository;
+    private final LinkRepository linkRepository;
+    private final CommentRepository commentRepository;
 
     // 1. 게시글 상세 조회 (GET)
     public PostDetailResponse getPostDetail(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
-        // DTO 변환 (StageName 처리는 DTO 에서 Long stageId 기반으로 처리되어야 함)
-        // DTO 호출 인자를 Post와 User로 단순화함
-        return PostDetailResponse.Converter.fromEntity(post, post.getUser());
+        // 해당 게시글의 모든 댓글 조회 (최상위 댓글 + 대댓글)
+        List<Comment> comments = commentRepository.findAllByPostId(postId);
+
+        Request request = requestRepository.findByPostId(postId);
+
+        // DTO 변환 (파일, 링크, 댓글 포함)
+        return PostDetailResponse.Converter.fromEntity(post, post.getUser(), comments,request);
     }
 
     // 2. 게시글 승인

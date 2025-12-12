@@ -11,15 +11,14 @@ import java.util.stream.Collectors;
 @Builder
 public class CheckListResponse {
 
-    private Long id;
+    private Long checkListId;
     private String content;
-    private Boolean checked;
 
     public static class Converter{
 
         public static CheckListResponse from(CheckList checkList){
             return CheckListResponse.builder()
-                    .id(checkList.getCheckListId())
+                    .checkListId(checkList.getCheckListId())
                     .content(checkList.getContent())
                     .build();
         }

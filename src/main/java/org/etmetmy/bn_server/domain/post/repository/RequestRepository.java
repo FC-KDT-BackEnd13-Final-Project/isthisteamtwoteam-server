@@ -18,4 +18,7 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
      */
     @Query("SELECT r FROM Request r WHERE r.post.postId IN :postIds AND r.approveStatus = :status")
     List<Request> findByPostIdsAndApproveStatus(@Param("postIds") List<Long> postIds, @Param("status") RequestStatus status);
+
+    @Query("SELECT r FROM Request r WHERE r.post.postId = :postId")
+    Request findByPostId(@Param("postId") Long postId);
 }
