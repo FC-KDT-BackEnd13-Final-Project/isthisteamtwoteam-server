@@ -58,12 +58,9 @@ public class PostController {
         return CommonResponse.success("게시글 작성 성공", response);
     }
 
-    /**
-     * 게시글 상세 조회
-     */
-    @GetMapping("/{projectId}/posts/{postId}")
+    // todo: 게시글 상세 조회
+    @GetMapping("/posts/{postId}")
     public CommonResponse<PostDetailResponse> getPostDetail(
-            @PathVariable Long projectId,
             @PathVariable Long postId
     ) {
         PostDetailResponse response = postService.getPostDetail(postId);
