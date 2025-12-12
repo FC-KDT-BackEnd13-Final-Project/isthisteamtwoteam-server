@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserSessionDto;
+import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
 import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
@@ -105,6 +106,26 @@ public class UserController {
         Long userId = userService.updateMember(memberId, request);
 
         return CommonResponse.success("회원 정보 수정 완료",userId);
+    }
+
+    //todo: 자신의 비밀번호 변경 (개발사/고객사)
+    @PutMapping("/users/me/password")
+    public CommonResponse<Void> changeMyPassword(
+            @RequestBody UserChangePasswordRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        // 세션에서 로그인한 사용자 ID 가져오기
+        HttpSession session = httpRequest.getSession(false);
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+        if (loginUserId == null) {
+            throw new UserNotFoundException("로그인이 필요합니다.");
+        }
+
+        // 비밀번호 변경 처리
+        userService.changePassword(loginUserId, request);
+
+        return CommonResponse.success("비밀번호가 성공적으로 변경되었습니다.", null);
     }
 
     /**
