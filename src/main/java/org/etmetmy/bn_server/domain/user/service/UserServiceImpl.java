@@ -38,9 +38,13 @@ public class UserServiceImpl implements UserService{
         // 1. 회원 찾기
         User user = userRepository.findById(memberId)
                 .orElseThrow(UserNotFoundException::new);
-        // 2. 바꿀 회사 찾기
-        Company company = companyRepository.findByCompanyName(request.getCompanyName())
-                .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
+
+        // 2. 바꿀 회사 찾기 (companyName이 null이 아닌 경우에만)
+        Company company = null;
+        if (request.getCompanyName() != null && !request.getCompanyName().isEmpty()) {
+            company = companyRepository.findByCompanyName(request.getCompanyName())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
+        }
 
         // 3. 정보 변경 (dirty checking)
         user.updateInfo(request.getName(), request.getEmail(), request.getPhone(), company, request.getRole());
