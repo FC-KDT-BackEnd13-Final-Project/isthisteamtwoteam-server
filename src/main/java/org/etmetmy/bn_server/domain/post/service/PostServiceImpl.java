@@ -1,21 +1,22 @@
 package org.etmetmy.bn_server.domain.post.service;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.etmetmy.bn_server.domain.comment.repository.CommentRepository;
+import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
-import org.etmetmy.bn_server.domain.link.dto.LinkCreateRequest;
+import org.etmetmy.bn_server.domain.file.service.FileService;
+import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
+import org.etmetmy.bn_server.domain.link.service.LinkService;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.RequestCreateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.ReplyPostCreateResponse;
 import org.etmetmy.bn_server.domain.post.entity.*;
 import org.etmetmy.bn_server.domain.post.repository.PostNumberCounterRepository;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
@@ -32,7 +33,6 @@ import org.etmetmy.bn_server.exception.custom.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -47,10 +47,14 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final PostNumberCounterRepository postNumberCounterRepository;
     private final ProjectRepository projectRepository;
+    private final LinkRepository linkRepository; //todo: 게시글 수정 브랜치 다시 파서 지울 예정
+    private final FileRepository fileRepository; //todo: 게시글 수정 브랜치 다시 파서 지울 예정
     private final ProjectMemberRepository projectMemberRepository;
-    private final FileRepository fileRepository;
-    private final LinkRepository linkRepository;
-    private final org.etmetmy.bn_server.domain.comment.repository.CommentRepository commentRepository;
+
+    private final LinkService linkService;
+    private final FileService fileService;
+
+    private final CommentRepository commentRepository;
 
     // 1. 게시글 상세 조회 (GET)
     public PostDetailResponse getPostDetail(Long postId) {
@@ -133,7 +137,7 @@ public class PostServiceImpl implements PostService {
         };
     }
 
-    // 게시글 작성
+    // 게시글 작성 (게시글 저장 → 링크 저장 -> 임시 파일 연결 (post_id, isTemp=false))
     @Override
     @Transactional
     public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
@@ -143,108 +147,31 @@ public class PostServiceImpl implements PostService {
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
         Stage stage = stageRepository.findById(requestDto.getStageId()).orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
-        // Counter Table로 프로젝트 내 게시글 번호 생성 (낙관적 락 적용)
-        PostNumberCounter counter = postNumberCounterRepository.findByProjectId(projectId)
-                .orElseGet(() -> PostNumberCounter.builder()
-                        .projectId(projectId)
-                        .currentNumber(0L)
-                        .build());
-        Long postNumber = counter.getNextNumber();
-        postNumberCounterRepository.save(counter);
+        Long postNumber = generatePostNumber(projectId);
 
-        // Post 엔티티 생성 및 저장
-        Post post = PostCreateRequest.Converter.toEntity(project, user, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
-        Post savedPost = postRepository.save(post);
+        Post parent = null;
+        if (requestDto.getParentId() != null) {
+            parent = postRepository.findById(requestDto.getParentId()).orElseThrow(BoardNotFoundException::new);}
 
-        // Request 엔티티 생성 및 저장
-        requestRepository.save(RequestCreateRequest.Converter.toEntity(savedPost, loginUserId));
+        // 1. 게시글 저장: DTO를 엔티티로 변환 후 DB에 저장, ID 발급
+        Post savedPost = postRepository.save(
+                PostCreateRequest.Converter.toEntity(project, user, stage, postNumber, parent, requestDto)
+        );
 
-        // 파일 처리
-        List<File> savedFiles = new ArrayList<>();
-        if (requestDto.getFileInfos() != null && !requestDto.getFileInfos().isEmpty()) {
-            for (PostCreateRequest.FileInfo fileInfo : requestDto.getFileInfos()) {
-                File file = FileCreateRequest.Converter.toEntity(
-                        fileInfo.getFileUrl(),
-                        fileInfo.getFileSize(),
-                        savedPost,
-                        loginUserId
-                );
-                savedFiles.add(file);
-            }
-            fileRepository.saveAll(savedFiles);
-        }
+        // 2. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 게시글과 연동
+        linkService.saveLinks(savedPost, requestDto.getLinkUrls(), loginUserId);
 
-        // 링크 처리
-        List<Link> savedLinks = new ArrayList<>();
-        if (requestDto.getLinkUrls() != null && !requestDto.getLinkUrls().isEmpty()) {
-            for (String linkUrl : requestDto.getLinkUrls()) {
-                Link link = LinkCreateRequest.Converter.toEntity(linkUrl, savedPost, loginUserId);
-                savedLinks.add(link);
-            }
-            linkRepository.saveAll(savedLinks);
-        }
+        // 3. 임시 파일 연결: 프론트에서 전달받은 fileIds를 기준으로 DB 에서 임시 파일(isTemp=true)을 조회
+        fileService.saveFiles(savedPost, requestDto.getFileIds(), loginUserId);
 
-        // 응답 반환
-        return PostCreateResponse.Converter.from(savedPost, savedFiles, savedLinks);
+        // 4. 저장된 데이터 재조회
+        List<File> files = fileRepository.findFilesByPostId(savedPost.getPostId());
+        List<Link> links = linkRepository.findLinksByPostId(savedPost.getPostId());
+
+        return PostCreateResponse.Converter.from(savedPost, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links));
     }
 
-    @Override
-    @Transactional
-    public ReplyPostCreateResponse createReplyPost(Long projectId, PostCreateRequest requestDto, Long postId, Long loginUserId) {
-
-        // 1. 필요한 엔티티 조회
-        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
-        Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
-        Stage stage = stageRepository.findById(requestDto.getStageId()).orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
-        Post post = postRepository.findById(postId).orElseThrow(BoardNotFoundException::new);
-
-        // 2. Counter Table로 프로젝트 내 게시글 번호 생성 (낙관적 락 적용)
-        PostNumberCounter counter = postNumberCounterRepository.findByProjectId(projectId)
-                .orElseGet(() -> PostNumberCounter.builder()
-                        .projectId(projectId)
-                        .currentNumber(0L)
-                        .build());
-        Long postNumber = counter.getNextNumber();
-        postNumberCounterRepository.save(counter);
-
-        // 3. Post 엔티티 생성 및 저장
-        Post replyPost = PostCreateRequest.Converter.toReplyEntity(project, user,post, requestDto.getTitle(), requestDto.getContent(), stage, postNumber);
-        Post savedPost = postRepository.save(replyPost);
-
-        // Request 엔티티 생성 및 저장
-        requestRepository.save(RequestCreateRequest.Converter.toEntity(savedPost, loginUserId));
-
-        // 4. 파일 처리
-        List<File> savedFiles = new ArrayList<>();
-        if (requestDto.getFileInfos() != null && !requestDto.getFileInfos().isEmpty()) {
-            for (PostCreateRequest.FileInfo fileInfo : requestDto.getFileInfos()) {
-                File file = FileCreateRequest.Converter.toEntity(
-                        fileInfo.getFileUrl(),
-                        fileInfo.getFileSize(),
-                        savedPost,
-                        loginUserId
-                );
-                savedFiles.add(file);
-            }
-            fileRepository.saveAll(savedFiles);
-        }
-
-        // 5. 링크 처리
-
-        List<Link> savedLinks = new ArrayList<>();
-        if (requestDto.getLinkUrls() != null && !requestDto.getLinkUrls().isEmpty()) {
-            for (String linkUrl : requestDto.getLinkUrls()) {
-                Link link = LinkCreateRequest.Converter.toEntity(linkUrl, savedPost, loginUserId);
-                savedLinks.add(link);
-            }
-            linkRepository.saveAll(savedLinks);
-        }
-
-        // 6. 응답 반환
-        return ReplyPostCreateResponse.Converter.from(savedPost, post, savedFiles, savedLinks);
-    }
-
-    // 게시글 업데이트 API
+    /*// 게시글 수정
     @Override
     @Transactional
     public PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId) {
@@ -281,10 +208,10 @@ public class PostServiceImpl implements PostService {
             // 기존 링크 삭제 (물리적 삭제 - orphanRemoval로 자동 처리됨)
             linkRepository.deleteAll(existingLinks);
 
-            // 새 링크 추가
+
             List<Link> newLinks = new ArrayList<>();
             for (String linkUrl : requestDto.getLinkUrls()) {
-                Link link = LinkCreateRequest.Converter.toEntity(linkUrl, post, loginUserId);
+                Link link = LinkCreateRequest.Converter.toEntity(post, linkUrl, loginUserId);
                 newLinks.add(link);
             }
             linkRepository.saveAll(newLinks);
@@ -295,8 +222,9 @@ public class PostServiceImpl implements PostService {
         // 8. 응답 반환 (파일, 링크 정보 포함)
         List<File> savedFiles = fileRepository.findByPost(post);
         List<Link> savedLinks = linkRepository.findByPost(post);
-        return PostCreateResponse.Converter.from(post, savedFiles, savedLinks);
-    }
+       // todo: 수정예정 return PostCreateResponse.Converter.from(post, savedFiles, savedLinks);
+         return PostCreateResponse.Converter.from(post);
+    }*/
 
     @Override
     @Transactional
@@ -338,5 +266,26 @@ public class PostServiceImpl implements PostService {
         if (!post.getUser().getId().equals(loginUserId)) {
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
+    }
+
+    // Counter Table로 프로젝트 내 게시글 번호 생성 (낙관적 락 적용)
+    private Long generatePostNumber(Long projectId) {
+        PostNumberCounter counter = postNumberCounterRepository.findByProjectId(projectId)
+                .orElseGet(() -> {
+                    PostNumberCounter newCounter = PostNumberCounter.builder()
+                            .projectId(projectId)
+                            .currentNumber(0L)
+                            .build();
+
+                    // DB에 먼저 저장
+                    return postNumberCounterRepository.save(newCounter);
+                });
+
+        Long postNumber = counter.getNextNumber();
+
+        // version 증가시키려면 save 반드시 필요
+        postNumberCounterRepository.save(counter);
+
+        return postNumber;
     }
 }

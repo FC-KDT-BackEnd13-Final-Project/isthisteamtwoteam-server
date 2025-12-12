@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.request.FileDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.service.FileService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
@@ -34,19 +35,20 @@ public class FileController {
     }
 
     // 2. 임시 파일 업로드 API
-    @PostMapping("/posts/{postId}/files")
-    public CommonResponse<List<ActiveFileListDTO>> postFiles(
+    @PostMapping("/posts/files/temp")
+    public CommonResponse<List<TempFileListDTO>> postFiles(
             @PathVariable Long projectId,
-            @PathVariable Long postId,
-            @RequestPart("files") List<MultipartFile> files)
+            @RequestPart("files") List<MultipartFile> files,
+            HttpSession session)
     {
-        List<ActiveFileListDTO> response = fileService.postFiles(projectId, postId, files);
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        List<TempFileListDTO> response = fileService.postFiles(projectId, files, loginUserId);
 
         return CommonResponse.success("파일 업로드 성공", response);
     }
 
     // 3. 임시 파일 삭제 API (hard delete)
-    @DeleteMapping("files")
+    @DeleteMapping("files/temp")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTempFile(@PathVariable Long projectId, @RequestBody FileDeleteRequest request)
     {
@@ -65,4 +67,7 @@ public class FileController {
         Long loginUserId = SessionUtil.getLoginUserId(session);
         fileService.deletePostFiles(projectId, postId, fileId, loginUserId);
     }
+
+    // 5. 파일과 게시글 조회
+
 }

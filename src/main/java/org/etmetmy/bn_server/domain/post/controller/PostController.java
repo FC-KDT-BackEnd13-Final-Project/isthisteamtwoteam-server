@@ -3,14 +3,11 @@ package org.etmetmy.bn_server.domain.post.controller;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
 import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.ReplyPostCreateResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
@@ -27,38 +24,20 @@ public class PostController {
 
     private final PostService postService;
 
-    /**
-     * 게시글 작성 API
-     */
+    // todo: 부모 게시글, 자식 게시글 작성 API
     @PostMapping("/{projectId}/posts")
-    @ActivityLogger(targetType = "Post", action = "CREATE")
     public CommonResponse<PostCreateResponse> createPost(
-            @PathVariable("projectId") Long projectId,
-            @Valid @RequestBody PostCreateRequest requestDto,
-            HttpSession session) {
-
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-
-        PostCreateResponse response = postService.createPost(projectId, requestDto, loginUserId);
-        return CommonResponse.success("게시글 작성 성공", response);
-    }
-
-    // todo: reply 게시글 작성 API
-    @PostMapping("/{projectId}/posts/{postId}")
-    @ActivityLogger(targetType = "Post", action = "COMMENT_ADD")
-    public CommonResponse<ReplyPostCreateResponse> createReplyPost(
             @PathVariable Long projectId,
             @Valid @RequestBody PostCreateRequest requestDto,
-            @PathVariable Long postId,
-            HttpSession session) {
-
+            HttpSession session
+    ) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
+        PostCreateResponse response = postService.createPost(projectId, requestDto, loginUserId);
 
-        ReplyPostCreateResponse response = postService.createReplyPost(projectId, requestDto, postId, loginUserId);
         return CommonResponse.success("게시글 작성 성공", response);
     }
 
-    // todo: 게시글 상세 조회
+    // todo: 게시글 상세 조회 API
     @GetMapping("/posts/{postId}")
     public CommonResponse<PostDetailResponse> getPostDetail(
             @PathVariable Long postId
@@ -68,9 +47,7 @@ public class PostController {
 
     }
 
-    /**
-     * 게시글 승인 API
-     */
+    // todo: 게시글 승인 API
     @PatchMapping("/{postId}/approval")
     public ResponseEntity<CommonResponse<Object>> approvePost(
             @PathVariable Long postId,
@@ -81,10 +58,9 @@ public class PostController {
         return ResponseEntity.ok(CommonResponse.success("게시글 승인 완료"));
     }
 
-    /**
-     * 게시글 거절 API
-     */
-    @PatchMapping("/{postId}/reject")
+
+    // todo: 게시글 거절 API
+    @PatchMapping("posts/{postId}/reject")
     public ResponseEntity<CommonResponse<Object>> rejectPost(
             @PathVariable Long postId,
             @RequestBody @Valid PostApprovalRequest request
@@ -94,7 +70,7 @@ public class PostController {
         return ResponseEntity.ok(CommonResponse.success("게시글 거절 완료"));
     }
 
-    // todo : 관리자 및 개발사가 게시글 완료하기 버튼
+    // todo: 관리자 및 개발사가 게시글 완료하기 버튼 API
     @PatchMapping("/{projectId}/posts/{postId}/completion")
     public void completePost(@PathVariable Long projectId,
                              @PathVariable Long postId,
@@ -134,7 +110,7 @@ public class PostController {
         }
     }
 
-    @PatchMapping("/{projectId}/posts/{postId}")
+    /*@PatchMapping("/{projectId}/posts/{postId}")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     public CommonResponse<PostCreateResponse> updatePost(
             @PathVariable Long projectId,
@@ -147,5 +123,5 @@ public class PostController {
         PostCreateResponse response = postService.updatePost(
                 projectId, postId, requestDto, loginUserId);
         return CommonResponse.success("게시글 수정 성공", response);
-    }
+    }*/
 }

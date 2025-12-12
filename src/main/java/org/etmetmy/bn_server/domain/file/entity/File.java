@@ -54,12 +54,11 @@ public class File extends BaseEntity {
     @Column(name = "uploaded_by", nullable = false)
     private Long uploadedBy;
 
+    @Column(name = "is_temp")
+    private Boolean isTemp = true;
+
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    private Project project;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -67,10 +66,21 @@ public class File extends BaseEntity {
     @Column(name = "deleted_by")
     private Long deletedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+
 
     public void softDelete(Long deletedBy) {
         this.isDeleted = true;
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deletedBy;
+    }
+
+    // 임시 파일 상태 변경
+    public void attachToPost(Post post,Long uploadedBy) {
+        this.post = post;
+        this.isTemp = false;
+        this.uploadedBy = uploadedBy;
     }
 }

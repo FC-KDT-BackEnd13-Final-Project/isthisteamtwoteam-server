@@ -17,12 +17,6 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-
-    @Query("select p from Post p " +
-            "join fetch p.user u " +
-            "where p.postId = :postId")
-    Optional<Post> findByIdWithDetails(@Param("postId") Long postId);
-
     // 전체 게시글 조회 (User + Stage 함께 조회)
     @Query("select p from Post p " +
             "join fetch p.user u " +
@@ -99,5 +93,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE p.request IS NOT NULL " +
             "ORDER BY p.createdAt DESC")
     List<Post> findAllPostsWithRequest();
-
 }

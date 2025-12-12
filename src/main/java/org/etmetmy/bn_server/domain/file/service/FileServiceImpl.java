@@ -3,8 +3,8 @@ package org.etmetmy.bn_server.domain.file.service;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
-import org.etmetmy.bn_server.domain.file.dto.request.FileDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
@@ -53,7 +53,7 @@ public class FileServiceImpl implements FileService {
 
     // 1. 프로젝트별 파일 목록 조회
     @Override
-    public List<ActiveFileListDTO> findAllByProjectId(Long projectId, HttpSession session){
+    public List<ActiveFileListDTO> findAllByProjectId(Long projectId, HttpSession session) {
 
         // 1. 로그인 사용자 확인
         Long loginUserId = SessionUtil.getLoginUserId(session);
@@ -78,33 +78,29 @@ public class FileServiceImpl implements FileService {
     // 2. 임시 파일 업로드
     @Override
     @Transactional
-    public List<ActiveFileListDTO> postFiles(Long projectId, Long postId, List<MultipartFile> files){
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(BoardNotFoundException::new);
+    public List<TempFileListDTO> postFiles(Long projectId, List<MultipartFile> files,Long uploadedBy) {
 
         List<File> savedFiles = new ArrayList<>();
 
         for (MultipartFile file : files) {
 
-            // S3 업로드
+            // 1. S3 업로드
             String fileUrl = uploadToS3(file);
 
-            // DTO Converter를 통한 엔티티 생성
-            File fileEntity = FileCreateRequest.Converter.toEntity(
-                    fileUrl, file.getSize(), post, post.getUser().getId());
+            // 2. 임시 파일 엔티티 생성 (post = null, isTemp = true)
+            File fileEntity = FileCreateRequest.Converter.toEntity(null, fileUrl, file, uploadedBy);
 
-            // DB에 저장
+            // 3. DB에 저장
             File saved = fileRepository.save(fileEntity);
             savedFiles.add(saved);
         }
-        return ActiveFileListDTO.Converter.from(savedFiles);
+        return TempFileListDTO.Converter.from(savedFiles);
     }
 
     // 3. 파일 삭제 (hard delete)
     @Override
     @Transactional
-    public void deleteFile(Long projectId, List<Long> fileIds){
+    public void deleteFile(Long projectId, List<Long> fileIds) {
 
         List<File> files = fileRepository.findAllById(fileIds);
 
@@ -127,7 +123,7 @@ public class FileServiceImpl implements FileService {
     // 4. 업로드 된 파일 삭제 (soft delete)
     @Override
     @Transactional
-    public void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId){
+    public void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId) {
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
@@ -163,7 +159,7 @@ public class FileServiceImpl implements FileService {
         String originalFilename = file.getOriginalFilename();
         String s3FileName = UUID.randomUUID() + "_" + originalFilename;
 
-        try(InputStream is = file.getInputStream()){
+        try (InputStream is = file.getInputStream()) {
 
             PutObjectRequest req = PutObjectRequest.builder()
                     .bucket(bucketName)
@@ -173,9 +169,8 @@ public class FileServiceImpl implements FileService {
                     .contentLength(file.getSize())
                     .build();
 
-            s3Client.putObject(req, RequestBody.fromInputStream(is,file.getSize()));
-        }
-        catch (Exception e){
+            s3Client.putObject(req, RequestBody.fromInputStream(is, file.getSize()));
+        } catch (Exception e) {
             throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         }
         return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName))
@@ -185,14 +180,13 @@ public class FileServiceImpl implements FileService {
     // 6. 삭제에 필요한 key 반환
     @Override
     public String getKeyFromFileUrls(String fileUrl) {
-        try{
+        try {
             URL url = new URI(fileUrl).toURL();
             String decodedKey = URLDecoder.decode(url.getPath(), StandardCharsets.UTF_8);
 
             //경로 앞에 '/' 제거 후 반환
             return decodedKey.substring(1);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new BusinessException(ErrorCode.INVALID_URL_FORMAT);
         }
     }
@@ -248,5 +242,35 @@ public class FileServiceImpl implements FileService {
                 throw new BusinessException(ErrorCode.FILE_DELETE_FAILED);
             }
         }
+    }
+
+    // 9. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
+    @Override
+    @Transactional
+    public void saveFiles(Post post, List<Long> fileIds, Long loginUserId) {
+
+        // fileIds가 null이거나 비어있으면 아무것도 하지 않음
+        if (fileIds == null || fileIds.isEmpty()) {
+            return;
+        }
+
+        // 1. DB 에서 임시 파일 조회
+        List<File> tempFiles = fileRepository.findAllById(fileIds)
+                .stream()
+                .filter(File::getIsTemp)
+                .toList();
+
+        // 임시 파일이 없으면 예외 발생 (요청한 파일 ID가 존재하지 않거나 이미 사용됨)
+        if (tempFiles.isEmpty()) {
+            throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
+        }
+
+        // 2. 게시글과 연결 + 상태 변경
+        for (File file : tempFiles) {
+            file.attachToPost(post, loginUserId);
+        }
+
+        // 3. DB 저장
+        fileRepository.saveAll(tempFiles);
     }
 }
