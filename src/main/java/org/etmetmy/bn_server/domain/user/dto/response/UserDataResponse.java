@@ -15,7 +15,6 @@ public class UserDataResponse {
     private final UserItems<CompanySearchResponse> companies;
 
     public static class Converter {
-
         // DTO 조립을 위한 정적 메서드
         public static UserDataResponse createResponse(
                 UserItems<DeveloperUserResponse> developerItems,

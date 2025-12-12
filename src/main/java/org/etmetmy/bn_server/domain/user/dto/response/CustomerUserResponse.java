@@ -13,6 +13,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomerUserResponse {
 
+    private final Long userId;
     private final String name;
     private final String email;
     private final String phone;
@@ -23,6 +24,7 @@ public class CustomerUserResponse {
         public static CustomerUserResponse from(User user) {
             // DTO의 Builder를 사용하여 객체 생성
             return CustomerUserResponse.builder()
+                    .userId(user.getId())
                     .name(user.getName())
                     .email(user.getEmail())
                     .phone(user.getPhone())

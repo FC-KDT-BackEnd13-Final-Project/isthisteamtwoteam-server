@@ -13,15 +13,19 @@ import java.util.List;
 @Builder
 @RequiredArgsConstructor
 public class DeveloperUserResponse {
+    private final Long userId;
     private final String name;
     private final String email;
     private final String phone;
+
+    private final String companyName;
 
 
     public static class Converter {
 
         public static DeveloperUserResponse from(User user) {
             return DeveloperUserResponse.builder()
+                    .userId(user.getId())
                     .name(user.getName())
                     .email(user.getEmail())
                     .phone(user.getPhone())
