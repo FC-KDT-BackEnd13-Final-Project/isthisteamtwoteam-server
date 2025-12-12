@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
+import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
 import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
@@ -130,5 +131,22 @@ public class UserServiceImpl implements UserService{
         Long userId = userRepository.save(newUser).getId();
 
         return userId;
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(Long userId, UserChangePasswordRequest request) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 2. 현재 비밀번호 확인
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        // 3. 비밀번호 암호화 후 변경
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        user.setPassword(encodedPassword);
     }
 }
