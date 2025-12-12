@@ -143,6 +143,28 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectResponse.Converter.from(projects, membersByProjectId);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProjectCustomerResponse> getAllProjects(Long loginUserId) {
+        // 1. loginUserId로 User 조회 및 검증
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 2. 해당 user가 속한 프로젝트 ID들을 조회
+        List<Long> projectIds = projectMemberRepository.findProjectIdsByUserId(user.getId());
+
+        // 3. 프로젝트 ID가 없으면 빈 리스트 반환
+        if (projectIds == null || projectIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 4. 프로젝트 조회
+        List<Project> projects = projectRepository.findAllById(projectIds);
+
+        // 5. ProjectCustomerResponse로 변환하여 반환
+        return ProjectCustomerResponse.Converter.from(projects);
+    }
+
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberResponse> getProjectMembers(Long projectId) {
