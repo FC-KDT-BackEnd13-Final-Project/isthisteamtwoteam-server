@@ -29,7 +29,7 @@ public class Project extends BaseEntity {
     @Column(name = "project_id")
     private Long id;
 
-    @Column(name = "project_image_url")
+    @Column(length = 1000, name = "project_image_url")
     private String projectImageUrl;
 
     @Column(name = "project_name", nullable = false, length = 255)
@@ -71,5 +71,9 @@ public class Project extends BaseEntity {
     public void restore() {
         isDeleted = false;
         deletedAt = null;
+    }
+
+    public void setProjectImageUrl(String imageUrl) {
+        projectImageUrl = imageUrl;
     }
 }

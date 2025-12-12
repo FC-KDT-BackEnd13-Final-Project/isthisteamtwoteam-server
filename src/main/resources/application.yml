@@ -37,6 +37,10 @@ server:
   servlet:
     session:
       tracking-modes: cookie
+  tomcat:
+    max-swallow-size: -1
+    max-http-form-post-size: -1
+  max-http-request-header-size: 16384
 
 springdoc:
   api-docs:

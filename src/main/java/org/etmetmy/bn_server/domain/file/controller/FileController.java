@@ -47,15 +47,6 @@ public class FileController {
         return CommonResponse.success("파일 업로드 성공", response);
     }
 
-    // 3. 임시 파일 삭제 API (hard delete)
-    @DeleteMapping("files/temp")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTempFile(
-            @PathVariable Long projectId, @RequestBody FileDeleteRequest request)
-    {
-        fileService.deleteTempFile(projectId,request.getFileIds());
-    }
-
     // 4. 업로드 된 파일 삭제 API (soft delete)
     @DeleteMapping("/posts/{postId}/files/{fileId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

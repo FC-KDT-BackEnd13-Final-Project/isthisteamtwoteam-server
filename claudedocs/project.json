@@ -1,0 +1,15 @@
+{
+  "projectName": "김동균바보멍청이",
+  "startDate": "2025-01-01",
+  "endDate": "2525-05-01",
+  "createdBy": 1,
+  "selectedChecklistIds": [
+    4,5,6,7,8
+  ],
+  "companyId": 1,
+  "memo": "메모장입니다",
+  "stage": "개발",
+  "members": [
+    5,6,7,8
+  ]
+}

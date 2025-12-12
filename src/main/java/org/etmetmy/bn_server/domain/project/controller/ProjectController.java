@@ -16,7 +16,9 @@ import org.etmetmy.bn_server.exception.custom.InvalidInputException;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -29,11 +31,14 @@ public class ProjectController {
     private final ProjectMemberService projectMemberService;
 
     // todo: 프로젝트 생성
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ActivityLogger(action = "CREATE", targetType = "Project")
-    public void createProject(HttpSession session, @RequestBody ProjectCreateRequest request) {
+    public void createProject(
+            HttpSession session,
+            @RequestPart("data") ProjectCreateRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-        projectService.createProject(request, loginUserId);
+        projectService.createProject(request, image, loginUserId);
     }
 
     // todo: 프로젝트 전체 조회
@@ -88,6 +93,17 @@ public class ProjectController {
     ) {
         ProjectUpdateResponse response = projectService.updateProjectName(projectId, request);
         return CommonResponse.success("프로젝트 제목 수정 성공", response);
+    }
+
+    // todo: 프로젝트 이미지 수정
+    @PatchMapping(value = "/{projectId}/image",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public CommonResponse<ProjectUpdateResponse> updateProjectImage(
+            @PathVariable Long projectId,
+            @RequestPart("image") MultipartFile image
+    ) {
+        ProjectUpdateResponse response = projectService.updateProjectImage(projectId, image);
+        return CommonResponse.success("프로젝트 이미지 수정 성공", response);
     }
 
     // todo: 개별 프로젝트 날짜 수정

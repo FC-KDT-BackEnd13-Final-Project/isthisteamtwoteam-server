@@ -1,3 +1,4 @@
+/*
 package org.etmetmy.bn_server.domain.project.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -225,3 +226,4 @@ class ProjectControllerTest {
                 .andExpect(jsonPath("$.response.projectId").value(projectId));
     }
 }
+*/

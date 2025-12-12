@@ -7,12 +7,13 @@ import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectMemberRequest;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface ProjectService {
 
-    void createProject(ProjectCreateRequest request, Long loginUserId);
+    void createProject(ProjectCreateRequest request, MultipartFile image, Long loginUserId);
 
     int addProjectMembers(Long projectId, List<ProjectMemberRequest> members, Long createdById);
 
@@ -45,4 +46,7 @@ public interface ProjectService {
 
     // 삭제된 프로젝트 복원
     ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request);
+
+    // 프로젝트 이미지 수정
+    ProjectUpdateResponse updateProjectImage(Long projectId, MultipartFile image);
 }
