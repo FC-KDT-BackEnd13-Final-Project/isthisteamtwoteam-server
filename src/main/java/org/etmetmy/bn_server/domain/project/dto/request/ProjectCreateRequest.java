@@ -1,12 +1,12 @@
 package org.etmetmy.bn_server.domain.project.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -16,18 +16,20 @@ import java.util.List;
 @AllArgsConstructor
 public class ProjectCreateRequest {
     private String projectName;
+    private String projectImageUrl; // URL만 저장(파일 업로드 후)
+
     private String startDate;
     private String endDate;
     private Long createdBy;
 
-    @JsonProperty("members")
-    //@JsonDeserialize(using = MemberListDeserializer.class)
     private List<Long> members;
     private List<Integer> selectedChecklistIds;
+
     private Long companyId;
-    private Boolean isDeleted;
     private String memo;
     private String stage;
+
+    private Boolean isDeleted;
 
     //내부 converter
     public static class Converter {

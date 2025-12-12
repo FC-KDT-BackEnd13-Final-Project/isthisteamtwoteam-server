@@ -6,6 +6,8 @@ import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.file.service.FileService;
+import org.etmetmy.bn_server.domain.file.service.FileServiceImpl;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
@@ -35,6 +37,7 @@ import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -59,12 +62,14 @@ public class ProjectServiceImpl implements ProjectService {
     private final FileRepository fileRepository;
     private final LinkRepository linkRepository;
     private final CompanyRepository companyRepository;
+    private final FileService fileService;
 
     @Override
     @Transactional
-    public void createProject(ProjectCreateRequest request, Long loginUserId) {
-        Stage startStage = getStartStage(request.getStage());
+    public void createProject(ProjectCreateRequest request, MultipartFile image, Long loginUserId) {
 
+        // 1. 엔티티 조회
+        Stage startStage = getStartStage(request.getStage());
         Company company = companyRepository.findById(request.getCompanyId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
 
@@ -72,10 +77,18 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = ProjectCreateRequest.Converter.toEntity(request, company, loginUserId, startStage);
         Project savedProject = projectRepository.save(project);
 
-        // 3. Memo 생성 및 저장
+        // 3. 이미지가 있을 경우 S3에 업로드하고 URL 받기
+        if (image != null && !image.isEmpty()) {
+            // S3 업로드
+            String imageUrl = fileService.uploadToS3(image);
+            // 프로젝트에 이미지 주소 저장
+            project.setProjectImageUrl(imageUrl);
+        }
+
+        // 4. Memo 생성 및 저장
         createMemoIfPresent(request.getMemo(), savedProject);
 
-        // 4. 프로젝트 멤버 생성 및 저장
+        // 5. 프로젝트 멤버 생성 및 저장
         if (hasMembers(request)) {
             // List<Long>을 List<ProjectMemberRequest>로 변환 (생성자 사용)
             List<ProjectMemberRequest> memberRequests = request.getMembers().stream()
@@ -93,7 +106,7 @@ public class ProjectServiceImpl implements ProjectService {
             }
         }
 
-        // 5. 체크리스트 생성 및 저장
+        // 6. 체크리스트 생성 및 저장
         if (request.getSelectedChecklistIds() != null && !request.getSelectedChecklistIds().isEmpty()) {
             List<ProjectCheckList> projectCheckLists = request.getSelectedChecklistIds().stream()
                     .map(checkListId -> {
@@ -548,5 +561,24 @@ public class ProjectServiceImpl implements ProjectService {
 
         projectRepository.saveAll(projects);
         return ProjectRestoreResponse.Converter.from(projects);
+    }
+
+    // 프로젝트 이미지 수정
+    @Override
+    @Transactional
+    public ProjectUpdateResponse updateProjectImage(Long projectId, MultipartFile image){
+
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 이미지가 있을 경우 S3에 업로드하고 URL 받기
+        if (image != null && !image.isEmpty()) {
+            // S3 업로드
+            String imageUrl = fileService.uploadToS3(image);
+            // 프로젝트에 이미지 주소 저장
+            project.setProjectImageUrl(imageUrl);
+            projectRepository.save(project);
+        }
+        return ProjectUpdateResponse.Converter.from(project);
     }
 }
