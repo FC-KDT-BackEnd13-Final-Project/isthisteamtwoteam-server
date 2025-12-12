@@ -81,12 +81,13 @@ public class UserController {
     public CommonResponse<UserDataResponse> searchUsers(
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String email
-
     ) {
         UserDataResponse usersBoardData = userService.searchUsers(name, email);
 
         return CommonResponse.success("대시보드 데이터를 성공적으로 조회하였습니다.", usersBoardData);
     }
+
+
 
     //todo: 회원 삭제 (DELETE)
     @DeleteMapping("/admin/users/{memberId}")
@@ -123,7 +124,6 @@ public class UserController {
             return CommonResponse.success("성공적으로 조회했습니다",profile);
         }
     }
-
 
     /**
      * 프론트엔드에서 세션 확인할 때 사용되는 api
