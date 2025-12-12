@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
+import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
+import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
 import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
@@ -29,6 +31,7 @@ public class UserServiceImpl implements UserService{
     private final CompanyRepository companyRepository;
     private final CompanyService companyService;
     private final PasswordEncoder passwordEncoder;
+    private final ProjectMemberRepository projectMemberRepository;
 
     // 회원 정보 수정 (Update)
     @Override
@@ -37,9 +40,13 @@ public class UserServiceImpl implements UserService{
         // 1. 회원 찾기
         User user = userRepository.findById(memberId)
                 .orElseThrow(UserNotFoundException::new);
-        // 2. 바꿀 회사 찾기
-        Company company = companyRepository.findByCompanyName(request.getCompanyName())
-                .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
+
+        // 2. 바꿀 회사 찾기 (companyName이 null이 아닌 경우에만)
+        Company company = null;
+        if (request.getCompanyName() != null && !request.getCompanyName().isEmpty()) {
+            company = companyRepository.findByCompanyName(request.getCompanyName())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
+        }
 
         // 3. 정보 변경 (dirty checking)
         user.updateInfo(request.getName(), request.getEmail(), request.getPhone(), company, request.getRole());
@@ -59,6 +66,11 @@ public class UserServiceImpl implements UserService{
                 .orElseThrow(UserNotFoundException::new);
 
         Long userId = user.getId();
+
+        // 먼저 해당 유저의 모든 프로젝트 멤버 삭제
+        projectMemberRepository.deleteByUserId(userId);
+
+        // 그 다음 유저 삭제
         userRepository.delete(user);
         return userId;
     }
@@ -130,5 +142,22 @@ public class UserServiceImpl implements UserService{
         Long userId = userRepository.save(newUser).getId();
 
         return userId;
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(Long userId, UserChangePasswordRequest request) {
+        // 1. 사용자 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 2. 현재 비밀번호 확인
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new BusinessException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        // 3. 비밀번호 암호화 후 변경
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        user.setPassword(encodedPassword);
     }
 }

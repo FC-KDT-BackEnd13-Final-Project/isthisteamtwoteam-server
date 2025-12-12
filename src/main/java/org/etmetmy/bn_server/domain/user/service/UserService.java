@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.user.service;
 
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
+import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
 import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
@@ -20,4 +21,8 @@ public interface UserService {
     Long joinUser(UserDto userDto);
     User login(UserLoginDto loginDto);
     UserProfileImgNameResponse getProfileImgName(Long userId);
+
+    @Transactional
+    void changePassword(Long userId, UserChangePasswordRequest request);
+
 }

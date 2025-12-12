@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserSessionDto;
+import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
 import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
 import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
@@ -75,7 +76,6 @@ public class UserController {
 
     }
 
-
     //todo: 회원 조회
     @GetMapping("/admin/users")
     public CommonResponse<UserDataResponse> searchUsers(
@@ -86,8 +86,6 @@ public class UserController {
 
         return CommonResponse.success("대시보드 데이터를 성공적으로 조회하였습니다.", usersBoardData);
     }
-
-
 
     //todo: 회원 삭제 (DELETE)
     @DeleteMapping("/admin/users/{memberId}")
@@ -105,6 +103,18 @@ public class UserController {
         Long userId = userService.updateMember(memberId, request);
 
         return CommonResponse.success("회원 정보 수정 완료",userId);
+    }
+
+    //todo: 자신의 비밀번호 변경 (PUT)
+    @PutMapping("/users/password")
+    public CommonResponse<Long> changeMyPassword(
+            @RequestBody UserChangePasswordRequest request, HttpSession session) {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+        // 비밀번호 변경 처리
+        userService.changePassword(loginUserId, request);
+
+        return CommonResponse.success("비밀번호가 성공적으로 변경되었습니다.", null);
     }
 
     /**
