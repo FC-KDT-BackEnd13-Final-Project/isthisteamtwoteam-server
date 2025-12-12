@@ -145,6 +145,16 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Transactional(readOnly = true)
     @Override
+    public List<ProjectResponse> getAllProjects(Long loginUserId) {
+        List<Project> projects = projectRepository.findAll();
+
+        Map<Long, List<ProjectMember>> membersByProjectId = groupMembersByProject(projects);
+
+        return ProjectResponse.Converter.from(projects, membersByProjectId, loginUserId);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public List<ProjectMemberResponse> getProjectMembers(Long projectId) {
         List<ProjectMember> members = projectMemberRepository.findByProjectId(projectId);
 

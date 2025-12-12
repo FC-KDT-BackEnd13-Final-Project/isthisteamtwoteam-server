@@ -33,9 +33,14 @@ public class ProjectResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Long createdBy;
+    private Boolean isAttend;
 
     public static class Converter {
         public static ProjectResponse from(Project project,  List<ProjectMember> members) {
+            return from(project, members, null);
+        }
+
+        public static ProjectResponse from(Project project, List<ProjectMember> members, Long loginUserId) {
             Memo memo = (project.getMemos() != null && !project.getMemos().isEmpty())
                     ? project.getMemos().getFirst()
                     : null;
@@ -45,6 +50,12 @@ public class ProjectResponse {
                     .map(pm -> pm.getUser() != null ? pm.getUser().getId() : null)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
+
+            boolean isAttend = false;
+            if (loginUserId != null && members != null) {
+                isAttend = members.stream()
+                        .anyMatch(pm -> pm.getUser() != null && pm.getUser().getId().equals(loginUserId));
+            }
 
             return ProjectResponse.builder()
                     .projectId(project.getId())
@@ -59,12 +70,17 @@ public class ProjectResponse {
                     .createdAt(project.getCreatedAt())
                     .updatedAt(project.getUpdatedAt())
                     .createdBy(project.getCreatedBy())
+                    .isAttend(isAttend)
                     .build();
         }
 
         public static List<ProjectResponse> from(List<Project> projects, Map<Long, List<ProjectMember>> membersByProjectId) {
+            return from(projects, membersByProjectId, null);
+        }
+
+        public static List<ProjectResponse> from(List<Project> projects, Map<Long, List<ProjectMember>> membersByProjectId, Long loginUserId) {
             return projects.stream()
-                    .map(project -> Converter.from(project, membersByProjectId.getOrDefault(project.getId(), List.of())))
+                    .map(project -> Converter.from(project, membersByProjectId.getOrDefault(project.getId(), List.of()), loginUserId))
                     .collect(Collectors.toList());
         }
     }
