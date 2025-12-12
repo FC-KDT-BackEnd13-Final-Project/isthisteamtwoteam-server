@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.domain.post.service;
 
 import lombok.RequiredArgsConstructor;
 
+import org.etmetmy.bn_server.domain.comment.repository.CommentRepository;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
@@ -53,8 +54,6 @@ public class PostServiceImpl implements PostService {
     private final LinkService linkService;
     private final FileService fileService;
 
-    private final FileRepository fileRepository;
-    private final LinkRepository linkRepository;
     private final CommentRepository commentRepository;
 
     // 1. 게시글 상세 조회 (GET)

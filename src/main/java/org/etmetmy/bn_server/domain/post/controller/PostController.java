@@ -3,10 +3,8 @@ package org.etmetmy.bn_server.domain.post.controller;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
 import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
@@ -39,7 +37,7 @@ public class PostController {
         return CommonResponse.success("게시글 작성 성공", response);
     }
 
-    // todo: 게시글 상세 조회
+    // todo: 게시글 상세 조회 API
     @GetMapping("/posts/{postId}")
     public CommonResponse<PostDetailResponse> getPostDetail(
             @PathVariable Long postId
@@ -62,7 +60,7 @@ public class PostController {
 
 
     // todo: 게시글 거절 API
-    @PatchMapping("/{postId}/reject")
+    @PatchMapping("posts/{postId}/reject")
     public ResponseEntity<CommonResponse<Object>> rejectPost(
             @PathVariable Long postId,
             @RequestBody @Valid PostApprovalRequest request
