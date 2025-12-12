@@ -25,7 +25,7 @@ public class CustomerUserResponse {
             return CustomerUserResponse.builder()
                     .name(user.getName())
                     .email(user.getEmail())
-                    .phone(user.getPhoneNumber())
+                    .phone(user.getPhone())
                     .companyName(user.getCompany().getCompanyName())
                     .build();
         }

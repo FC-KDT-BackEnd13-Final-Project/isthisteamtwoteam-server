@@ -15,8 +15,8 @@ public class UserUpdateRequest {
     private String email;
     private String password;
 
-    @JsonProperty("phone_number")
-    private String phoneNumber;
+    @JsonProperty("phone")
+    private String phone;
 
     @JsonProperty("company_name")
     private String companyName;
