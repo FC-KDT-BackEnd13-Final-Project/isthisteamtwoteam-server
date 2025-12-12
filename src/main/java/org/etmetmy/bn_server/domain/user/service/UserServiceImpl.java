@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
+import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
 import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService{
     private final CompanyRepository companyRepository;
     private final CompanyService companyService;
     private final PasswordEncoder passwordEncoder;
+    private final ProjectMemberRepository projectMemberRepository;
 
     // 회원 정보 수정 (Update)
     @Override
@@ -64,6 +66,11 @@ public class UserServiceImpl implements UserService{
                 .orElseThrow(UserNotFoundException::new);
 
         Long userId = user.getId();
+
+        // 먼저 해당 유저의 모든 프로젝트 멤버 삭제
+        projectMemberRepository.deleteByUserId(userId);
+
+        // 그 다음 유저 삭제
         userRepository.delete(user);
         return userId;
     }
