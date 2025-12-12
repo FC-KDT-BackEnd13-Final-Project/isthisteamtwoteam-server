@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 public class PostDetailResponse {
     private final Long postId;
-    private final Long parentPostId; // null or Id번호
+    private final Long parentPostId; // null or Id 번호
     private final Long userId;
     private final String title;
     private final String content;
