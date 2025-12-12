@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.UploadedFileDto;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.link.entity.Link;
@@ -23,6 +24,9 @@ public class PostCreateResponse {
 
     @JsonProperty("postId")
     private Long postId;
+
+    @JsonProperty("parentPostId")
+    private Long parentPostId;
 
     @JsonProperty("title")
     private String title;
@@ -45,34 +49,14 @@ public class PostCreateResponse {
     private LocalDateTime updatedAt;
 
     @JsonProperty("files")
-    private List<FileInfoDTO> files;
+    private List<UploadedFileDto> files;
 
     @JsonProperty("linkUrls")
-    private List<String> linkUrls;
+    private List<LinkInfoDTO> linkUrls;
 
 
     public static class Converter {
-        /*public static PostCreateResponse from(
-            Post post, List<File> files, List<Link> links
-        ) {
-            // 파일 목록 변환 (삭제되지 않은 파일만)
-            List<FileInfoDTO> fileInfos = FileInfoDTO.Converter.from(files);
 
-            // 링크 목록 변환 (삭제되지 않은 링크만) - LinkInfoDTO 사용
-            List<String> linkUrls = LinkInfoDTO.Converter.toUrlList(links);
-
-            return PostCreateResponse.builder()
-                    .postId(post.getPostId())
-                    .title(post.getTitle())
-                    .content(post.getContent())
-                    .stageId(post.getStage().getId())
-                    .createdByUserId(post.getUser().getId())
-                    .createdAt(post.getCreatedAt())
-                    .updatedAt(post.getUpdatedAt())
-                    .files(fileInfos)
-                    .linkUrls(linkUrls)
-                    .build();
-        }*/
         public static PostCreateResponse from(Post post){
             return PostCreateResponse.builder()
                     .postId(post.getPostId())
@@ -82,8 +66,8 @@ public class PostCreateResponse {
                     .createdByUserId(post.getUser().getId())
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
-                    .files(FileInfoDTO.Converter.from(post.getFiles()))
-                    .linkUrls(LinkInfoDTO.Converter.toUrlList(post.getLinks()))
+                    .files(UploadedFileDto.Converter.from(post))
+                    .linkUrls(LinkInfoDTO.Converter.from(post.getLinks()))
                     .build();
         }
     }

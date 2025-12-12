@@ -17,12 +17,6 @@ import java.util.Optional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-
-    @Query("select p from Post p " +
-            "join fetch p.user u " +
-            "where p.postId = :postId")
-    Optional<Post> findByIdWithDetails(@Param("postId") Long postId);
-
     // 게시글 조회 (files 포함)
     @Query("select distinct p from Post p " +
             "left join fetch p.files " +

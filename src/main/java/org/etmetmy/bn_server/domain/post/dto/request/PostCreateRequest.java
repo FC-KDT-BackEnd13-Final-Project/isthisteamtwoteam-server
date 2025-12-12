@@ -33,22 +33,14 @@ public class PostCreateRequest {
     private Long parentId;
 
     // S3에 업로드된 파일 정보 목록 (선택 사항)
-    private List<FileInfo> fileInfos;
+    private List<Long> fileIds;
 
     // 링크 URL 목록 (선택 사항)
     private List<String> linkUrls;
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class FileInfo {
-        private String fileUrl;
-        private Long fileSize;
-    }
-
     public static class Converter {
-        public static Post toEntity(Project project, User user, Stage stage, Long postNumber, Post parent, PostCreateRequest requestDto) {
+        public static Post toEntity(
+                Project project, User user, Stage stage, Long postNumber, Post parent, PostCreateRequest requestDto) {
 
             return Post.builder()
                     .project(project)

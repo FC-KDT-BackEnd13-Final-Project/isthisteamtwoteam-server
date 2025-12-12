@@ -163,9 +163,9 @@ public class ActivityLogAspect {
             if (unwrapped instanceof PostCreateResponse postResponse) {
                 return postResponse.getPostId();
             }
-            if (unwrapped instanceof ReplyPostCreateResponse replyResponse) {
+            /*if (unwrapped instanceof ReplyPostCreateResponse replyResponse) {
                 return replyResponse.getPostId();
-            }
+            }*/
         }
 
         // 3. 일반적인 Long 타입 반환 값 처리

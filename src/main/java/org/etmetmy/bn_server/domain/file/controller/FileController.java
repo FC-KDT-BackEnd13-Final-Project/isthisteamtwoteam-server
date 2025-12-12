@@ -34,19 +34,20 @@ public class FileController {
     }
 
     // 2. 임시 파일 업로드 API
-    @PostMapping("/posts/{postId}/files")
+    @PostMapping("/posts/files/temp")
     public CommonResponse<List<ActiveFileListDTO>> postFiles(
             @PathVariable Long projectId,
-            @PathVariable Long postId,
-            @RequestPart("files") List<MultipartFile> files)
+            @RequestPart("files") List<MultipartFile> files,
+            HttpSession session)
     {
-        List<ActiveFileListDTO> response = fileService.postFiles(projectId, postId, files);
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        List<ActiveFileListDTO> response = fileService.postFiles(projectId, files, loginUserId);
 
         return CommonResponse.success("파일 업로드 성공", response);
     }
 
     // 3. 임시 파일 삭제 API (hard delete)
-    @DeleteMapping("files")
+    @DeleteMapping("files/temp")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTempFile(@PathVariable Long projectId, @RequestBody FileDeleteRequest request)
     {

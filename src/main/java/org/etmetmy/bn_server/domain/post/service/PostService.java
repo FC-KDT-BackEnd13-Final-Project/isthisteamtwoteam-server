@@ -6,16 +6,13 @@ import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.ReplyPostCreateResponse;
 
 import java.util.List;
 
 public interface PostService {
     PostDetailResponse getPostDetail(Long postId);
 
-
     void approvePost(Long postId, Long approvingUserId);
-
 
     void rejectPost(Long postId, Long rejectingUserId, String rejectReason);
 

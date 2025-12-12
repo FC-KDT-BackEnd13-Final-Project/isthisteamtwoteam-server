@@ -28,13 +28,13 @@ public class PostController {
 
     // todo: 부모 게시글, 자식 게시글 작성 API
     @PostMapping("/{projectId}/posts")
-    public CommonResponse<?> createPost(
+    public CommonResponse<PostCreateResponse> createPost(
             @PathVariable Long projectId,
             @Valid @RequestBody PostCreateRequest requestDto,
             HttpSession session
     ) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-        Object response = postService.createPost(projectId, requestDto, loginUserId);
+        PostCreateResponse response = postService.createPost(projectId, requestDto, loginUserId);
 
         return CommonResponse.success("게시글 작성 성공", response);
     }

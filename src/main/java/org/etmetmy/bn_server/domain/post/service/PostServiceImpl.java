@@ -129,7 +129,7 @@ public class PostServiceImpl implements PostService {
         };
     }
 
-    // 게시글 작성
+    // 게시글 작성 (게시글 저장 → 링크 저장 -> 임시 파일 연결 (post_id, isTemp=false))
     @Override
     @Transactional
     public PostCreateResponse createPost(Long projectId, PostCreateRequest requestDto, Long loginUserId) {
@@ -143,26 +143,20 @@ public class PostServiceImpl implements PostService {
 
         Post parent = null;
         if (requestDto.getParentId() != null) {
-            parent = postRepository.findById(requestDto.getParentId())
-                    .orElseThrow(BoardNotFoundException::new);
-        }
+            parent = postRepository.findById(requestDto.getParentId()).orElseThrow(BoardNotFoundException::new);}
+
+        // 1. 게시글 저장: DTO를 엔티티로 변환 후 DB에 저장, ID 발급
         Post savedPost = postRepository.save(
                 PostCreateRequest.Converter.toEntity(project, user, stage, postNumber, parent, requestDto)
         );
 
+        // 2. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 게시글과 연동
         linkService.saveLinks(savedPost, requestDto.getLinkUrls(), loginUserId);
-        fileService.saveFiles(savedPost, requestDto.getFileInfos(), loginUserId);
 
-        // files, links를 각각 fetch (MultipleBagFetchException 방지)
-        // 첫 번째 쿼리: files 초기화
-        postRepository.findByIdWithFiles(savedPost.getPostId())
-                .orElseThrow(BoardNotFoundException::new);
+        // 3. 임시 파일 연결: 프론트에서 전달받은 fileIds를 기준으로 DB 에서 임시 파일(isTemp=true)을 조회
+        fileService.saveFiles(savedPost, requestDto.getFileIds(), loginUserId);
 
-        // 두 번째 쿼리: links 초기화 (같은 영속성 컨텍스트, files와 links 모두 초기화됨)
-        Post postWithFilesAndLinks = postRepository.findByIdWithLinks(savedPost.getPostId())
-                .orElseThrow(BoardNotFoundException::new);
-
-        return PostCreateResponse.Converter.from(postWithFilesAndLinks);
+        return PostCreateResponse.Converter.from(savedPost);
     }
 
     // 게시글 수정
