@@ -1,16 +1,15 @@
 package org.etmetmy.bn_server.domain.post.service;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.file.service.FileService;
-import org.etmetmy.bn_server.domain.link.dto.LinkCreateRequest;
+import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.link.service.LinkService;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
@@ -30,7 +29,6 @@ import org.etmetmy.bn_server.exception.custom.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -156,10 +154,14 @@ public class PostServiceImpl implements PostService {
         // 3. 임시 파일 연결: 프론트에서 전달받은 fileIds를 기준으로 DB 에서 임시 파일(isTemp=true)을 조회
         fileService.saveFiles(savedPost, requestDto.getFileIds(), loginUserId);
 
-        return PostCreateResponse.Converter.from(savedPost);
+        // 4. 저장된 데이터 재조회
+        List<File> files = fileRepository.findFilesByPostId(savedPost.getPostId());
+        List<Link> links = linkRepository.findLinksByPostId(savedPost.getPostId());
+
+        return PostCreateResponse.Converter.from(savedPost, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links));
     }
 
-    // 게시글 수정
+    /*// 게시글 수정
     @Override
     @Transactional
     public PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId) {
@@ -211,8 +213,8 @@ public class PostServiceImpl implements PostService {
         List<File> savedFiles = fileRepository.findByPost(post);
         List<Link> savedLinks = linkRepository.findByPost(post);
        // todo: 수정예정 return PostCreateResponse.Converter.from(post, savedFiles, savedLinks);
-        return PostCreateResponse.Converter.from(post);
-    }
+         return PostCreateResponse.Converter.from(post);
+    }*/
 
     @Override
     @Transactional

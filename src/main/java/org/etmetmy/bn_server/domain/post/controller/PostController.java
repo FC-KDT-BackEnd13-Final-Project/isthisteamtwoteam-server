@@ -113,7 +113,7 @@ public class PostController {
         }
     }
 
-    @PatchMapping("/{projectId}/posts/{postId}")
+    /*@PatchMapping("/{projectId}/posts/{postId}")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     public CommonResponse<PostCreateResponse> updatePost(
             @PathVariable Long projectId,
@@ -126,5 +126,5 @@ public class PostController {
         PostCreateResponse response = postService.updatePost(
                 projectId, postId, requestDto, loginUserId);
         return CommonResponse.success("게시글 수정 성공", response);
-    }
+    }*/
 }

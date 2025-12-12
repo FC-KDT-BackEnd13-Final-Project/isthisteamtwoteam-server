@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.file.dto.request.FileDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.service.FileService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
@@ -35,13 +36,13 @@ public class FileController {
 
     // 2. 임시 파일 업로드 API
     @PostMapping("/posts/files/temp")
-    public CommonResponse<List<ActiveFileListDTO>> postFiles(
+    public CommonResponse<List<TempFileListDTO>> postFiles(
             @PathVariable Long projectId,
             @RequestPart("files") List<MultipartFile> files,
             HttpSession session)
     {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-        List<ActiveFileListDTO> response = fileService.postFiles(projectId, files, loginUserId);
+        List<TempFileListDTO> response = fileService.postFiles(projectId, files, loginUserId);
 
         return CommonResponse.success("파일 업로드 성공", response);
     }
@@ -66,4 +67,7 @@ public class FileController {
         Long loginUserId = SessionUtil.getLoginUserId(session);
         fileService.deletePostFiles(projectId, postId, fileId, loginUserId);
     }
+
+    // 5. 파일과 게시글 조회
+
 }

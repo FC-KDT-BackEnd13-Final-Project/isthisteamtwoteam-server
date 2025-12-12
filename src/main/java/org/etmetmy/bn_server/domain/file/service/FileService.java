@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.domain.file.service;
 
 import jakarta.servlet.http.HttpSession;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.springframework.web.multipart.MultipartFile;
@@ -14,7 +15,7 @@ public interface FileService {
     List<ActiveFileListDTO> findAllByProjectId(Long projectId, HttpSession session);
 
     // 임시 파일 업로드
-    List<ActiveFileListDTO> postFiles(Long projectId, List<MultipartFile> files, Long uploadedBy);
+    List<TempFileListDTO> postFiles(Long projectId, List<MultipartFile> files, Long uploadedBy);
 
     // 임시 업로드 파일 삭제 (hard delete)
     void deleteFile(Long projectId, List<Long> fileIds);

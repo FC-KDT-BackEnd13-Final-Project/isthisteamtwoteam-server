@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.file.dto.response.UploadedFileDto;
 import org.etmetmy.bn_server.domain.file.entity.File;
@@ -49,7 +50,7 @@ public class PostCreateResponse {
     private LocalDateTime updatedAt;
 
     @JsonProperty("files")
-    private List<UploadedFileDto> files;
+    private List<FileInfoDTO> files;
 
     @JsonProperty("linkUrls")
     private List<LinkInfoDTO> linkUrls;
@@ -57,17 +58,18 @@ public class PostCreateResponse {
 
     public static class Converter {
 
-        public static PostCreateResponse from(Post post){
+        public static PostCreateResponse from(Post post, List<FileInfoDTO> files, List<LinkInfoDTO> links) {
             return PostCreateResponse.builder()
                     .postId(post.getPostId())
+                    .parentPostId(post.getParentPostId())
                     .title(post.getTitle())
                     .content(post.getContent())
                     .stageId(post.getStage().getId())
                     .createdByUserId(post.getUser().getId())
                     .createdAt(post.getCreatedAt())
                     .updatedAt(post.getUpdatedAt())
-                    .files(UploadedFileDto.Converter.from(post))
-                    .linkUrls(LinkInfoDTO.Converter.from(post.getLinks()))
+                    .files(files)
+                    .linkUrls(links)
                     .build();
         }
     }

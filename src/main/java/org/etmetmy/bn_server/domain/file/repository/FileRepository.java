@@ -27,4 +27,7 @@ public interface FileRepository extends JpaRepository<File, Long> {
            "AND f.isDeleted = false")
     List<File> findByProjectCheckListId(@Param("projectCheckListId") Long projectCheckListId);
 
+    @Query("select f from File f " +
+            "where f.post.postId = :postId and f.isDeleted = false")
+    List<File> findFilesByPostId(Long postId);
 }
