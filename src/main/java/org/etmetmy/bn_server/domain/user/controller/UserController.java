@@ -108,19 +108,11 @@ public class UserController {
         return CommonResponse.success("회원 정보 수정 완료",userId);
     }
 
-    //todo: 자신의 비밀번호 변경 (개발사/고객사)
-    @PutMapping("/users/me/password")
-    public CommonResponse<Void> changeMyPassword(
-            @RequestBody UserChangePasswordRequest request,
-            HttpServletRequest httpRequest
-    ) {
-        // 세션에서 로그인한 사용자 ID 가져오기
-        HttpSession session = httpRequest.getSession(false);
+    //todo: 자신의 비밀번호 변경 (PUT)
+    @PutMapping("/users/password")
+    public CommonResponse<Long> changeMyPassword(
+            @RequestBody UserChangePasswordRequest request, HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-
-        if (loginUserId == null) {
-            throw new UserNotFoundException("로그인이 필요합니다.");
-        }
 
         // 비밀번호 변경 처리
         userService.changePassword(loginUserId, request);
