@@ -20,7 +20,7 @@ import java.util.List;
 public class PostDetailResponse {
     private final Long parentPostId; // null or Id번호
     private final String title;
-    private final Long authorName;
+    private final String authorName;
     private final LocalDateTime createdAt;
     private final Boolean isCompleted;
     private final String stageName;
@@ -48,7 +48,7 @@ public class PostDetailResponse {
 
             return PostDetailResponse.builder()
                     .parentPostId(post.getParentPostId())
-                    .authorName(author.getId())
+                    .authorName(author.getName())
                     .title(post.getTitle())
                     .content(post.getContent())
                     .createdAt(post.getCreatedAt())
