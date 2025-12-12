@@ -17,6 +17,7 @@ public interface ProjectService {
     int addProjectMembers(Long projectId, List<ProjectMemberRequest> members, Long createdById);
 
     List<ProjectResponse> getAllProjects();
+    List<ProjectCustomerResponse> getAllProjects(Long loginUserId);
     List<ProjectMemberResponse> getProjectMembers(Long projectId);
 
     ProjectResponse getProjectById(Long projectId);
