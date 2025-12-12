@@ -28,8 +28,8 @@ public class User extends BaseEntity {
     @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(name = "phone_number", length = 20)
-    private String phoneNumber;
+    @Column(name = "phone", length = 20)
+    private String phone;
 
     @JsonIgnore
     @Column(name = "password", nullable = false, length = 255)
@@ -46,10 +46,10 @@ public class User extends BaseEntity {
     @Column(name = "profile_img")
     private String profileImg;
 
-    public void updateInfo(String name, String email, String phoneNumber, Company company, Role role) {
+    public void updateInfo(String name, String email, String phone, Company company, Role role) {
         this.name = name;
         this.email = email;
-        this.phoneNumber = phoneNumber;
+        this.phone = phone;
         this.company = company; // 회사 이동 가능
         this.role = role;       // 관리자 권한 부여 가능
     }

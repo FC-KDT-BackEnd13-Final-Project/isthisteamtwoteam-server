@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService{
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
 
         // 3. 정보 변경 (dirty checking)
-        user.updateInfo(request.getName(), request.getEmail(), request.getPhoneNumber(), company, request.getRole());
+        user.updateInfo(request.getName(), request.getEmail(), request.getPhone(), company, request.getRole());
 
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
