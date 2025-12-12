@@ -50,9 +50,10 @@ public class FileController {
     // 3. 임시 파일 삭제 API (hard delete)
     @DeleteMapping("files/temp")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteTempFile(@PathVariable Long projectId, @RequestBody FileDeleteRequest request)
+    public void deleteTempFile(
+            @PathVariable Long projectId, @RequestBody FileDeleteRequest request)
     {
-        fileService.deleteFile(projectId,request.getFileIds());
+        fileService.deleteTempFile(projectId,request.getFileIds());
     }
 
     // 4. 업로드 된 파일 삭제 API (soft delete)
@@ -67,7 +68,4 @@ public class FileController {
         Long loginUserId = SessionUtil.getLoginUserId(session);
         fileService.deletePostFiles(projectId, postId, fileId, loginUserId);
     }
-
-    // 5. 파일과 게시글 조회
-
 }

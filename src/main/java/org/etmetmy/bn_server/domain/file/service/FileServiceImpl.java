@@ -97,25 +97,15 @@ public class FileServiceImpl implements FileService {
         return TempFileListDTO.Converter.from(savedFiles);
     }
 
-    // 3. 파일 삭제 (hard delete)
+    // 3. 임시 파일 삭제 (hard delete)
     @Override
     @Transactional
-    public void deleteFile(Long projectId, List<Long> fileIds) {
+    public void deleteTempFile(Long projectId, List<Long> fileIds) {
 
         List<File> files = fileRepository.findAllById(fileIds);
-
-        // 파일 개수 검증
-        if (files.size() != fileIds.size()) {
-            throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
-        }
-
-        // 프로젝트 소속 검증 (악의적 요청 가정)
         for (File file : files) {
-            if (file.getPost() == null ||
-                    file.getPost().getProject() == null ||
-                    !file.getPost().getProject().getId().equals(projectId)) {
-                throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
-            }
+            if(file.getIsTemp()==false)
+                throw new BusinessException(ErrorCode.FILE_NOT_TEMP);
         }
         deleteFilesFromS3AndDb(files);
     }
@@ -152,7 +142,36 @@ public class FileServiceImpl implements FileService {
         fileRepository.save(file);
     }
 
-    // 5. S3 업로드 메서드
+    // 5. 삭제된 파일 영구 삭제 (hard delete)
+    @Override
+    @Transactional
+    public void deleteHardFile(Long projectId, List<Long> fileIds) {
+
+        List<File> files = fileRepository.findAllById(fileIds);
+
+        // 파일 개수 검증
+        if (files.size() != fileIds.size()) {
+            throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
+        }
+
+        for (File file : files) {
+
+            // 프로젝트 소속 검증 (악의적 요청 가정)
+            if (file.getPost() == null ||
+                    file.getPost().getProject() == null ||
+                    !file.getPost().getProject().getId().equals(projectId)) {
+                throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
+            }
+
+            // 2. 삭제된 파일인지 검증 (영구 삭제는 isDeleted == true인 파일만 허용)
+            if (!file.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.FILE_NOT_DELETED);
+            }
+        }
+        deleteFilesFromS3AndDb(files);
+    }
+
+    // 6. S3 업로드 메서드
     @Override
     public String uploadToS3(MultipartFile file) {
 
@@ -177,7 +196,7 @@ public class FileServiceImpl implements FileService {
                 .toString();
     }
 
-    // 6. 삭제에 필요한 key 반환
+    // 7. 삭제에 필요한 key 반환
     @Override
     public String getKeyFromFileUrls(String fileUrl) {
         try {
@@ -191,7 +210,7 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    // 7. S3에서 파일 삭제 후 DB 레코드도 삭제
+    // 8. S3에서 파일 삭제 후 DB 레코드도 삭제
     @Override
     public void deleteFilesFromS3AndDb(List<File> files) {
         for (File file : files) {
@@ -219,7 +238,7 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    // 8. S3에서 파일 삭제
+    // 9. S3에서 파일 삭제
     @Override
     public void deleteFilesFromS3(List<File> files) {
         for (File file : files) {
@@ -244,12 +263,12 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    // 9. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
+    // 10. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
     @Override
     @Transactional
     public void saveFiles(Post post, List<Long> fileIds, Long loginUserId) {
 
-        // fileIds가 null이거나 비어있으면 아무것도 하지 않음
+        // fileIds가 null 이거나 비어있으면 아무것도 하지 않음
         if (fileIds == null || fileIds.isEmpty()) {
             return;
         }

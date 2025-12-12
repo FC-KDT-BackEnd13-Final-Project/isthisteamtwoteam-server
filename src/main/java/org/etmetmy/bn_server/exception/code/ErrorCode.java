@@ -56,6 +56,8 @@ public enum ErrorCode {
     FILE_NOT_IN_POST(400, "F005", "파일이 해당 게시글에 속하지 않습니다."),
     INVALID_URL_FORMAT(400,"C005", "잘못된 URL 형식입니다."),
     FILE_DELETE_FAILED(500, "F006", "파일 삭제에 실패했습니다"),
+    FILE_NOT_TEMP(400, "F007", "임시 파일이 아닙니다."),
+    FILE_NOT_DELETED(400, "F008", "삭제된 파일만 영구 삭제할 수 있습니다."),
 
     // 체크리스트 관련 에러
     CHECKLIST_NOT_FOUND(404,"D001","체크리스트를 찾을 수 없습니다."),
