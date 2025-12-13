@@ -70,4 +70,33 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     // 삭제된 프로젝트 조회
     @Query("select p from Project p where p.isDeleted = true")
     List<Project> findDeletedProjects();
+
+    // 특정 프로젝트 ID 리스트에서 진행 중인 프로젝트만 조회 (고객용 대시보드)
+    @Query("SELECT p FROM Project p " +
+            "JOIN FETCH p.stage s " +
+            "JOIN FETCH p.company c " +
+            "WHERE p.id IN :projectIds " +
+            "AND p.stage.stageName in ('요구사항 정의', '화면 설계', '디자인, 퍼블리싱', '개발', '검수') " +
+            "AND p.isDeleted = false " +
+            "ORDER BY p.createdAt DESC")
+    List<Project> findProjectsInProgressByProjectIds(@Param("projectIds") List<Long> projectIds);
+
+    // 특정 프로젝트 ID 리스트에서 유지보수 프로젝트만 조회 (고객용 대시보드)
+    @Query("SELECT p FROM Project p " +
+            "JOIN FETCH p.stage s " +
+            "JOIN FETCH p.company c " +
+            "WHERE p.id IN :projectIds " +
+            "AND p.stage.stageName = '유지보수' " +
+            "AND p.isDeleted = false " +
+            "ORDER BY p.createdAt DESC")
+    List<Project> findProjectsMaintenanceByProjectIds(@Param("projectIds") List<Long> projectIds);
+
+    // 특정 프로젝트 ID 리스트의 활성 프로젝트만 조회 (고객용 프로젝트 목록)
+    @Query("SELECT p FROM Project p " +
+            "JOIN FETCH p.stage s " +
+            "JOIN FETCH p.company c " +
+            "WHERE p.id IN :projectIds " +
+            "AND (p.isDeleted IS NULL OR p.isDeleted = false) " +
+            "ORDER BY p.updatedAt DESC")
+    List<Project> findActiveProjectsByProjectIds(@Param("projectIds") List<Long> projectIds);
 }
