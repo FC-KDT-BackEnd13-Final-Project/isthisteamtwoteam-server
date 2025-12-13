@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.post.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.etmetmy.bn_server.domain.comment.repository.CommentRepository;
@@ -14,6 +15,7 @@ import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.link.service.LinkService;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
@@ -34,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -177,7 +180,7 @@ public class PostServiceImpl implements PostService {
         return PostCreateResponse.Converter.from(savedPost, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links));
     }
 
-    /*// 게시글 수정
+    // 게시글 수정
     @Override
     @Transactional
     public PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId) {
@@ -191,7 +194,7 @@ public class PostServiceImpl implements PostService {
             throw new BusinessException(ErrorCode.POST_PROJECT_MISMATCH);
         }
 
-        // 3. 작성자 권한 검증
+        // 3. 작성자 권한 검증 (작성자만 수정 가능)
         if(!post.getUser().getId().equals(loginUserId)){
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
@@ -206,31 +209,68 @@ public class PostServiceImpl implements PostService {
         // 5. 기본 필드 업데이트 (title, content, stage)
         PostUpdateRequest.Converter.applyTo(requestDto, post, stage);
 
-        // 6. 링크 업데이트 (링크 URL이 제공된 경우)
-        if (requestDto.getLinkUrls() != null) {
-            // 기존 링크 조회
-            List<Link> existingLinks = linkRepository.findByPost(post);
+        // 6. 파일 삭제 처리 (removeFileIds가 제공된 경우)
+        if (requestDto.getRemoveFileIds() != null && !requestDto.getRemoveFileIds().isEmpty()) {
+            List<File> filesToDelete = fileRepository.findAllById(requestDto.getRemoveFileIds());
 
-            // 기존 링크 삭제 (물리적 삭제 - orphanRemoval로 자동 처리됨)
-            linkRepository.deleteAll(existingLinks);
-
-
-            List<Link> newLinks = new ArrayList<>();
-            for (String linkUrl : requestDto.getLinkUrls()) {
-                Link link = LinkCreateRequest.Converter.toEntity(post, linkUrl, loginUserId);
-                newLinks.add(link);
+            // 파일이 해당 게시글에 속하는지 검증
+            for (File file : filesToDelete) {
+                if (file.getPost() == null || !file.getPost().getPostId().equals(postId)) {
+                    throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
+                }
             }
-            linkRepository.saveAll(newLinks);
+
+            // Soft Delete 적용
+            for (File file : filesToDelete) {
+                file.softDelete(loginUserId);
+            }
         }
 
-        // 7. TODO: 파일 업데이트 로직은 별도 API로 구현 필요
+        // 7. 파일 추가 처리 (addFileIds가 제공된 경우)
+        if (requestDto.getAddFileIds() != null && !requestDto.getAddFileIds().isEmpty()) {
+            fileService.saveFiles(post, requestDto.getAddFileIds(), loginUserId);
+        }
 
-        // 8. 응답 반환 (파일, 링크 정보 포함)
-        List<File> savedFiles = fileRepository.findByPost(post);
-        List<Link> savedLinks = linkRepository.findByPost(post);
-       // todo: 수정예정 return PostCreateResponse.Converter.from(post, savedFiles, savedLinks);
-         return PostCreateResponse.Converter.from(post);
-    }*/
+        // 8. 링크 업데이트 (링크 URL이 제공된 경우)
+        if (requestDto.getLinkUrls() != null) {
+            // 기존 링크 조회 및 삭제
+            List<Link> existingLinks = linkRepository.findByPost(post);
+            linkRepository.deleteAll(existingLinks);
+
+            // 새 링크 저장
+            linkService.saveLinks(post, requestDto.getLinkUrls(), loginUserId);
+        }
+
+        // 9. 승인요청 상태 업데이트 (requestApproval 필드가 제공된 경우)
+        if (requestDto.getRequestApproval() != null) {
+            // 기존 PENDING 상태의 Request 조회
+            Request existingRequest = requestRepository.findByPostPostIdAndApproveStatus(
+                    postId, RequestStatus.STATUS_PENDING).orElse(null);
+
+            if (Boolean.TRUE.equals(requestDto.getRequestApproval())) {
+                // 승인요청을 원하는 경우
+                if (existingRequest == null) {
+                    // 기존 승인요청이 없으면 새로 생성
+                    Request newRequest = PostUpdateRequest.Converter.toRequestEntity(requestDto, post, loginUserId);
+                    requestRepository.save(Objects.requireNonNull(newRequest));
+                }
+                // 이미 PENDING 상태의 승인요청이 있으면 그대로 유지
+            } else {
+                // 승인요청을 취소하는 경우
+                if (existingRequest != null) {
+                    // 기존 PENDING 승인요청이 있으면 삭제
+                    requestRepository.delete(existingRequest);
+                }
+            }
+        }
+
+        // 10. 저장된 데이터 재조회
+        List<File> files = fileRepository.findFilesByPostId(post.getPostId());
+        List<Link> links = linkRepository.findLinksByPostId(post.getPostId());
+
+        return PostCreateResponse.Converter.from(
+                post, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links));
+    }
 
     @Override
     @Transactional
