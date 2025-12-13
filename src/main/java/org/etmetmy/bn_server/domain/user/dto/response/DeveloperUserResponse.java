@@ -29,6 +29,7 @@ public class DeveloperUserResponse {
                     .name(user.getName())
                     .email(user.getEmail())
                     .phone(user.getPhone())
+                    .companyName(user.getCompany().getCompanyName())
                     .build();
         }
 
