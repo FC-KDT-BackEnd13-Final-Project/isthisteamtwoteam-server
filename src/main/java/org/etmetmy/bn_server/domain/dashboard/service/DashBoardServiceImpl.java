@@ -26,7 +26,9 @@ public class DashBoardServiceImpl implements DashBoardService {
     private final ProjectMemberRepository projectMemberRepository;
     private final PostRepository postRepository;
 
-    // 1. 프로젝트 목록 조회 (접근 권한 정보 제공)
+    // 1. 프로젝트 목록 조회 (관리자용: 모든 프로젝트 + 접근 권한 정보 제공)
+    @Override
+    @Transactional(readOnly = true)
     public List<ProjectListResponse> getProjectList(Long loginUserId) {
 
         // 유저 검증
@@ -41,12 +43,29 @@ public class DashBoardServiceImpl implements DashBoardService {
         return ProjectListResponse.Converter.from(allProjects, myProjectIds);
     }
 
+    // 고객용 프로젝트 목록 조회 (고객이 속한 프로젝트만)
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProjectListResponse> getCustomerProjectList(Long loginUserId) {
+
+        // 고객이 참여 중인 프로젝트 ID 목록 조회
+        List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
+
+        // 빈 리스트 처리 (참여 중인 프로젝트가 없는 경우)
+        if (myProjectIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 참여 중인 프로젝트만 조회
+        List<Project> myProjects = projectRepository.findActiveProjectsByProjectIds(myProjectIds);
+
+        // 모든 프로젝트가 이미 필터링되었으므로 hasPermission은 모두 true
+        return ProjectListResponse.Converter.from(myProjects, myProjectIds);
+    }
+
     @Override
     @Transactional(readOnly = true)
     public DashBoardResponse getStatusDashboard(Long loginUserId) {
-        // 유저 검증
-        userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
 
         // STATUS_PENDING(요청대기) 상태인 Post 목록
         List<Post> pendingPosts = postRepository.findPostsWithRequestStatus(RequestStatus.STATUS_PENDING);

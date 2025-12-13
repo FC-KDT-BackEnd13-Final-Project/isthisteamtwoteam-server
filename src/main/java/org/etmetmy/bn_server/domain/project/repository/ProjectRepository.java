@@ -90,4 +90,13 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "AND p.isDeleted = false " +
             "ORDER BY p.createdAt DESC")
     List<Project> findProjectsMaintenanceByProjectIds(@Param("projectIds") List<Long> projectIds);
+
+    // 특정 프로젝트 ID 리스트의 활성 프로젝트만 조회 (고객용 프로젝트 목록)
+    @Query("SELECT p FROM Project p " +
+            "JOIN FETCH p.stage s " +
+            "JOIN FETCH p.company c " +
+            "WHERE p.id IN :projectIds " +
+            "AND (p.isDeleted IS NULL OR p.isDeleted = false) " +
+            "ORDER BY p.updatedAt DESC")
+    List<Project> findActiveProjectsByProjectIds(@Param("projectIds") List<Long> projectIds);
 }
