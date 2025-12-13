@@ -13,5 +13,8 @@ public interface DashBoardService {
 
     DashBoardResponse getStatusDashboard(Long loginUserId);
 
+    // 고객용 대시보드: 고객이 참여 중인 프로젝트만 필터링
+    DashBoardResponse getCustomerStatusDashboard(Long loginUserId);
+
     ApprovalRequestListResponse getApprovalRequest(Long loginUserId);
 }

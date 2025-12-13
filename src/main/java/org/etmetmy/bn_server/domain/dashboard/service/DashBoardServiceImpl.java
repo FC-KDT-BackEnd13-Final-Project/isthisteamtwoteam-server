@@ -70,6 +70,41 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     @Override
     @Transactional(readOnly = true)
+    public DashBoardResponse getCustomerStatusDashboard(Long loginUserId) {
+        // 유저 검증
+        userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 고객이 참여 중인 프로젝트 ID 목록 조회
+        List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
+
+        // 빈 리스트 처리 (참여 중인 프로젝트가 없는 경우)
+        if (myProjectIds.isEmpty()) {
+            return DashBoardResponse.Converter.of(List.of(), List.of(), List.of(), List.of());
+        }
+
+        // STATUS_PENDING(요청대기) 상태이면서 참여 중인 프로젝트의 Post 목록
+        List<Post> pendingPosts = postRepository.findPostsWithRequestStatusByProjectIds(RequestStatus.STATUS_PENDING, myProjectIds);
+        List<DashBoardStatusResponseDTO> pendingList = DashBoardStatusResponseDTO.Converter.toPostDTOList(pendingPosts, RequestStatus.STATUS_PENDING);
+
+        // STATUS_REJECTED(반려) 상태이면서 참여 중인 프로젝트의 Post 목록
+        List<Post> rejectedPosts = postRepository.findPostsWithRequestStatusByProjectIds(RequestStatus.STATUS_REJECTED, myProjectIds);
+        List<DashBoardStatusResponseDTO> rejectedList = DashBoardStatusResponseDTO.Converter.toPostDTOList(rejectedPosts, RequestStatus.STATUS_REJECTED);
+
+        // 참여 중인 프로젝트 중 진행 중인 Project
+        List<Project> inProgressProjects = projectRepository.findProjectsInProgressByProjectIds(myProjectIds);
+        List<DashBoardStatusResponseDTO> inProgress = DashBoardStatusResponseDTO.Converter.toProejctDTOList(inProgressProjects);
+
+        // 참여 중인 프로젝트 중 유지 보수 Project
+        List<Project> maintenanceProjects = projectRepository.findProjectsMaintenanceByProjectIds(myProjectIds);
+        List<DashBoardStatusResponseDTO> maintenances = DashBoardStatusResponseDTO.Converter.toProejctDTOList(maintenanceProjects);
+
+        // stats와 List를 포함한 wrapper 반환
+        return DashBoardResponse.Converter.of(pendingList, rejectedList, inProgress, maintenances);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ApprovalRequestListResponse getApprovalRequest(Long loginUserId) {
         // 유저 검증
         userRepository.findById(loginUserId)

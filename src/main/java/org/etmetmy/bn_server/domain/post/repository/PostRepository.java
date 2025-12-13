@@ -93,4 +93,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "WHERE p.request IS NOT NULL " +
             "ORDER BY p.createdAt DESC")
     List<Post> findAllPostsWithRequest();
+
+    /**
+     * 특정 프로젝트 목록 내에서 특정 상태의 Post 조회 (고객용 대시보드)
+     */
+    @Query("SELECT DISTINCT p FROM Post p " +
+            "join fetch p.user u " +
+            "join fetch p.stage s " +
+            "join fetch Request r ON r.post.postId = p.postId " +
+            "WHERE r.approveStatus = :status " +
+            "AND p.project.id IN :projectIds " +
+            "ORDER BY p.createdAt DESC")
+    List<Post> findPostsWithRequestStatusByProjectIds(@Param("status") RequestStatus status, @Param("projectIds") List<Long> projectIds);
 }
