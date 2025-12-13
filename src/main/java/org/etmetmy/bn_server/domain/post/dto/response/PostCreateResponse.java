@@ -55,7 +55,6 @@ public class PostCreateResponse {
     @JsonProperty("linkUrls")
     private List<LinkInfoDTO> linkUrls;
 
-
     public static class Converter {
 
         public static PostCreateResponse from(Post post, List<FileInfoDTO> files, List<LinkInfoDTO> links) {

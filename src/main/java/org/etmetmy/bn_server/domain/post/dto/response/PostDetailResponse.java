@@ -44,14 +44,16 @@ public class PostDetailResponse {
             // 파일 변환 (삭제되지 않은 파일만)
             List<FileInfoDTO> fileInfos = FileInfoDTO.Converter.from(post.getFiles());
 
-            // 링크 변환 (삭제되지 않은 링크만)
+            // 링크 변환
             List<LinkInfoDTO> linkInfos = LinkInfoDTO.Converter.from(post.getLinks());
 
             // 댓글 변환 (계층 구조 포함)
             List<CommentResponse> commentResponses = convertCommentsToHierarchy(comments);
 
             return PostDetailResponse.builder()
+                    .postId(post.getPostId())
                     .parentPostId(post.getParentPostId())
+                    .userId(author.getId())
                     .authorName(author.getName())
                     .title(post.getTitle())
                     .content(post.getContent())
@@ -60,8 +62,10 @@ public class PostDetailResponse {
                     .stageName(post.getStage().getStageName())
                     .files(fileInfos)
                     .links(linkInfos)
-                    .approveStatus(request.getApproveStatus().getDescription())
-                    .rejectionReason(request.getRejectReason())
+                    .approveStatus(request != null && request.getApproveStatus() != null
+                            ? request.getApproveStatus().getDescription()
+                            : null)
+                    .rejectionReason(request != null ? request.getRejectReason() : null)
                     .comments(commentResponses)
                     .build();
         }
