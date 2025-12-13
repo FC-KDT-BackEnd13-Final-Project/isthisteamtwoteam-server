@@ -3,8 +3,10 @@ package org.etmetmy.bn_server.domain.post.controller;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
 import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
@@ -58,7 +60,6 @@ public class PostController {
         return ResponseEntity.ok(CommonResponse.success("게시글 승인 완료"));
     }
 
-
     // todo: 게시글 거절 API
     @PatchMapping("posts/{postId}/reject")
     public ResponseEntity<CommonResponse<Object>> rejectPost(
@@ -80,15 +81,10 @@ public class PostController {
         postService.completePost(projectId, postId, loginUserId);
     }
 
-    /**
-     * 게시글 조회(필터)
-     * all : 전체
-     * finished: 완료된 게시글
-     * unfinished : 미완료된 게시글
-     */
-    /**
-     * 게시글 목록 조회 (필터)
-     */
+    // todo: 게시글 목록 조회 (필터) API
+    // all : 전체
+    // finished: 완료된 게시글
+    // unfinished : 미완료된 게시글
     @GetMapping("/{projectId}/posts")
     public CommonResponse<List<PostListResponse>> getPostList(
             @PathVariable Long projectId,
@@ -110,7 +106,7 @@ public class PostController {
         }
     }
 
-    /*@PatchMapping("/{projectId}/posts/{postId}")
+    @PatchMapping("/{projectId}/posts/{postId}")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     public CommonResponse<PostCreateResponse> updatePost(
             @PathVariable Long projectId,
@@ -123,5 +119,5 @@ public class PostController {
         PostCreateResponse response = postService.updatePost(
                 projectId, postId, requestDto, loginUserId);
         return CommonResponse.success("게시글 수정 성공", response);
-    }*/
+    }
 }
