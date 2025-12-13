@@ -67,7 +67,7 @@ public class PostServiceImpl implements PostService {
         Request request = requestRepository.findByPostId(postId);
 
         // DTO 변환 (파일, 링크, 댓글 포함)
-        return PostDetailResponse.Converter.fromEntity(post, post.getUser(), comments,request);
+        return PostDetailResponse.Converter.fromEntity(post, post.getUser(), comments, request);
     }
 
     // 2. 게시글 승인
@@ -158,13 +158,19 @@ public class PostServiceImpl implements PostService {
                 PostCreateRequest.Converter.toEntity(project, user, stage, postNumber, parent, requestDto)
         );
 
-        // 2. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 게시글과 연동
+        // 2. 승인요청이 있는 경우에만 Request 엔티티 생성 (초기 상태: PENDING)
+        Request request = PostCreateRequest.Converter.toRequestEntity(requestDto, savedPost, loginUserId);
+        if (request != null) {
+            requestRepository.save(request);
+        }
+
+        // 3. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 게시글과 연동
         linkService.saveLinks(savedPost, requestDto.getLinkUrls(), loginUserId);
 
-        // 3. 임시 파일 연결: 프론트에서 전달받은 fileIds를 기준으로 DB 에서 임시 파일(isTemp=true)을 조회
+        // 4. 임시 파일 연결: 프론트에서 전달받은 fileIds를 기준으로 DB 에서 임시 파일(isTemp=true)을 조회
         fileService.saveFiles(savedPost, requestDto.getFileIds(), loginUserId);
 
-        // 4. 저장된 데이터 재조회
+        // 5. 저장된 데이터 재조회
         List<File> files = fileRepository.findFilesByPostId(savedPost.getPostId());
         List<Link> links = linkRepository.findLinksByPostId(savedPost.getPostId());
 

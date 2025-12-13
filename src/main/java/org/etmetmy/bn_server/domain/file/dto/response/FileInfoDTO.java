@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.etmetmy.bn_server.domain.file.entity.File;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +41,7 @@ public class FileInfoDTO {
      * 삭제된 파일은 제외
      */
     public static class Converter {
-        public static List<FileInfoDTO> from(
-                List<org.etmetmy.bn_server.domain.file.entity.File> files) {
+        public static List<FileInfoDTO> from(List<File> files) {
 
             // 1. files가 null 이면 빈 리스트 반환
             if (files == null) {
@@ -57,7 +57,6 @@ public class FileInfoDTO {
                 if (file.getIsDeleted()) {
                     continue;
                 }
-
                 // File 엔티티의 정보를 FileInfo DTO로 변환
                 fileInfos.add(FileInfoDTO.builder()
                         .fileId(file.getFileId())

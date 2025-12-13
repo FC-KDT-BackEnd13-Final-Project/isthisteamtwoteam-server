@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.Request;
+import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -32,6 +34,10 @@ public class PostCreateRequest {
 
     private Long parentId;
 
+    // 승인요청 여부 (기본값: false)
+    @Builder.Default
+    private Boolean requestApproval = false;
+
     // S3에 업로드된 파일 정보 목록 (선택 사항)
     private List<Long> fileIds;
 
@@ -51,6 +57,24 @@ public class PostCreateRequest {
                     .stage(stage)
                     .postNumber(postNumber)
                     .isCompleted(false)
+                    .build();
+        }
+
+        /**
+         * 승인요청이 있는 경우 Request 엔티티 생성 (초기 상태: PENDING)
+         * @return Request 엔티티 또는 null (승인요청이 없는 경우)
+         */
+        public static Request toRequestEntity(
+                PostCreateRequest requestDto, Post post, Long requestUserId) {
+
+            if (!Boolean.TRUE.equals(requestDto.getRequestApproval())) {
+                return null;
+            }
+
+            return Request.builder()
+                    .post(post)
+                    .requestUserId(requestUserId)
+                    .approveStatus(RequestStatus.STATUS_PENDING)
                     .build();
         }
     }
