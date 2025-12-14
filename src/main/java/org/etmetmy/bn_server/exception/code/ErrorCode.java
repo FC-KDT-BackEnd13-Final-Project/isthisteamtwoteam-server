@@ -17,7 +17,10 @@ public enum ErrorCode {
     // 게시글 관련 에러
     BOARD_POST_NOT_FOUND(404, "B001", "게시글을 찾을 수 없습니다."),
     BOARD_COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),
+    COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),
     PARENT_COMMENT_NOT_FOUND(404, "B002_1", "부모 댓글을 찾을 수 없습니다."),
+    UNAUTHORIZED_COMMENT_ACCESS(403, "B002_2", "댓글 수정/삭제 권한이 없습니다."),
+    COMMENT_ALREADY_DELETED(400, "B002_3", "이미 삭제된 댓글입니다."),
     BOARD_PERMISSION_DENIED(403, "B003", "게시글 수정/삭제 권한이 없습니다."),
     BOARD_ALREADY_DELETED(400, "B004", "이미 삭제된 게시글입니다."),
     BOARD_INVALID_FILTER(400,"B005", "유효하지 않은 게시글 필터입니다."),

@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.comment.dto.request.CommentCreateRequest;
+import org.etmetmy.bn_server.domain.comment.dto.request.CommentUpdateRequest;
 import org.etmetmy.bn_server.domain.comment.dto.response.CommentListResponse;
 import org.etmetmy.bn_server.domain.comment.dto.response.CommentResponse;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
@@ -74,6 +75,56 @@ public class CommentServiceImpl implements CommentService {
                 .collect(Collectors.toList());
 
         return CommentListResponse.Converter.from(post,rootComments,commentResponses);
+    }
+
+    // 댓글 수정
+    public CommentResponse updateComment(Long commentId,
+                                         CommentUpdateRequest request,
+                                         HttpServletRequest servletRequest) {
+        HttpSession session = servletRequest.getSession(false);
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        // 댓글 조회
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+
+        // 작성자 확인
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_COMMENT_ACCESS);
+        }
+
+        // 삭제된 댓글 확인
+        if (comment.getIsDeleted()) {
+            throw new BusinessException(ErrorCode.COMMENT_ALREADY_DELETED);
+        }
+
+        // 내용 수정
+        comment.updateContent(request.getContent());
+
+        return CommentResponse.Converter.from(comment);
+    }
+
+    // 댓글 삭제 (소프트 삭제)
+    public void deleteComment(Long commentId, HttpServletRequest servletRequest) {
+        HttpSession session = servletRequest.getSession(false);
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        // 댓글 조회
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.COMMENT_NOT_FOUND));
+
+        // 작성자 확인
+        if (!comment.getUser().getId().equals(userId)) {
+            throw new BusinessException(ErrorCode.UNAUTHORIZED_COMMENT_ACCESS);
+        }
+
+        // 이미 삭제된 댓글 확인
+        if (comment.getIsDeleted()) {
+            throw new BusinessException(ErrorCode.COMMENT_ALREADY_DELETED);
+        }
+
+        // 소프트 삭제
+        comment.softDelete();
     }
 
      //대댓글 (Reply)을 로딩하고 DTO로 변환

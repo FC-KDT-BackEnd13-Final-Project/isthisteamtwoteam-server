@@ -59,4 +59,15 @@ public class Comment extends BaseEntity {
     //링크 목록
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Link> links = new ArrayList<>();
+
+    // 댓글 내용 수정
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    // 댓글 소프트 삭제
+    public void softDelete() {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+    }
 }
