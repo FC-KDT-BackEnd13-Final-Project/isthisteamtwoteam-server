@@ -13,33 +13,21 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 @Getter
 @NoArgsConstructor
 public class CommentCreateRequest {
-
-    @NotNull(message = "작성자 ID는 필수입니다.")
-    private User userId;
-
     @NotBlank(message = "댓글 내용은 필수입니다.")
     private String content;
 
+    private Long commentId2; // 대댓글인 경우 부모 댓글 ID, 일반 댓글인 경우 null
+
     public static class Converter{
-        public static Comment toEntity(Post post, CommentCreateRequest request, HttpServletRequest servletRequest) {
+        public static Comment toEntity(Post post, CommentCreateRequest request, HttpServletRequest servletRequest, User user) {
             return Comment.builder()
                     .post(post)
-                    .user(request.getUserId())
+                    .user(user)
                     .content(request.getContent())
                     .ip(servletRequest.getRemoteAddr())
-                    .commentId2(null)
+                    .commentId2(request.getCommentId2())
+                    .isDeleted(false)
                     .build();
         }
-
-        public static Comment toEntity(Post post, CommentCreateRequest request,Comment parentComment, HttpServletRequest servletRequest) {
-            return Comment.builder()
-                    .post(post)
-                    .user(request.getUserId())
-                    .content(request.getContent())
-                    .ip(servletRequest.getRemoteAddr())
-                    .commentId2(parentComment.getCommentId())
-                    .build();
-        }
-
     }
 }

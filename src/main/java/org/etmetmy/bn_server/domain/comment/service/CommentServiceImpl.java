@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.comment.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.comment.dto.request.CommentCreateRequest;
 import org.etmetmy.bn_server.domain.comment.dto.response.CommentListResponse;
@@ -9,9 +10,13 @@ import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.comment.repository.CommentRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
+import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BoardNotFoundException;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
+import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
+import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,33 +30,28 @@ public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    // 댓글 생성 (일반 댓글 + 대댓글 통합)
+    public CommentResponse createComment(Long postId,
+                                         CommentCreateRequest request,
+                                         HttpServletRequest servletRequest) {
 
-    //주 댓글 생성
-    public CommentResponse createComment(Long postId, CommentCreateRequest request, HttpServletRequest servletRequest) {
+        HttpSession session = servletRequest.getSession(false);
+        Long userId = SessionUtil.getLoginUserId(session);
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
 
-        // Post와 User 엔티티 유효성 검사 및 조회
+        // Post 엔티티 유효성 검사 및 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
-        Comment comment = CommentCreateRequest.Converter.toEntity(post,request,servletRequest);
+        // commentId2가 있으면 부모 댓글 존재 여부 확인
+        if (request.getCommentId2() != null) {
+            commentRepository.findById(request.getCommentId2())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PARENT_COMMENT_NOT_FOUND));
+        }
 
-        Comment saved = commentRepository.save(comment);
-
-        return CommentResponse.Converter.from(saved);
-    }
-
-    //대댓글 (Reply)을 생성합니다.
-    public CommentResponse createReply(Long postId, Long parentCommentId, CommentCreateRequest request, HttpServletRequest servletRequest) {
-
-        // Post와 User 엔티티 유효성 검사 및 조회
-        Post post = postRepository.findById(postId)
-                .orElseThrow(BoardNotFoundException::new);
-
-        // 부모 댓글 존재 여부 확인
-        Comment parentComment =commentRepository.findById(parentCommentId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PARENT_COMMENT_NOT_FOUND));
-
-        Comment comment = CommentCreateRequest.Converter.toEntity(post,request,parentComment,servletRequest);
+        Comment comment = CommentCreateRequest.Converter.toEntity(post, request, servletRequest, user);
         Comment saved = commentRepository.save(comment);
 
         return CommentResponse.Converter.from(saved);

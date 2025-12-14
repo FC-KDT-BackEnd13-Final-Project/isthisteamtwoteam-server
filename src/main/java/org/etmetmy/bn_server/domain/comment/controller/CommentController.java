@@ -18,7 +18,8 @@ public class CommentController {
 
     private final CommentService commentServiceImpl;
 
-    //주 댓글 작성 기능
+    // 댓글 작성 기능 (일반 댓글 + 대댓글)
+    // commentId2가 null이면 일반 댓글, 값이 있으면 대댓글로 처리
     @PostMapping("/comment")
     public CommonResponse<CommentResponse> createComment(
             @PathVariable Long projectId,
@@ -26,20 +27,11 @@ public class CommentController {
             @RequestBody @Valid CommentCreateRequest request,
             HttpServletRequest servletRequest
     ) {
-        return CommonResponse.success("댓글이 성공적으로 작성 되었습니다.", commentServiceImpl.createComment(postId, request, servletRequest));
-    }
-
-    // 대댓글 작성 기능
-    @PostMapping("/{commentId}/recomment")
-    public CommonResponse<CommentResponse> createReply(
-            @PathVariable Long projectId,
-            @PathVariable Long postId,
-            @PathVariable Long commentId, // Parent Comment ID
-            @RequestBody @Valid CommentCreateRequest request,
-            HttpServletRequest servletRequest
-    ) {
-        return CommonResponse.success("대댓글이 성공적으로 작성 되었습니다.", commentServiceImpl.createReply(postId,commentId, request, servletRequest));
-
+        CommentResponse response = commentServiceImpl.createComment(postId, request, servletRequest);
+        String message = request.getCommentId2() == null
+                ? "댓글이 성공적으로 작성 되었습니다."
+                : "대댓글이 성공적으로 작성 되었습니다.";
+        return CommonResponse.success(message, response);
     }
 
     // 댓글 목록 조회 기능 (주 댓글 + 대댓글 계층 구조)

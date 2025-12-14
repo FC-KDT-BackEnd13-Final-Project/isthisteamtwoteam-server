@@ -15,7 +15,6 @@ public class CompanyCreateRequest {
     private String companyAddress;
     private String companyCeo;
 
-    @NotBlank(message = "회사 전화번호는 필수입니다.")
     private String companyPhone; // 회사 대표 번호
 
     @NotBlank(message = "담당자명은 필수입니다.")
