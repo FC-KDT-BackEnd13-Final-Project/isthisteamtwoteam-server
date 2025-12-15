@@ -1,6 +1,8 @@
 package org.etmetmy.bn_server.domain.project.controller;
 
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 
 import jakarta.validation.Valid;
@@ -28,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Tag(name = "Project (Admin)", description = "관리자 프로젝트 관리 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/admin/projects")
@@ -39,6 +42,7 @@ public class ProjectAdminController {
     private final ProjectMemberRepository projectMemberRepository;
 
     // todo: 프로젝트 생성
+    @Operation(summary = "프로젝트 생성", description = "새로운 프로젝트를 생성합니다 (이미지 포함 가능)")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ActivityLogger(action = "CREATE", targetType = "Project")
     public void createProject(
@@ -50,6 +54,7 @@ public class ProjectAdminController {
     }
 
     // todo: 프로젝트 전체 조회 (페이지네이션, 검색)
+    @Operation(summary = "프로젝트 전체 조회", description = "모든 프로젝트 목록을 조회합니다")
     @GetMapping
     public CommonResponse<Page<ProjectResponse>> getProjects(
 
@@ -66,6 +71,7 @@ public class ProjectAdminController {
     }
 
     // todo: 개별 프로젝트 멤버 조회
+    @Operation(summary = "프로젝트 멤버 조회", description = "특정 프로젝트의 멤버 목록을 조회합니다")
     @GetMapping("/{projectId}/members")
     public CommonResponse<List<ProjectMemberResponse>> getProjectMembers(@PathVariable Long projectId) {
         List<ProjectMemberResponse> responses = projectService.getProjectMembers(projectId);
@@ -74,6 +80,7 @@ public class ProjectAdminController {
     }
 
     // todo: 개별 프로젝트 멤버 추가
+    @Operation(summary = "프로젝트 멤버 추가", description = "프로젝트에 새로운 멤버를 추가합니다")
     @PostMapping("/{projectId}/members")
     public CommonResponse<Integer> addProjectMembers(
             HttpSession session,
@@ -86,6 +93,7 @@ public class ProjectAdminController {
     }
 
     // todo: 개별프로젝트에 체크리스트 추가
+    @Operation(summary = "프로젝트 체크리스트 추가", description = "프로젝트에 체크리스트를 할당합니다")
     @PostMapping("/{projectId}/checklists")
     public CommonResponse<List<ProjectAddCheckListResponse>> addCheckLists(@PathVariable Long projectId,
                                                                            @RequestBody ProjectAddCheckListRequest request) {
@@ -94,6 +102,7 @@ public class ProjectAdminController {
     }
 
     // Todo : 개별 프로젝트 체크리스트 전체 조회
+    @Operation(summary = "프로젝트 체크리스트 조회", description = "프로젝트의 모든 체크리스트를 조회합니다")
     @GetMapping("/{projectId}/checklists")
     public CommonResponse<List<ProjectCheckListAllResponse>> getCheckLists(
             @PathVariable Long projectId
@@ -102,6 +111,7 @@ public class ProjectAdminController {
     }
 
     // todo: 개별 프로젝트 제목 수정
+    @Operation(summary = "프로젝트 제목 수정", description = "프로젝트의 제목을 수정합니다")
     @PatchMapping("/{projectId}/projectName")
     public CommonResponse<ProjectUpdateResponse> updateProjectName(
             @PathVariable Long projectId,
@@ -112,6 +122,7 @@ public class ProjectAdminController {
     }
 
     // todo: 프로젝트 이미지 수정
+    @Operation(summary = "프로젝트 이미지 수정", description = "프로젝트의 이미지를 수정합니다")
     @PatchMapping(value = "/{projectId}/image",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<ProjectUpdateResponse> updateProjectImage(
@@ -123,6 +134,7 @@ public class ProjectAdminController {
     }
 
     // todo: 개별 프로젝트 날짜 수정
+    @Operation(summary = "프로젝트 날짜 수정", description = "프로젝트의 시작일 및 종료일을 수정합니다")
     @PatchMapping("/{projectId}/date")
     public CommonResponse<ProjectUpdateResponse> updateProjectDate(
             @PathVariable Long projectId,
@@ -133,6 +145,7 @@ public class ProjectAdminController {
     }
 
     // todo: 개별 프로젝트 soft 삭제 (휴지으로 이동)
+    @Operation(summary = "프로젝트 삭제", description = "프로젝트를 휴지통으로 이동합니다 (soft delete)")
     @DeleteMapping("/{projectId}")
     @ActivityLogger(action = "DELETE", targetType = "Project")
     public CommonResponse<ProjectTrashResponse> deleteProject(@PathVariable Long projectId) {
@@ -141,6 +154,7 @@ public class ProjectAdminController {
     }
 
     // todo: 개별 프로젝트 멤버 삭제
+    @Operation(summary = "프로젝트 멤버 삭제", description = "프로젝트에서 멤버를 제거합니다")
     @DeleteMapping("/{projectId}/members/{userId}")
     public CommonResponse<Long> removeProjectMember(
             @PathVariable Long projectId,
@@ -151,6 +165,7 @@ public class ProjectAdminController {
     }
 
     // todo: 프로젝트 진행단계 수정
+    @Operation(summary = "프로젝트 진행단계 수정", description = "프로젝트의 진행단계를 수정합니다")
     @PatchMapping("/{projectId}/stage")
     @ActivityLogger(action = "UPDATE", targetType = "Project")
     public CommonResponse<ProjectStageUpdateResponse> updateProjectStage(
@@ -173,6 +188,7 @@ public class ProjectAdminController {
     }
 
     // todo: 개별 프로젝트 조회
+    @Operation(summary = "프로젝트 상세 조회", description = "특정 프로젝트의 상세 정보를 조회합니다")
     @GetMapping("/{projectId}")
     public CommonResponse<ProjectDetailResponse> getProjectDetail(
             @PathVariable Long projectId
@@ -182,6 +198,7 @@ public class ProjectAdminController {
     }
 
     // todo: 프로젝트 생성 - 개발사/고객사 사원 조회
+    @Operation(summary = "프로젝트 생성용 사원 조회", description = "프로젝트 생성 시 추가 가능한 개발사/고객사 사원을 조회합니다")
     @GetMapping(value = "/users")
     public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForCreate(@RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForCreate(role);
@@ -190,6 +207,7 @@ public class ProjectAdminController {
     }
 
     // todo: 프로젝트 설정 - 개별사/고객사 사원 조회
+    @Operation(summary = "프로젝트 설정용 사원 조회", description = "프로젝트 설정 시 추가 가능한 개발사/고객사 사원을 조회합니다")
     @GetMapping("/{projectId}/users")
     public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(@PathVariable Long projectId, @RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForProject(projectId, role);
@@ -197,6 +215,7 @@ public class ProjectAdminController {
     }
 
     //todo: 삭제된 프로젝트 목록 조회
+    @Operation(summary = "삭제된 프로젝트 목록 조회", description = "휴지통에 있는 삭제된 프로젝트 목록을 조회합니다")
     @GetMapping("/trash")
     public CommonResponse<List<DeletedProjectResponse>> getDeletedProjectList(HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
@@ -206,6 +225,7 @@ public class ProjectAdminController {
     }
 
     //todo: 삭제된 프로젝트 복원
+    @Operation(summary = "프로젝트 복원", description = "휴지통에 있는 프로젝트를 복원합니다")
     @PatchMapping("/trash/restore")
     @ActivityLogger(action = "UPDATE", targetType = "Project")
     public CommonResponse<ProjectRestoreResponse> restoreDeletedProject(

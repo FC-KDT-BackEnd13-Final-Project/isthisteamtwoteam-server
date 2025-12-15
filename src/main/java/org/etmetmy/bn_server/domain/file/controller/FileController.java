@@ -1,5 +1,7 @@
 package org.etmetmy.bn_server.domain.file.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Tag(name = "File", description = "파일 관리 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users/projects/{projectId}")
@@ -23,6 +26,7 @@ public class FileController {
     private final FileService fileService;
 
     // 1. 프로젝트별 파일 목록 조회 API
+    @Operation(summary = "프로젝트 파일 목록 조회", description = "특정 프로젝트의 파일 목록을 조회합니다")
     @GetMapping("/files")
     public CommonResponse<List<ActiveFileListDTO>> getFiles(
             @PathVariable Long projectId,
@@ -35,6 +39,7 @@ public class FileController {
     }
 
     // 2. 임시 파일 업로드 API
+    @Operation(summary = "임시 파일 업로드", description = "게시글 작성 시 임시로 파일을 업로드합니다")
     @PostMapping("/posts/files/temp")
     public CommonResponse<List<TempFileListDTO>> postFiles(
             @PathVariable Long projectId,
@@ -48,6 +53,7 @@ public class FileController {
     }
 
     // 3. 임시 파일 삭제 API (hard delete)
+    @Operation(summary = "임시 파일 삭제", description = "업로드한 임시 파일을 완전히 삭제합니다")
     @DeleteMapping("files/temp")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteTempFile(
@@ -57,6 +63,7 @@ public class FileController {
     }
 
     // 4. 업로드 된 파일 삭제 API (soft delete)
+    @Operation(summary = "게시글 파일 삭제", description = "게시글에 첨부된 파일을 삭제합니다 (soft delete)")
     @DeleteMapping("/posts/{postId}/files/{fileId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePostFiles(

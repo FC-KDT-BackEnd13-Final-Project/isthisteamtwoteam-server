@@ -1,5 +1,7 @@
 package org.etmetmy.bn_server.domain.user.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -20,6 +22,7 @@ import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "User", description = "사용자 인증 및 관리 API")
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 @RestController
@@ -28,6 +31,7 @@ public class UserController {
     private final UserService userService;
 
     //todo : 회원 계정 생성
+    @Operation(summary = "회원 계정 생성", description = "새로운 회원 계정을 생성합니다 (관리자용)")
     @PostMapping("/admin/user")
     public CommonResponse<Long> joinUser(
             @RequestBody UserDto userDto
@@ -38,6 +42,7 @@ public class UserController {
     }
 
     //todo: 로그인
+    @Operation(summary = "로그인", description = "이메일과 비밀번호로 로그인합니다")
     @PostMapping("/login")
     public CommonResponse<Long> login(
             @Valid @RequestBody UserLoginDto userLoginDto,
@@ -62,6 +67,7 @@ public class UserController {
     }
 
     //todo: 로그아웃
+    @Operation(summary = "로그아웃", description = "현재 세션을 종료하고 로그아웃합니다")
     @GetMapping("/logout")
     public CommonResponse<Object> logout(
             HttpServletRequest request
@@ -77,6 +83,7 @@ public class UserController {
     }
 
     //todo: 회원 조회
+    @Operation(summary = "회원 조회", description = "이름 또는 이메일로 회원을 검색합니다 (관리자용)")
     @GetMapping("/admin/users")
     public CommonResponse<UserDataResponse> searchUsers(
             @RequestParam(required = false) String name,
@@ -88,6 +95,7 @@ public class UserController {
     }
 
     //todo: 회원 삭제 (DELETE)
+    @Operation(summary = "회원 삭제", description = "회원을 삭제합니다 (관리자용)")
     @DeleteMapping("/admin/users/{memberId}")
     public CommonResponse<Long> deleteMember(@PathVariable Long memberId) {
         Long userId = userService.deleteMember(memberId);
@@ -95,6 +103,7 @@ public class UserController {
     }
 
     //todo: 회원 정보 수정 (PUT)
+    @Operation(summary = "회원 정보 수정", description = "회원 정보를 수정합니다 (관리자용)")
     @PutMapping("/admin/users/{memberId}")
     public CommonResponse<Long> updateMember(
             @PathVariable Long memberId,
@@ -106,6 +115,7 @@ public class UserController {
     }
 
     //todo: 자신의 비밀번호 변경 (PUT)
+    @Operation(summary = "비밀번호 변경", description = "자신의 비밀번호를 변경합니다")
     @PutMapping("/users/password")
     public CommonResponse<Long> changeMyPassword(
             @RequestBody UserChangePasswordRequest request, HttpSession session) {
@@ -120,6 +130,7 @@ public class UserController {
     /**
      * 회원의 프로필 사진과 회원명 조회
      * */
+    @Operation(summary = "프로필 정보 조회", description = "사이드바에 표시될 프로필 사진과 회원명을 조회합니다")
     @GetMapping("/users/profile/sidebar")
     public CommonResponse<Object> getProfileImageAndUsername(
             HttpServletRequest request
@@ -138,6 +149,7 @@ public class UserController {
     /**
      * 프론트엔드에서 세션 확인할 때 사용되는 api
      * */
+    @Operation(summary = "세션 확인", description = "현재 로그인된 사용자의 세션 정보를 조회합니다")
     @GetMapping("/auth/session")
     public CommonResponse<UserSessionDto> getSession(
             @SessionAttribute(name = SessionConst.LOGIN_MEMBER, required = false) User loginUser
