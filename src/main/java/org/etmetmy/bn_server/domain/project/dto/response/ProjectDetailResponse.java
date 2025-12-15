@@ -23,19 +23,8 @@ public class ProjectDetailResponse {
     private String stage;
 
     @JsonProperty("coverImage")
-    private CoverImage coverImage;
+    private String coverImage;
 
-    @Getter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class CoverImage {
-        @JsonProperty("fileName")
-        private String fileName;
-
-        @JsonProperty("url")
-        private String url;
-    }
 
     public static class Converter {
         public static ProjectDetailResponse from(Project project) {
@@ -43,7 +32,7 @@ public class ProjectDetailResponse {
                     .projectId(project.getId())
                     .name(project.getProjectName())
                     .stage(project.getStage() != null ? project.getStage().getStageName() : null)
-                    .coverImage(null) // TODO: 커버 이미지 구현 필요
+                    .coverImage(project.getProjectImageUrl()) // TODO: 커버 이미지 구현 필요
                     .build();
         }
     }
