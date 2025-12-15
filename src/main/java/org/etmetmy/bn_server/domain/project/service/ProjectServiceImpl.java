@@ -248,15 +248,22 @@ public class ProjectServiceImpl implements ProjectService {
                 .distinct()
                 .toList();
 
-        // 2. userId로 User 엔티티 일괄 조회
+        // 2. 이미 프로젝트에 있는 멤버들의 userId 조회
+        List<ProjectMember> existingMembers = projectMemberRepository.findByProjectId(project.getId());
+        List<Long> existingUserIds = existingMembers.stream()
+                .map(pm -> pm.getUser().getId())
+                .toList();
+
+        // 3. userId로 User 엔티티 일괄 조회
         List<User> users = userRepository.findAllById(memberIds);
 
         Map<Long, User> userMap = users.stream()
                 .collect(Collectors.toMap(User::getId, user -> user));
 
-        // 4. 존재하는 User만 필터링하여 ProjectMember 생성
+        // 4. 존재하는 User이면서 프로젝트에 아직 없는 멤버만 필터링하여 ProjectMember 생성
         List<ProjectMember> projectMembers = members.stream()
                 .filter(req -> userMap.containsKey(req.getUserId()))
+                .filter(req -> !existingUserIds.contains(req.getUserId())) // 이미 있는 멤버 제외
                 .map(req -> {
                     User user = userMap.get(req.getUserId());
                     ProjectMember pm = ProjectMemberRequest.Converter.toEntity(
