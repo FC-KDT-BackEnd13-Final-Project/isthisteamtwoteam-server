@@ -87,11 +87,14 @@ public class UserServiceImpl implements UserService{
         List<Company> allCompanies = companyRepository.findAll();
 
         // 3. 회원 목록 역할별 분리
+        List<AdminUserResponse> adminResponses = AdminUserResponse.Converter.fromList(allMembers);
+
         List<DeveloperUserResponse> developerResponses = DeveloperUserResponse.Converter.fromList(allMembers);
 
         List<CustomerUserResponse> customerResponses = CustomerUserResponse.Converter.fromList(allMembers);
 
         // 4. UserItems 객체 생성
+        UserItems<AdminUserResponse> adminItems = UserItems.create(adminResponses);
         UserItems<DeveloperUserResponse> developerItems = UserItems.create(developerResponses);
         UserItems<CustomerUserResponse> customerItems = UserItems.create(customerResponses);
 
@@ -101,6 +104,7 @@ public class UserServiceImpl implements UserService{
         UserItems<CompanySearchResponse> companyItems = UserItems.create(companyResponses);
 
         return UserDataResponse.Converter.createResponse(
+                adminItems,
                 developerItems,
                 customerItems,
                 companyItems

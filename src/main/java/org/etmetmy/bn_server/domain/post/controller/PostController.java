@@ -1,5 +1,7 @@
 package org.etmetmy.bn_server.domain.post.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Post", description = "게시글 관리 API")
 @RestController
 @RequestMapping("/api/v1/users/projects")
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class PostController {
     private final PostService postService;
 
     // todo: 부모 게시글, 자식 게시글 작성 API
+    @Operation(summary = "게시글 작성", description = "부모 게시글 또는 자식 게시글을 작성합니다")
     @PostMapping("/{projectId}/posts")
     public CommonResponse<PostCreateResponse> createPost(
             @PathVariable Long projectId,
@@ -34,12 +38,14 @@ public class PostController {
             HttpSession session
     ) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
+
         PostCreateResponse response = postService.createPost(projectId, requestDto, loginUserId);
 
         return CommonResponse.success("게시글 작성 성공", response);
     }
 
     // todo: 게시글 상세 조회 API
+    @Operation(summary = "게시글 상세 조회", description = "게시글의 상세 정보를 조회합니다")
     @GetMapping("/posts/{postId}")
     public CommonResponse<PostDetailResponse> getPostDetail(
             @PathVariable Long postId
@@ -50,6 +56,7 @@ public class PostController {
     }
 
     // todo: 게시글 승인 API
+    @Operation(summary = "게시글 승인", description = "게시글을 승인합니다")
     @PatchMapping("/{postId}/approval")
     public ResponseEntity<CommonResponse<Object>> approvePost(
             @PathVariable Long postId,
@@ -61,6 +68,7 @@ public class PostController {
     }
 
     // todo: 게시글 거절 API
+    @Operation(summary = "게시글 거절", description = "게시글을 거절합니다 (사유 포함)")
     @PatchMapping("posts/{postId}/reject")
     public ResponseEntity<CommonResponse<Object>> rejectPost(
             @PathVariable Long postId,
@@ -72,6 +80,7 @@ public class PostController {
     }
 
     // todo: 관리자 및 개발사가 게시글 완료하기 버튼 API
+    @Operation(summary = "게시글 완료", description = "게시글을 완료 상태로 변경합니다")
     @PatchMapping("/{projectId}/posts/{postId}/completion")
     public void completePost(@PathVariable Long projectId,
                              @PathVariable Long postId,
@@ -85,6 +94,7 @@ public class PostController {
     // all : 전체
     // finished: 완료된 게시글
     // unfinished : 미완료된 게시글
+    @Operation(summary = "게시글 목록 조회", description = "프로젝트의 게시글 목록을 조회합니다 (필터 및 단계별 조회 지원)")
     @GetMapping("/{projectId}/posts")
     public CommonResponse<List<PostListResponse>> getPostList(
             @PathVariable Long projectId,
@@ -105,6 +115,8 @@ public class PostController {
             return CommonResponse.success("게시글 목록 조회 성공", response);
         }
     }
+
+    @Operation(summary = "게시글 수정", description = "게시글을 수정합니다")
     @PatchMapping("/{projectId}/posts/{postId}")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     public CommonResponse<PostCreateResponse> updatePost(

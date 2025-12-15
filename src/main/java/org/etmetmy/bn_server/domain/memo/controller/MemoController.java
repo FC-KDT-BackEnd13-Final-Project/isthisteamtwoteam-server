@@ -1,5 +1,7 @@
 package org.etmetmy.bn_server.domain.memo.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.memo.dto.request.MemoUpdateRequestDto;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Memo", description = "메모 관리 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users/projects")
@@ -21,6 +24,7 @@ public class MemoController {
     /**
      * 프로젝트에서 공통 메모 조회
      * */
+    @Operation(summary = "프로젝트 공통 메모 조회", description = "프로젝트의 공통 메모를 조회합니다")
     @GetMapping("/{projectId}/main/memo")
     public CommonResponse<MemoResponse> getProjectMemo(
             @PathVariable Long projectId
@@ -32,6 +36,7 @@ public class MemoController {
     /**
     * 프로젝트에서 개인 메모 조회
     * */
+    @Operation(summary = "개인 메모 조회", description = "프로젝트의 개인 메모를 조회합니다")
     @GetMapping("/{projectId}/user/memos")
     public CommonResponse<MemoResponse> getUserMemo(
             @PathVariable Long projectId,
@@ -51,6 +56,7 @@ public class MemoController {
     /**
      * 프로젝트에서 개인 메모 업데이트
      * */
+    @Operation(summary = "개인 메모 수정", description = "프로젝트의 개인 메모를 수정합니다")
     @PatchMapping("/{projectId}/user/memos")
     public CommonResponse<Long> updateUserMemo(
             @PathVariable Long projectId,
@@ -66,6 +72,7 @@ public class MemoController {
     /**
      * 프로젝트에서 공통 메모 업데이트
      * */
+    @Operation(summary = "프로젝트 공통 메모 수정", description = "프로젝트의 공통 메모를 수정합니다")
     @PatchMapping("/{projectId}/main/memos")
     public CommonResponse<Object> updateProjectMemo(
             @PathVariable Long projectId,

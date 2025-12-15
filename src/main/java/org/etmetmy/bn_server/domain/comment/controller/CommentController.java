@@ -1,5 +1,7 @@
 package org.etmetmy.bn_server.domain.comment.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.domain.comment.dto.response.CommentListResponse;
 
+@Tag(name = "Comment", description = "댓글 관리 API")
 @RestController
 @RequestMapping("/api/v1/users/projects/posts/{postId}")
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class CommentController {
     private final CommentService commentService;
 
     //todo: 부모 댓글, 자식 댓글 작성 API
+    @Operation(summary = "댓글 작성", description = "게시글에 댓글을 작성합니다")
     @PostMapping("/comment")
     public CommonResponse<CommentCreateResponse> createComment(
             @PathVariable Long postId,
@@ -39,6 +43,7 @@ public class CommentController {
     }
 
     //todo: 댓글 목록 조회 기능 (주 댓글 + 대댓글 계층 구조)
+    @Operation(summary = "댓글 목록 조회", description = "게시글의 댓글 목록을 계층 구조로 조회합니다")
     @GetMapping("/comments")
     public ResponseEntity<CommonResponse<CommentListResponse>> getComments(
             @PathVariable Long postId)
