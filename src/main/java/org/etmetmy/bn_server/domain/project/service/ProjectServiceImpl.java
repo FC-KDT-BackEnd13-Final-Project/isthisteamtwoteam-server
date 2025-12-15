@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
+import org.etmetmy.bn_server.domain.dashboard.dto.response.ProjectListResponse;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.file.service.FileService;
@@ -35,6 +36,8 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -144,6 +147,38 @@ public class ProjectServiceImpl implements ProjectService {
 
         projectMemberRepository.saveAll(projectMembers);
         return projectMembers.size();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProjectResponse> getProjects(Pageable pageable, String searchKeyword) {
+
+        // 1. 검색 조건에 따른 Repository 메서드 호출
+        Page<Project> projectPage;
+        if (searchKeyword != null && !searchKeyword.isBlank()) {
+            projectPage = projectRepository.findByProjectNameContainingIgnoreCaseAndIsDeletedFalse(searchKeyword, pageable);
+        } else {
+            projectPage = projectRepository.findByIsDeletedFalse(pageable);
+        }
+
+        List<Project> projects = projectPage.getContent();
+
+        // 2. Member 정보 일괄 조회
+        List<Long> projectIds = projects.stream()
+                .map(Project::getId)
+                .collect(Collectors.toList());
+
+        List<ProjectMember> allMembers = projectMemberRepository.findByProjectIdIn(projectIds);
+
+        // 3. Project ID별 ProjectMember Map 생성
+        Map<Long, List<ProjectMember>> membersByProjectId = allMembers.stream()
+                .collect(Collectors.groupingBy(pm -> pm.getProject().getId()));
+
+        // 4. Page<Project>를 Page<ProjectResponse>로 변환 (멤버 정보 포함)
+        return projectPage.map(project -> {
+            List<ProjectMember> members = membersByProjectId.getOrDefault(project.getId(), List.of());
+            return ProjectResponse.Converter.from(project, members);
+        });
     }
 
     @Transactional(readOnly = true)

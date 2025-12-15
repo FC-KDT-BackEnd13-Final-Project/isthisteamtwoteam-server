@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.project.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpSession;
 
 import jakarta.validation.Valid;
@@ -8,6 +9,8 @@ import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 
+import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
+import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.domain.user.entity.Role;
@@ -15,6 +18,10 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +35,8 @@ public class ProjectAdminController {
 
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
+    private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository projectMemberRepository;
 
     // todo: 프로젝트 생성
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -40,10 +49,18 @@ public class ProjectAdminController {
         projectService.createProject(request, image, loginUserId);
     }
 
-    // todo: 프로젝트 전체 조회
+    // todo: 프로젝트 전체 조회 (페이지네이션, 검색)
     @GetMapping
-    public CommonResponse<List<ProjectResponse>> getProjects() {
-        List<ProjectResponse> responses = projectService.getAllProjects();
+    public CommonResponse<Page<ProjectResponse>> getProjects(
+
+            @Parameter(hidden = true)
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10)
+            Pageable pageable,
+
+            @Parameter(description = "검색 키워드 (프로젝트 이름)")
+            @RequestParam(required = false) String searchKeyword) {
+
+        Page<ProjectResponse> responses = projectService.getProjects(pageable, searchKeyword);
 
         return CommonResponse.success("프로젝트 목록조회 성공", responses);
     }
