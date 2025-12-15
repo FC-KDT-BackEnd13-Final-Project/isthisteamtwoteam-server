@@ -1,12 +1,15 @@
 package org.etmetmy.bn_server.domain.project.service;
 
 import jakarta.servlet.http.HttpSession;
+import org.etmetmy.bn_server.domain.dashboard.dto.response.ProjectListResponse;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCreateRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectMemberRequest;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectMemberResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -20,6 +23,9 @@ public interface ProjectService {
     List<ProjectResponse> getAllProjects();
     List<ProjectCustomerResponse> getAllProjects(Long loginUserId);
     List<ProjectMemberResponse> getProjectMembers(Long projectId);
+
+    //프로젝트 리스트 페이지네이션, 검색
+    Page<ProjectResponse> getProjects(Pageable pageable, String searchKeyword, Boolean isDeleted);
 
     ProjectResponse getProjectById(Long projectId);
     List<ProjectAddCheckListResponse> checklistAdd(Long projectId, ProjectAddCheckListRequest request);

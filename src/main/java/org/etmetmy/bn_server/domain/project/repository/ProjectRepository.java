@@ -1,6 +1,8 @@
 package org.etmetmy.bn_server.domain.project.repository;
 
 import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -99,4 +101,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "AND (p.isDeleted IS NULL OR p.isDeleted = false) " +
             "ORDER BY p.updatedAt DESC")
     List<Project> findActiveProjectsByProjectIds(@Param("projectIds") List<Long> projectIds);
+
+    Page<Project> findByProjectNameContainingIgnoreCaseAndIsDeleted(String searchKeyword, Boolean isDeleted, Pageable pageable);
+    Page<Project> findByIsDeleted(Boolean isDeleted, Pageable pageable);
 }
