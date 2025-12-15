@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.comment.dto.request.CommentCreateRequest;
+import org.etmetmy.bn_server.domain.comment.dto.response.CommentCreateResponse;
 import org.etmetmy.bn_server.domain.comment.dto.request.CommentUpdateRequest;
 import org.etmetmy.bn_server.domain.comment.dto.response.CommentResponse;
 import org.etmetmy.bn_server.domain.comment.service.CommentService;
