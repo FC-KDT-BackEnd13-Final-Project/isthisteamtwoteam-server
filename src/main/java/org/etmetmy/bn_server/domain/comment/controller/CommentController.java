@@ -1,53 +1,49 @@
 package org.etmetmy.bn_server.domain.comment.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.comment.dto.request.CommentCreateRequest;
-import org.etmetmy.bn_server.domain.comment.dto.response.CommentResponse;
+import org.etmetmy.bn_server.domain.comment.dto.response.CommentCreateResponse;
 import org.etmetmy.bn_server.domain.comment.service.CommentService;
+import org.etmetmy.bn_server.global.util.IpAddressUtil;
+import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.domain.comment.dto.response.CommentListResponse;
 
 @RestController
-@RequestMapping("/api/v1/users/projects/{projectId}/posts/{postId}")
+@RequestMapping("/api/v1/users/projects/posts/{postId}")
 @RequiredArgsConstructor
 public class CommentController {
 
-    private final CommentService commentServiceImpl;
+    private final CommentService commentService;
 
-    //주 댓글 작성 기능
+    //todo: 부모 댓글, 자식 댓글 작성 API
     @PostMapping("/comment")
-    public CommonResponse<CommentResponse> createComment(
-            @PathVariable Long projectId,
+    public CommonResponse<CommentCreateResponse> createComment(
             @PathVariable Long postId,
             @RequestBody @Valid CommentCreateRequest request,
-            HttpServletRequest servletRequest
-    ) {
-        return CommonResponse.success("댓글이 성공적으로 작성 되었습니다.", commentServiceImpl.createComment(postId, request, servletRequest));
+            HttpServletRequest servletRequest)
+    {
+        HttpSession session = servletRequest.getSession(false);
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        String clientIp = IpAddressUtil.getClientIp(servletRequest);
+
+        CommentCreateResponse response = commentService.createComment(postId, request, clientIp, userId);
+        String message = request.getParentId() == null ? "댓글 작성 성공" : "대댓글 작성 성공";
+        return CommonResponse.success(message, response);
     }
 
-    // 대댓글 작성 기능
-    @PostMapping("/{commentId}/recomment")
-    public CommonResponse<CommentResponse> createReply(
-            @PathVariable Long projectId,
-            @PathVariable Long postId,
-            @PathVariable Long commentId, // Parent Comment ID
-            @RequestBody @Valid CommentCreateRequest request,
-            HttpServletRequest servletRequest
-    ) {
-        return CommonResponse.success("대댓글이 성공적으로 작성 되었습니다.", commentServiceImpl.createReply(postId,commentId, request, servletRequest));
-
-    }
-
-    // 댓글 목록 조회 기능 (주 댓글 + 대댓글 계층 구조)
+    //todo: 댓글 목록 조회 기능 (주 댓글 + 대댓글 계층 구조)
     @GetMapping("/comments")
     public ResponseEntity<CommonResponse<CommentListResponse>> getComments(
-            @PathVariable Long postId
-    ) {
-        CommentListResponse response = commentServiceImpl.getCommentsByPostId(postId);
+            @PathVariable Long postId)
+    {
+        CommentListResponse response = commentService.getCommentsByPostId(postId);
         return ResponseEntity.ok(CommonResponse.success("댓글 목록 조회 성공", response));
     }
 }

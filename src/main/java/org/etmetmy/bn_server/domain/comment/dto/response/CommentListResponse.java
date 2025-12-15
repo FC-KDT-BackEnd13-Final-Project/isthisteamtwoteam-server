@@ -12,16 +12,16 @@ import java.util.List;
 public class CommentListResponse {
     private final Long postId;
     private final int totalCount;
-    private final List<CommentResponse> comments;
+    private final List<CommentCreateResponse> comments;
 
     public static class Converter{
         public static CommentListResponse from(Post post,
                                                List<Comment> rootComments,
-                                               List<CommentResponse> commentResponses) {
+                                               List<CommentCreateResponse> commentCreateRespons) {
             return CommentListResponse.builder()
                     .postId(post.getPostId())
                     .totalCount(rootComments.size())
-                    .comments(commentResponses)
+                    .comments(commentCreateRespons)
                     .build();
         }
     }

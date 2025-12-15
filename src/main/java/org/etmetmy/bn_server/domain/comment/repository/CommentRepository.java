@@ -21,7 +21,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     // 2. 특정 부모 댓글 ID에 대한 대댓글 조회
     @Query("SELECT c FROM Comment c " +
             "JOIN FETCH c.user u " +
-            "WHERE c.commentId2 = :parentCommentId " +
+            "WHERE c.parent = :parentCommentId " +
             "ORDER BY c.createdAt ASC")
     List<Comment> findRepliesByParentId(@Param("parentCommentId") Long parentCommentId);
 
@@ -31,5 +31,4 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "WHERE c.post.postId = :postId " +
             "ORDER BY c.createdAt ASC")
     List<Comment> findAllByPostId(@Param("postId") Long postId);
-
 }

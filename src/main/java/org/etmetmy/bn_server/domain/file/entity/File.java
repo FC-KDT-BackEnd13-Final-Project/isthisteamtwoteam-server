@@ -55,9 +55,11 @@ public class File extends BaseEntity {
     private Long uploadedBy;
 
     @Column(name = "is_temp")
+    @lombok.Builder.Default
     private Boolean isTemp = true;
 
     @Column(name = "is_deleted", nullable = false)
+    @lombok.Builder.Default
     private Boolean isDeleted = false;
 
     @Column(name = "deleted_at")
@@ -77,10 +79,21 @@ public class File extends BaseEntity {
         this.deletedBy = deletedBy;
     }
 
-    // 임시 파일 상태 변경
-    public void attachToPost(Post post,Long uploadedBy) {
+    // 공통 내부 처리
+    private void attach(Post post, Comment comment, Long uploadedBy) {
         this.post = post;
+        this.comment = comment;
         this.isTemp = false;
         this.uploadedBy = uploadedBy;
+    }
+
+    // 게시글에 연결
+    public void attachToPost(Post post, Long uploadedBy) {
+        attach(post, null, uploadedBy);
+    }
+
+    // 댓글에 연결
+    public void attachToComment(Comment comment, Long uploadedBy) {
+        attach(null, comment, uploadedBy);
     }
 }

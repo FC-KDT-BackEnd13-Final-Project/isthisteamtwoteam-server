@@ -44,6 +44,7 @@ public class Post extends BaseEntity {
     private String content;
 
     @Column(name = "is_completed", nullable = false)
+    @Builder.Default
     private Boolean isCompleted = false;
 
     @Column(name = "created_ip")
@@ -59,14 +60,17 @@ public class Post extends BaseEntity {
 
     //파일 목록
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<File> files = new ArrayList<>();
 
     //링크 목록
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Link> links = new ArrayList<>();
 
     //댓글 목록
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Comment> comments = new ArrayList<>();
 
     //삭제(프로젝트 삭제 시 soft delete)

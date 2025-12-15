@@ -26,4 +26,7 @@ public interface LinkRepository extends JpaRepository<Link, Long> {
     @Query("select f from Link f " +
             "where f.post.postId = :postId")
     List<Link> findLinksByPostId(Long postId);
+
+    @Query("select l from Link l where l.comment.post.postId = :postId")
+    List<Link> findByPostId(@Param("postId") Long postId);
 }

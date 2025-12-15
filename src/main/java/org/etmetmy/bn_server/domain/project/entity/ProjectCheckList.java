@@ -42,9 +42,11 @@ public class ProjectCheckList extends BaseEntity {
 
     //파일 목록
     @OneToMany(mappedBy = "projectCheckList", cascade = CascadeType.ALL, orphanRemoval = true)
+    @lombok.Builder.Default
     private List<File> files = new ArrayList<>();
 
     //링크 목록
     @OneToMany(mappedBy = "projectCheckList", cascade = CascadeType.ALL, orphanRemoval = true)
+    @lombok.Builder.Default
     private List<Link> links = new ArrayList<>();
 }

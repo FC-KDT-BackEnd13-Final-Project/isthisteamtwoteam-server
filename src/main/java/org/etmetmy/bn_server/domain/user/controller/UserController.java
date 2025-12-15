@@ -62,7 +62,7 @@ public class UserController {
     }
 
     //todo: 로그아웃
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public CommonResponse<Object> logout(
             HttpServletRequest request
     ){

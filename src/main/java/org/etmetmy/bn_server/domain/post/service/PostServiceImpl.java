@@ -157,9 +157,8 @@ public class PostServiceImpl implements PostService {
             parent = postRepository.findById(requestDto.getParentId()).orElseThrow(BoardNotFoundException::new);}
 
         // 1. 게시글 저장: DTO를 엔티티로 변환 후 DB에 저장, ID 발급
-        Post savedPost = postRepository.save(
-                PostCreateRequest.Converter.toEntity(project, user, stage, postNumber, parent, requestDto)
-        );
+        Post post = PostCreateRequest.Converter.toEntity(project, user, stage, postNumber, parent, requestDto);
+        Post savedPost = postRepository.save(post);
 
         // 2. 승인요청이 있는 경우에만 Request 엔티티 생성 (초기 상태: PENDING)
         Request request = PostCreateRequest.Converter.toRequestEntity(requestDto, savedPost, loginUserId);

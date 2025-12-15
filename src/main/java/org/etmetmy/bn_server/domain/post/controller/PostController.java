@@ -105,7 +105,6 @@ public class PostController {
             return CommonResponse.success("게시글 목록 조회 성공", response);
         }
     }
-
     @PatchMapping("/{projectId}/posts/{postId}")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     public CommonResponse<PostCreateResponse> updatePost(
