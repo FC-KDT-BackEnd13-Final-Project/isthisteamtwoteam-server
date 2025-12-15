@@ -1,5 +1,7 @@
 package org.etmetmy.bn_server.domain.project.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectCustomerResponse;
@@ -12,12 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Tag(name = "Project (Customer)", description = "고객사 프로젝트 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/customers/projects")
 public class ProjectCustomerController {
     private final ProjectService projectService;
 
+    @Operation(summary = "고객사 프로젝트 목록 조회", description = "고객사 사용자가 참여 중인 프로젝트 목록을 조회합니다")
     @GetMapping
     public CommonResponse<List<ProjectCustomerResponse>> getAllProjects(HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);

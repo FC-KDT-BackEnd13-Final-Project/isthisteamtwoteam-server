@@ -149,7 +149,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional(readOnly = true)
     @Override
     public List<ProjectResponse> getAllProjects() {
-        List<Project> projects = projectRepository.findAll();
+        List<Project> projects = projectRepository.findActiveProjects();
 
         Map<Long, List<ProjectMember>> membersByProjectId = groupMembersByProject(projects);
 
