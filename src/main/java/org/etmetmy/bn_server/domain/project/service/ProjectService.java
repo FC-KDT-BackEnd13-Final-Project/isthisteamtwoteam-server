@@ -25,7 +25,7 @@ public interface ProjectService {
     List<ProjectMemberResponse> getProjectMembers(Long projectId);
 
     //프로젝트 리스트 페이지네이션, 검색
-    Page<ProjectResponse> getProjects(Pageable pageable, String searchKeyword);
+    Page<ProjectResponse> getProjects(Pageable pageable, String searchKeyword, Boolean isDeleted);
 
     ProjectResponse getProjectById(Long projectId);
     List<ProjectAddCheckListResponse> checklistAdd(Long projectId, ProjectAddCheckListRequest request);

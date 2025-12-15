@@ -59,16 +59,22 @@ public class ProjectAdminController {
     public CommonResponse<Page<ProjectResponse>> getProjects(
 
             @Parameter(hidden = true)
-            @PageableDefault(sort = "id", direction = Sort.Direction.DESC, page = 0, size = 10)
+            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC, page = 0, size = 10)
             Pageable pageable,
 
             @Parameter(description = "검색 키워드 (프로젝트 이름)")
-            @RequestParam(required = false) String searchKeyword) {
+            @RequestParam(required = false) String searchKeyword, // 쉼표 추가 및 메서드 바디에서 분리
 
-        Page<ProjectResponse> responses = projectService.getProjects(pageable, searchKeyword);
+
+            @Parameter(description = "삭제된 프로젝트 포함 여부 (true: 삭제된 프로젝트만 조회, false 또는 미입력: 삭제되지 않은 프로젝트만 조회)")
+            @RequestParam(required = false) Boolean isDeleted) {
+
+        Page<ProjectResponse> responses = projectService.getProjects(pageable, searchKeyword, isDeleted);
 
         return CommonResponse.success("프로젝트 목록조회 성공", responses);
     }
+
+
 
     // todo: 개별 프로젝트 멤버 조회
     @Operation(summary = "프로젝트 멤버 조회", description = "특정 프로젝트의 멤버 목록을 조회합니다")

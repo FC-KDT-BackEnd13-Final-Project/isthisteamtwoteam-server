@@ -102,7 +102,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "ORDER BY p.updatedAt DESC")
     List<Project> findActiveProjectsByProjectIds(@Param("projectIds") List<Long> projectIds);
 
-    Page<Project> findByIsDeletedFalse(Pageable pageable);
-
-    Page<Project> findByProjectNameContainingIgnoreCaseAndIsDeletedFalse(String searchKeyword, Pageable pageable);
+    Page<Project> findByProjectNameContainingIgnoreCaseAndIsDeleted(String searchKeyword, Boolean isDeleted, Pageable pageable);
+    Page<Project> findByIsDeleted(Boolean isDeleted, Pageable pageable);
 }

@@ -151,14 +151,18 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ProjectResponse> getProjects(Pageable pageable, String searchKeyword) {
+    public Page<ProjectResponse> getProjects(Pageable pageable, String searchKeyword, Boolean isDeleted) {
 
         // 1. 검색 조건에 따른 Repository 메서드 호출
         Page<Project> projectPage;
+        Boolean deletedStatus = (isDeleted != null) ? isDeleted : false;
+
         if (searchKeyword != null && !searchKeyword.isBlank()) {
-            projectPage = projectRepository.findByProjectNameContainingIgnoreCaseAndIsDeletedFalse(searchKeyword, pageable);
+            projectPage = projectRepository.findByProjectNameContainingIgnoreCaseAndIsDeleted(
+                    searchKeyword, deletedStatus, pageable
+            );
         } else {
-            projectPage = projectRepository.findByIsDeletedFalse(pageable);
+            projectPage = projectRepository.findByIsDeleted(deletedStatus, pageable);
         }
 
         List<Project> projects = projectPage.getContent();
@@ -168,13 +172,14 @@ public class ProjectServiceImpl implements ProjectService {
                 .map(Project::getId)
                 .collect(Collectors.toList());
 
+        // 프로젝트 ID 목록을 기반으로 모든 관련 ProjectMember를 한 번에 조회
         List<ProjectMember> allMembers = projectMemberRepository.findByProjectIdIn(projectIds);
 
         // 3. Project ID별 ProjectMember Map 생성
         Map<Long, List<ProjectMember>> membersByProjectId = allMembers.stream()
                 .collect(Collectors.groupingBy(pm -> pm.getProject().getId()));
 
-        // 4. Page<Project>를 Page<ProjectResponse>로 변환 (멤버 정보 포함)
+        // 4. Page<Project>를 Page<ProjectResponse>로 변환
         return projectPage.map(project -> {
             List<ProjectMember> members = membersByProjectId.getOrDefault(project.getId(), List.of());
             return ProjectResponse.Converter.from(project, members);
