@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.domain.file.service;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
@@ -267,29 +268,39 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public void saveFiles(Post post, List<Long> fileIds, Long loginUserId) {
+        saveFilesInternal(post, null, fileIds, loginUserId);
+    }
 
-        // fileIds가 null 이거나 비어있으면 아무것도 하지 않음
+    // 11. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
+    @Override
+    @Transactional
+    public void saveFiles(Comment comment, List<Long> fileIds, Long loginUserId) {
+        saveFilesInternal(null, comment, fileIds, loginUserId);
+    }
+
+    // 12. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post/Comment에 저장
+    private void saveFilesInternal(Post post, Comment comment, List<Long> fileIds, Long loginUserId) {
         if (fileIds == null || fileIds.isEmpty()) {
             return;
         }
 
-        // 1. DB 에서 임시 파일 조회
         List<File> tempFiles = fileRepository.findAllById(fileIds)
                 .stream()
                 .filter(File::getIsTemp)
                 .toList();
 
-        // 임시 파일이 없으면 예외 발생 (요청한 파일 ID가 존재하지 않거나 이미 사용됨)
         if (tempFiles.isEmpty()) {
             throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }
 
-        // 2. 게시글과 연결 + 상태 변경
         for (File file : tempFiles) {
-            file.attachToPost(post, loginUserId);
+            if (post != null) {
+                file.attachToPost(post, loginUserId);
+            } else {
+                file.attachToComment(comment, loginUserId);
+            }
         }
 
-        // 3. DB 저장
         fileRepository.saveAll(tempFiles);
     }
 }

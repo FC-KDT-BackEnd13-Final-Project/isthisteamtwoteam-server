@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.file.service;
 
 import jakarta.servlet.http.HttpSession;
+import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
@@ -40,5 +41,8 @@ public interface FileService {
 
     // S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
     void saveFiles(Post post, List<Long> fileIds, Long loginUserId);
+
+    // S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Comment에 저장
+    void saveFiles(Comment comment, List<Long> fileIds, Long loginUserId);
 }
 
