@@ -278,7 +278,7 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findById(loginUserId)
                 .orElseThrow(UserNotFoundException::new);
 
-        // ADMIN과 DEVELOPER 권한 확인 (개발사만 완료 처리 가능)
+        // ADMIN과 DEVELOPER 권한 확인 (관리자와 개발사 처리 가능)
         if (user.getRole() != Role.ADMIN && user.getRole() != Role.DEVELOPER) {
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
