@@ -11,10 +11,10 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    // 1. 특정 Post에 대한 최상위 댓글 조회 (commentId2가 NULL인 댓글)
+    // 1. 특정 Post에 대한 최상위 댓글 조회 (parent가 NULL인 댓글)
     @Query("SELECT c FROM Comment c " +
             "JOIN FETCH c.user u " +
-            "WHERE c.post.postId = :postId AND c.commentId2 IS NULL " +
+            "WHERE c.post.postId = :postId AND c.parent IS NULL " +
             "ORDER BY c.createdAt ASC")
     List<Comment> findRootCommentsByPostId(@Param("postId") Long postId);
 

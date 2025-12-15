@@ -53,14 +53,19 @@ public class CommentServiceImpl implements CommentService {
         Post post = postRepository.findById(postId).orElseThrow(BoardNotFoundException::new);
 
         // 2. 부모 댓글 조회 (대댓글인 경우)
-        Comment parent = commentRepository.findById(request.getParentId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.PARENT_COMMENT_NOT_FOUND));
-        if (!parent.getPost().getPostId().equals(postId)) {
-            throw new BusinessException(ErrorCode.INVALID_PARENT_COMMENT);
+        Comment parent = null;
+        if (request.getParentId() != null) {
+            parent = commentRepository.findById(request.getParentId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.PARENT_COMMENT_NOT_FOUND));
+
+            // 부모 댓글이 현재 게시글에 속하는지 검증
+            if (!parent.getPost().getPostId().equals(postId)) {
+                throw new BusinessException(ErrorCode.INVALID_PARENT_COMMENT);
+            }
         }
 
         // 3. 댓글 엔티티 생성 & 저장
-        Comment comment = CommentCreateRequest.Converter.toEntity(post, request, user, clientIp);
+        Comment comment = CommentCreateRequest.Converter.toEntity(post, request, user, parent, clientIp);
         Comment savedComment = commentRepository.save(comment);
 
         // 4. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 게시글과 연동

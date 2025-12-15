@@ -27,18 +27,14 @@ public class CommentCreateRequest {
     private List<String> linkUrls;
 
     public static class Converter {
-        public static Comment toEntity(Post post, CommentCreateRequest request, User user, String clientIp) {
-            Comment parentComment = null;
-            if (request.getParentId() != null) {
-                parentComment = Comment.builder().commentId(request.getParentId()).build();
-            }
-
+        public static Comment toEntity(
+                Post post, CommentCreateRequest request, User user, Comment parent, String clientIp) {
             return Comment.builder()
                     .post(post)
                     .user(user)
                     .content(request.getContent())
                     .ip(clientIp)
-                    .parent(parentComment)
+                    .parent(parent)
                     .isDeleted(false)
                     .build();
         }
