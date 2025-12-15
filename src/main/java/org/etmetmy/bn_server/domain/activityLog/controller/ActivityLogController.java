@@ -1,5 +1,7 @@
 package org.etmetmy.bn_server.domain.activityLog.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.dto.response.ActivityLogResponse;
 import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
@@ -16,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Tag(name = "Activity Log", description = "활동 로그 조회 API")
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class ActivityLogController {
     // Todo: 프로젝트별 활동 로그 조회 (최신순, 페이지네이션)
     // GET /api/v1/projects/{projectId}/logs
 
+    @Operation(summary = "프로젝트별 활동 로그 조회", description = "특정 프로젝트의 활동 로그를 페이지네이션하여 조회합니다")
     @GetMapping("/projects/{projectId}/logs")
     public CommonResponse<Page<ActivityLogResponse>> getProjectLogs(
             @PathVariable Long projectId,
@@ -41,6 +45,7 @@ public class ActivityLogController {
     // Todo: 액션 타입 필터
     //GET /api/v1/projects/{projectId}/logs/by-action?action=CREATE
 
+    @Operation(summary = "액션 타입별 활동 로그 조회", description = "특정 프로젝트의 활동 로그를 액션 타입으로 필터링하여 조회합니다")
     @GetMapping("/projects/{projectId}/logs/by-action")
     public CommonResponse<List<ActivityLogResponse>> getProjectLogsByAction(
             @PathVariable Long projectId,
@@ -53,6 +58,7 @@ public class ActivityLogController {
     //Todo: 사용자 필터
     //GET /api/v1/projects/{projectId}/logs/by-user?userId=1
 
+    @Operation(summary = "사용자별 활동 로그 조회", description = "특정 프로젝트의 활동 로그를 사용자별로 필터링하여 조회합니다")
     @GetMapping("/projects/{projectId}/logs/by-user")
     public CommonResponse<List<ActivityLogResponse>> getProjectLogsByUser(
             @PathVariable Long projectId,
@@ -65,6 +71,7 @@ public class ActivityLogController {
     //Todo: 기간 필터
     //GET /api/v1/projects/{projectId}/logs/by-date?startDate=2025-12-01&endDate=2025-12-3
 
+    @Operation(summary = "기간별 활동 로그 조회", description = "특정 프로젝트의 활동 로그를 기간으로 필터링하여 조회합니다")
     @GetMapping("/projects/{projectId}/logs/by-date")
     public CommonResponse<List<ActivityLogResponse>> getLogsByDateRange(
             @PathVariable Long projectId,
@@ -82,6 +89,7 @@ public class ActivityLogController {
 
     //Todo: 전체 활동 로그 조회
     //GET /api/v1/admin/activity-logs?page=0&size=50
+    @Operation(summary = "전체 활동 로그 조회", description = "모든 프로젝트의 활동 로그를 페이지네이션하여 조회합니다 (관리자용)")
     @GetMapping("/admin/activity-logs")
     public CommonResponse<Page<ActivityLogResponse>> getAllLogs(
             @RequestParam(defaultValue = "0") int page,
