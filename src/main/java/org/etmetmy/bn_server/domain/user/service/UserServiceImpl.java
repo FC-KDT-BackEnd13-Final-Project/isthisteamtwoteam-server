@@ -5,21 +5,26 @@ import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
-import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
-import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.*;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.dto.response.*;
+import org.etmetmy.bn_server.domain.user.entity.PasswordResetCode;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.domain.user.repository.PasswordResetCodeRepository;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -32,6 +37,11 @@ public class UserServiceImpl implements UserService{
     private final CompanyService companyService;
     private final PasswordEncoder passwordEncoder;
     private final ProjectMemberRepository projectMemberRepository;
+    private final PasswordResetCodeRepository passwordResetCodeRepository;
+    private final JavaMailSender mailSender;
+
+    private static final int RESET_CODE_EXPIRES_SECONDS = 300;
+
 
     // 회원 정보 수정 (Update)
     @Override
@@ -164,4 +174,73 @@ public class UserServiceImpl implements UserService{
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
         user.setPassword(encodedPassword);
     }
+
+    @Override
+    @Transactional
+    public PasswordFindResponse sendPasswordResetCode(PasswordFindRequest request) {
+        String email = request.getEmail();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("가입되지 않은 이메일입니다."));
+
+        String code = generate6DigitCode();
+
+
+        passwordResetCodeRepository.findByEmail(email)
+                .ifPresent(passwordResetCodeRepository::delete);
+
+        PasswordResetCode resetCode = new PasswordResetCode(email, code);
+        passwordResetCodeRepository.save(resetCode);
+
+        // 메일 전송은 지금 주석 처리 상태 그대로 유지 가능
+        // sendResetCodeMail(email, code);
+
+        // ✅ dot 반환을 쓰려면 PasswordFindResponse에 from()이 있어야 함(아래 참고)
+        return PasswordFindResponse.from(email, RESET_CODE_EXPIRES_SECONDS);
+    }
+
+    @Override
+    @Transactional
+    public PasswordResetResponse resetPassword(PasswordResetVerifyCodeRequest request) {
+        String email = request.getEmail();
+        String code = request.getCode();
+        String newPassword = request.getNewPassword();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("가입되지 않은 이메일입니다."));
+
+        PasswordResetCode resetCode = passwordResetCodeRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESET_CODE_NOT_FOUND));
+
+        // ✅ getUsed() -> isUsed()
+        if (resetCode.isUsed()) {
+            throw new BusinessException(ErrorCode.RESET_CODE_ALREADY_USED);
+        }
+
+        // ✅ isExpired(LocalDateTime.now()) -> isExpired()
+        if (resetCode.isExpired()) {
+            throw new BusinessException(ErrorCode.EXPIRED_RESET_CODE);
+        }
+
+        // ✅ matches(code) -> getCode().equals(code)
+        if (!resetCode.getCode().equals(code)) {
+            throw new BusinessException(ErrorCode.INVALID_RESET_CODE);
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        // ✅ use() -> markAsUsed()
+        resetCode.markAsUsed();
+        passwordResetCodeRepository.save(resetCode);
+
+        return new PasswordResetResponse(user.getId());
+    }
+
+    private String generate6DigitCode() {
+        SecureRandom r = new SecureRandom();
+        int n = r.nextInt(900000) + 100000;
+        return String.valueOf(n);
+    }
+
+
 }

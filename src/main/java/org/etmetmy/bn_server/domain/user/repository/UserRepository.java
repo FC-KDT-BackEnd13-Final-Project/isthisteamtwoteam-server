@@ -43,4 +43,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     // 고객사 조회 (관리자 제외, role=CUSTOMER)
     @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.company c WHERE u.role = 'CUSTOMER' ")
     List<User> findClientCandidates();
+
+
+
 }

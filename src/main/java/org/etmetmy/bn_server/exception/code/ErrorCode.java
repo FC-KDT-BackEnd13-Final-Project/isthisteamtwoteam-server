@@ -14,6 +14,11 @@ public enum ErrorCode {
     EXPIRED_TOKEN(401, "A004", "만료된 토큰입니다."),
     INVALID_PASSWORD(401, "A005", "비밀번호가 일치하지 않습니다."),
 
+    RESET_CODE_NOT_FOUND(400, "A006", "비밀번호 재설정 인증코드를 찾을 수 없습니다."),
+    RESET_CODE_ALREADY_USED(400, "A007", "이미 사용된 인증코드입니다."),
+    EXPIRED_RESET_CODE(400, "A008", "만료된 인증코드입니다."),
+    INVALID_RESET_CODE(400, "A009", "유효하지 않은 인증코드입니다."),
+
     // 게시글 관련 에러
     BOARD_POST_NOT_FOUND(404, "B001", "게시글을 찾을 수 없습니다."),
     BOARD_COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),
