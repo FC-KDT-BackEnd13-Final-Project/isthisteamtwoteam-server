@@ -2,7 +2,7 @@ package org.etmetmy.bn_server.domain.post.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;
-import org.etmetmy.bn_server.domain.comment.dto.response.CommentCreateResponse;
+import org.etmetmy.bn_server.domain.comment.dto.response.CommentResponse;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
@@ -36,7 +36,7 @@ public class PostDetailResponse {
 
     private final List<FileInfoDTO> files;
     private final List<LinkInfoDTO> links;
-    private final List<CommentCreateResponse> comments;
+    private final List<CommentResponse> comments;
 
 
     public static class Converter {
@@ -48,7 +48,7 @@ public class PostDetailResponse {
             List<LinkInfoDTO> linkInfos = LinkInfoDTO.Converter.from(post.getLinks());
 
             // 댓글 변환 (계층 구조 포함)
-            List<CommentCreateResponse> commentCreateRespons = convertCommentsToHierarchy(comments);
+            List<CommentResponse> commentCreateRespons = convertCommentsToHierarchy(comments);
 
             return PostDetailResponse.builder()
                     .postId(post.getPostId())
@@ -73,7 +73,7 @@ public class PostDetailResponse {
         /**
          * 댓글 리스트를 계층 구조로 변환 (수정된 로직)
          */
-        private static List<CommentCreateResponse> convertCommentsToHierarchy(List<Comment> comments) {
+        private static List<CommentResponse> convertCommentsToHierarchy(List<Comment> comments) {
             // 1. 모든 댓글을 부모 ID 기준으로 그룹핑
             Map<Long, List<Comment>> groupedByParentId = comments.stream()
                     .filter(comment -> comment.getParent() != null)
@@ -89,20 +89,20 @@ public class PostDetailResponse {
         /**
          * 재귀적으로 댓글을 DTO로 변환하는 헬퍼 메소드
          */
-        private static CommentCreateResponse toDtoRecursive(Comment comment, Map<Long, List<Comment>> groupedByParentId) {
+        private static CommentResponse toDtoRecursive(Comment comment, Map<Long, List<Comment>> groupedByParentId) {
             // 현재 댓글의 파일 및 링크 변환
             List<FileInfoDTO> fileInfos = FileInfoDTO.Converter.from(comment.getFiles());
             List<LinkInfoDTO> linkInfos = LinkInfoDTO.Converter.from(comment.getLinks());
 
             // 현재 댓글의 자식 댓글들을 찾아서 재귀적으로 DTO 변환
-            List<CommentCreateResponse> replies = groupedByParentId
+            List<CommentResponse> replies = groupedByParentId
                     .getOrDefault(comment.getCommentId(), List.of()) // 현재 댓글을 부모로 가지는 자식들을 가져옴
                     .stream()
                     .map(child -> toDtoRecursive(child, groupedByParentId)) // 자식들에 대해 재귀 호출
                     .toList();
 
             // 현재 댓글 엔티티와 변환된 파일, 링크, 자식 DTO 리스트를 사용해 최종 DTO 생성
-            return CommentCreateResponse.Converter.from(comment, fileInfos, linkInfos, replies);
+            return CommentResponse.Converter.from(comment, fileInfos, linkInfos, replies);
         }
     }
 }

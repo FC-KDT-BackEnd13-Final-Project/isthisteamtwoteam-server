@@ -32,6 +32,10 @@ public interface FileRepository extends JpaRepository<File, Long> {
             "where f.post.postId = :postId and f.isDeleted = false")
     List<File> findFilesByPostId(Long postId);
 
+    @Query("select f from File f " +
+            "where f.comment.commentId = :commentId and f.isDeleted = false")
+    List<File> findFilesByCommentId(Long commentId);
+
     @Query("select f from File f where f.comment.post.postId = :postId")
     List<File> findByPostId(@Param("postId") Long postId);
 

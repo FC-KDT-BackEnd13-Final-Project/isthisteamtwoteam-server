@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.link.repository;
 
+import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,6 +19,8 @@ public interface LinkRepository extends JpaRepository<Link, Long> {
 
     List<Link> findByPost(Post post);
 
+    List<Link> findByComment(Comment comment);
+
     @Query("SELECT l FROM Link l " +
            "WHERE l.projectCheckList.projectCheckListId = :projectCheckListId " +
            "AND l.isDeleted = false")
@@ -26,6 +29,10 @@ public interface LinkRepository extends JpaRepository<Link, Long> {
     @Query("select f from Link f " +
             "where f.post.postId = :postId")
     List<Link> findLinksByPostId(Long postId);
+
+    @Query("select f from Link f " +
+            "where f.comment.commentId = :commentId")
+    List<Link> findLinksByCommentId(Long commentId);
 
     @Query("select l from Link l where l.comment.post.postId = :postId")
     List<Link> findByPostId(@Param("postId") Long postId);

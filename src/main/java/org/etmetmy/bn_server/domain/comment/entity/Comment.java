@@ -63,4 +63,10 @@ public class Comment extends BaseEntity {
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     @lombok.Builder.Default
     private List<Link> links = new ArrayList<>();
+
+
+    // 댓글 업데이트 메서드
+    public void updateContent(String content) {
+        this.content = content;
+    }
 }

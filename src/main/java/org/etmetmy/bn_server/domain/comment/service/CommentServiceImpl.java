@@ -1,9 +1,11 @@
 package org.etmetmy.bn_server.domain.comment.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.comment.dto.request.CommentCreateRequest;
+import org.etmetmy.bn_server.domain.comment.dto.request.CommentUpdateRequest;
 import org.etmetmy.bn_server.domain.comment.dto.response.CommentListResponse;
-import org.etmetmy.bn_server.domain.comment.dto.response.CommentCreateResponse;
+import org.etmetmy.bn_server.domain.comment.dto.response.CommentResponse;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.comment.repository.CommentRepository;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
@@ -14,6 +16,8 @@ import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.link.service.LinkService;
+import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
+import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -27,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,7 +48,7 @@ public class CommentServiceImpl implements CommentService {
 
 
     // 댓글 생성 (일반 댓글 + 대댓글 통합)
-    public CommentCreateResponse createComment(
+    public CommentResponse createComment(
             Long postId, CommentCreateRequest request, String clientIp, Long userId)
     {
         // 1. 필요한 엔티티 조회
@@ -75,10 +78,10 @@ public class CommentServiceImpl implements CommentService {
         fileService.saveFiles(savedComment, request.getFileIds(), userId);
 
         // 6. 저장된 데이터 재조회
-        List<File> files = fileRepository.findFilesByPostId(savedComment.getCommentId());
-        List<Link> links = linkRepository.findLinksByPostId(savedComment.getCommentId());
+        List<File> files = fileRepository.findFilesByCommentId(savedComment.getCommentId());
+        List<Link> links = linkRepository.findLinksByCommentId(savedComment.getCommentId());
 
-        return CommentCreateResponse.Converter.from(
+        return CommentResponse.Converter.from(
                 savedComment, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links), List.of());
     }
 
@@ -101,7 +104,7 @@ public class CommentServiceImpl implements CommentService {
                 .collect(Collectors.groupingBy(
                         f -> f.getComment().getCommentId(),
                         Collectors.mapping(
-                                f -> FileInfoDTO.Converter.from(List.of(f)).get(0), // 단일 객체를 리스트로 감싸 기존 Converter 호출
+                                f -> FileInfoDTO.Converter.from(List.of(f)).getFirst(), // 단일 객체를 리스트로 감싸 기존 Converter 호출
                                 Collectors.toList()
                         )
                 ));
@@ -110,7 +113,7 @@ public class CommentServiceImpl implements CommentService {
                 .filter(l -> l.getComment() != null) // 댓글 없는 링크 제외
                 .collect(Collectors.groupingBy(
                         l -> l.getComment().getCommentId(),
-                        Collectors.mapping(l -> LinkInfoDTO.Converter.from(List.of(l)).get(0),
+                        Collectors.mapping(l -> LinkInfoDTO.Converter.from(List.of(l)).getFirst(),
                                 Collectors.toList())
                 ));
 
@@ -122,7 +125,7 @@ public class CommentServiceImpl implements CommentService {
                                 comment -> comment.getParent().getCommentId()));
 
         // 5. 최상위 댓글만 트리 구성
-        List<CommentCreateResponse> responses =
+        List<CommentResponse> responses =
                 comments.stream()
                         .filter(comment -> comment.getParent() == null)
                         .map(comment ->
@@ -135,14 +138,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     // 댓글 트리 생성
-    private CommentCreateResponse buildCommentTree(
+    private CommentResponse buildCommentTree(
             Comment comment,
             Map<Long, List<Comment>> childrenMap,
             Map<Long, List<FileInfoDTO>> fileMap,
             Map<Long, List<LinkInfoDTO>> linkMap
     ) {
         // 하위 댓글 재귀 처리 (메모리)
-        List<CommentCreateResponse> replies =
+        List<CommentResponse> replies =
                 childrenMap
                         .getOrDefault(comment.getCommentId(), List.of())
                         .stream()
@@ -151,11 +154,67 @@ public class CommentServiceImpl implements CommentService {
                         )
                         .toList();
 
-        return CommentCreateResponse.Converter.from(
+        return CommentResponse.Converter.from(
                 comment,
                 fileMap.getOrDefault(comment.getCommentId(), List.of()),
                 linkMap.getOrDefault(comment.getCommentId(), List.of()),
                 replies
         );
+    }
+
+    // 댓글 수정
+    public CommentResponse updateComment(
+            Long commentId, @Valid CommentUpdateRequest requestDto, String clientIp, Long userId){
+
+        // 1. 댓글 조회
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOARD_COMMENT_NOT_FOUND));
+
+        // 2. 작성자 권한 검증 (작성자만 수정 가능)
+        if(!comment.getUser().getId().equals(userId)){
+            throw new BusinessException(ErrorCode.COMMENT_PERMISSION_DENIED);
+        }
+
+        // 3. 기본 필드 업데이트 (content)
+        comment.updateContent(requestDto.getContent());
+
+        // 4. 파일 삭제 처리 (removeFileIds가 제공된 경우)
+        if (requestDto.getRemoveFileIds() != null && !requestDto.getRemoveFileIds().isEmpty()) {
+            List<File> filesToDelete = fileRepository.findAllById(requestDto.getRemoveFileIds());
+
+            // 파일이 해당 댓글에 속하는지 검증
+            for (File file : filesToDelete) {
+                if (file.getComment() == null || !file.getComment().getCommentId().equals(commentId)) {
+                    throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
+                }
+            }
+
+            // Soft Delete 적용
+            for (File file : filesToDelete) {
+                file.softDelete(userId);
+            }
+        }
+
+        // 5. 파일 추가 처리 (addFileIds가 제공된 경우)
+        if (requestDto.getAddFileIds() != null && !requestDto.getAddFileIds().isEmpty()) {
+            fileService.saveFiles(comment, requestDto.getAddFileIds(), userId);
+        }
+
+        // 6. 링크 업데이트 (링크 URL이 제공된 경우)
+        if (requestDto.getLinkUrls() != null) {
+            // 기존 링크 조회 및 삭제
+            List<Link> existingLinks = linkRepository.findByComment(comment);
+            linkRepository.deleteAll(existingLinks);
+
+            // 새 링크 저장
+            linkService.saveLinks(comment, requestDto.getLinkUrls(), userId);
+        }
+
+        // 7. 저장된 데이터 재조회
+        List<File> files = fileRepository.findFilesByCommentId(comment.getCommentId());
+        List<Link> links = linkRepository.findLinksByCommentId(comment.getCommentId());
+
+        return CommentResponse.Converter.from(
+                comment, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links), List.of());
     }
 }
