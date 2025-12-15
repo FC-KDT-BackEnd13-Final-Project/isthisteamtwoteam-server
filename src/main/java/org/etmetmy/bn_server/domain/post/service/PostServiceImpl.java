@@ -278,9 +278,16 @@ public class PostServiceImpl implements PostService {
         User user = userRepository.findById(loginUserId)
                 .orElseThrow(UserNotFoundException::new);
 
-        // 프로젝트 멤버 검증 (로그인 유저가 해당 프로젝트의 멤버인지 확인)
-        if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId)) {
-            throw new BusinessException(ErrorCode.PROJECT_AND_USER_NOT_FOUND);
+        // ADMIN과 DEVELOPER 권한 확인 (개발사만 완료 처리 가능)
+        if (user.getRole() != Role.ADMIN && user.getRole() != Role.DEVELOPER) {
+            throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
+        }
+
+        // ADMIN이 아닌 경우에만 프로젝트 멤버 검증
+        if (user.getRole() != Role.ADMIN) {
+            if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId)) {
+                throw new BusinessException(ErrorCode.PROJECT_AND_USER_NOT_FOUND);
+            }
         }
 
         Post post = postRepository.findById(postId)
@@ -289,11 +296,6 @@ public class PostServiceImpl implements PostService {
         // 게시글이 해당 프로젝트에 속하는지 검증
         if (!post.getProject().getId().equals(projectId)) {
             throw new BusinessException(ErrorCode.POST_PROJECT_MISMATCH);
-        }
-
-        // ADMIN과 DEVELOPER 권한 확인 (개발사만 완료 처리 가능)
-        if (user.getRole() != Role.ADMIN && user.getRole() != Role.DEVELOPER) {
-            throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
 
         // 완료 상태로 업데이트
