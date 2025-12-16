@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.etmetmy.bn_server.domain.comment.repository.CommentRepository;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.FileListResponse;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
@@ -18,6 +19,7 @@ import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostListByStageResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
 import org.etmetmy.bn_server.domain.post.entity.*;
@@ -38,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -101,34 +102,23 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostListResponse> getPostListByProjectIdAndFilter(Long projectId, String filter) {
-        // 필터에 따라 게시글 조회
+    public PostListByStageResponse getPostListByProjectIdAndFilter(Long projectId, String filter) {
+        // 필터에 따라 게시글 조회 (전체 리스트)
         List<Post> posts = getPostsByFilter(projectId, filter);
-        return posts.stream()
-                .map(PostListResponse::from)
-                .collect(Collectors.toList());
 
-    }
-
-    @Override
-    public List<PostListResponse> getPostListByStage(Long projectId, String stage) {
-
-        // 필터에 따라 게시글 조회
-        List<Post> posts = getPostsByStageFilter(projectId, stage);
-        return posts.stream()
+        // Post를 PostListResponse로 변환
+        List<PostListResponse> postListResponses = posts.stream()
                 .map(PostListResponse::from)
                 .toList();
-    }
 
-    private List<Post> getPostsByStageFilter(Long projectId, String stage) {
+        // 프로젝트의 모든 파일 조회 (project_id로 직접 조회)
+        List<File> files = fileRepository.findAllByProjectId(projectId);
+        List<FileListResponse> fileListResponses = files.stream()
+                .map(FileListResponse::from)
+                .toList();
 
-        if (stage.equals("all")) {
-            return postRepository.findAllByProjectId(projectId);
-        }
-        Stage stageEntity = stageRepository.findByStageName(stage)
-                .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
-
-        return postRepository.findByProjectIdAndStageId(projectId, stageEntity.getId());
+        // 단계별로 그룹핑하여 반환
+        return PostListByStageResponse.Converter.of(postListResponses, fileListResponses);
     }
 
     // 필터에 따라 게시글 조회
@@ -140,6 +130,7 @@ public class PostServiceImpl implements PostService {
             default -> throw new BusinessException(ErrorCode.BOARD_INVALID_FILTER);
         };
     }
+
 
     // 게시글 작성 (게시글 저장 → 링크 저장 -> 임시 파일 연결 (post_id, isTemp=false))
     @Override

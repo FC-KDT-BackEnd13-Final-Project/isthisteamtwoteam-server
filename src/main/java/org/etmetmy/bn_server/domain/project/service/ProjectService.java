@@ -46,7 +46,7 @@ public interface ProjectService {
 
     // 프로젝트 진행단계 수정
     ProjectStageUpdateResponse updateProjectStage(Long projectId, ProjectStageUpdateRequest request, Long currentUserId);
-    ProjectDetailResponse getProjectDetail(Long projectId);
+    ProjectDetailResponse getProjectDetail(Long userId, Long projectId);
 
     // 삭제된 프로젝트 복원
     ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request);

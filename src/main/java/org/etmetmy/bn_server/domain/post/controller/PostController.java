@@ -14,14 +14,13 @@ import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostListByStageResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Post", description = "게시글 관리 API")
 @RestController
@@ -92,7 +91,7 @@ public class PostController {
         postService.completePost(projectId, postId, loginUserId);
     }
 
-    // todo: 게시글 목록 조회 (필터) API
+/*    // todo: 게시글 목록 조회 (필터) API
     // all : 전체
     // finished: 완료된 게시글
     // unfinished : 미완료된 게시글
@@ -116,6 +115,20 @@ public class PostController {
             response = postService.getPostListByProjectIdAndFilter(projectId, filterValue);
             return CommonResponse.success("게시글 목록 조회 성공", response);
         }
+    }*/
+    // todo: 게시글 목록 조회 (필터) API
+    // all : 전체
+    // finished: 완료된 게시글
+    // unfinished : 미완료된 게시글
+    @Operation(summary = "게시글 목록 조회", description = "프로젝트의 게시글 목록을 단계별로 조회합니다 (필터 조회 지원)")
+    @GetMapping("/{projectId}/posts")
+    public CommonResponse<PostListByStageResponse> getPostList(
+            @PathVariable Long projectId,
+            @RequestParam(name = "filter", required = false) String filter
+    ) {
+        String filterValue = filter != null ? filter : "all";
+        PostListByStageResponse response = postService.getPostListByProjectIdAndFilter(projectId, filterValue);
+        return CommonResponse.success("게시글 목록 조회 성공", response);
     }
 
     // todo: 게시글 수정 API

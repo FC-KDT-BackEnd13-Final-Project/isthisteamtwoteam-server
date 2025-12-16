@@ -6,6 +6,7 @@ import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostListByStageResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectRestoreResponse;
@@ -19,11 +20,11 @@ public interface PostService {
 
     void rejectPost(Long postId, Long rejectingUserId, String rejectReason);
 
-    List<PostListResponse> getPostListByProjectIdAndFilter(Long projectId, String filter);
+    PostListByStageResponse getPostListByProjectIdAndFilter(Long projectId, String filter);
 
     PostCreateResponse createPost(Long projectId, @Valid PostCreateRequest requestDto, Long loginUserId);
 
-    List<PostListResponse> getPostListByStage(Long projectId, String stage);
+    //PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId);
 
     PostCreateResponse updatePost(Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId);
 
