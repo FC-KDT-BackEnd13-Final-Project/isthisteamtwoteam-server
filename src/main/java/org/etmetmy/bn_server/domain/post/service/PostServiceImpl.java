@@ -182,33 +182,28 @@ public class PostServiceImpl implements PostService {
     // 게시글 수정
     @Override
     @Transactional
-    public PostCreateResponse updatePost(Long projectId, Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId) {
+    public PostCreateResponse updatePost(Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId) {
 
         // 1. 게시글 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
-        // 2. 게시글이 해당 프로젝트에 속하는지 검증
-        if (!post.getProject().getId().equals(projectId)) {
-            throw new BusinessException(ErrorCode.POST_PROJECT_MISMATCH);
-        }
-
-        // 3. 작성자 권한 검증 (작성자만 수정 가능)
+        // 2. 작성자 권한 검증 (작성자만 수정 가능)
         if(!post.getUser().getId().equals(loginUserId)){
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
 
-        // 4. Stage 조회
+        // 3. Stage 조회
         Stage stage = null;
         if (requestDto.getStageId() != null) {
             stage = stageRepository.findById(requestDto.getStageId())
                     .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
         }
 
-        // 5. 기본 필드 업데이트 (title, content, stage)
+        // 4. 기본 필드 업데이트 (title, content, stage)
         PostUpdateRequest.Converter.applyTo(requestDto, post, stage);
 
-        // 6. 파일 삭제 처리 (removeFileIds가 제공된 경우)
+        // 5. 파일 삭제 처리 (removeFileIds가 제공된 경우)
         if (requestDto.getRemoveFileIds() != null && !requestDto.getRemoveFileIds().isEmpty()) {
             List<File> filesToDelete = fileRepository.findAllById(requestDto.getRemoveFileIds());
 
@@ -225,12 +220,12 @@ public class PostServiceImpl implements PostService {
             }
         }
 
-        // 7. 파일 추가 처리 (addFileIds가 제공된 경우)
+        // 6. 파일 추가 처리 (addFileIds가 제공된 경우)
         if (requestDto.getAddFileIds() != null && !requestDto.getAddFileIds().isEmpty()) {
             fileService.saveFiles(post, requestDto.getAddFileIds(), loginUserId);
         }
 
-        // 8. 링크 업데이트 (링크 URL이 제공된 경우)
+        // 7. 링크 업데이트 (링크 URL이 제공된 경우)
         if (requestDto.getLinkUrls() != null) {
             // 기존 링크 조회 및 삭제
             List<Link> existingLinks = linkRepository.findByPost(post);
@@ -240,7 +235,7 @@ public class PostServiceImpl implements PostService {
             linkService.saveLinks(post, requestDto.getLinkUrls(), loginUserId);
         }
 
-        // 9. 승인요청 상태 업데이트 (requestApproval 필드가 제공된 경우)
+        // 8. 승인요청 상태 업데이트 (requestApproval 필드가 제공된 경우)
         if (requestDto.getRequestApproval() != null) {
             // 기존 PENDING 상태의 Request 조회
             Request existingRequest = requestRepository.findByPostPostIdAndApproveStatus(
@@ -263,7 +258,7 @@ public class PostServiceImpl implements PostService {
             }
         }
 
-        // 10. 저장된 데이터 재조회
+        // 9. 저장된 데이터 재조회
         List<File> files = fileRepository.findFilesByPostId(post.getPostId());
         List<Link> links = linkRepository.findLinksByPostId(post.getPostId());
 
