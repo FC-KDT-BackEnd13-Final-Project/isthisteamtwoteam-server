@@ -21,7 +21,7 @@ public class FileListResponse {
     public static FileListResponse from(File file) {
         return FileListResponse.builder()
                 .fileId(file.getFileId())
-                .fileTitle(file.getFileTitle())
+                .fileTitle(file.getOriginalFileTitle())
                 .fileSize(file.getFileSize())
                 .filePath(file.getFilePath())
                 .build();

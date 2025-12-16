@@ -54,6 +54,9 @@ public class Comment extends BaseEntity {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name =  "deleted_by")
+    private Long deletedBy;
+
     //파일 목록
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
     @lombok.Builder.Default
@@ -68,5 +71,12 @@ public class Comment extends BaseEntity {
     // 댓글 업데이트 메서드
     public void updateContent(String content) {
         this.content = content;
+    }
+
+    // 댓글 soft delete
+    public void softDelete(Long deletedBy) {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
     }
 }

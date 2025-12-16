@@ -4,10 +4,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 
+import java.util.List;
+
 @Getter
 @NoArgsConstructor
 public class CheckListCreateRequest {
     private String content;
+
     // 내부 Converter
     public static class Converter{
 
