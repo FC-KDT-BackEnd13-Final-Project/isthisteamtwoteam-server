@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.Project;
@@ -43,8 +42,11 @@ public class File extends BaseEntity {
     @JoinColumn(name = "project_check_list_id")
     private ProjectCheckList projectCheckList;
 
-    @Column(name = "file_title", nullable = false, length = 255)
-    private String fileTitle;
+    @Column(name = "s3_file_title", nullable = false, length = 255)
+    private String s3FileTitle; // UUID_파일명
+
+    @Column(name = "original_file_title", nullable = false, length = 255)
+    private String originalFileTitle; // 사용자가 업로드한 이름
 
     @Column(name = "file_path", nullable = false, length = 500)
     private String filePath;

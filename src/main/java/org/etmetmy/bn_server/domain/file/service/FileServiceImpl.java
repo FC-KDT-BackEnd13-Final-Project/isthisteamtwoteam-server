@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
@@ -88,10 +89,10 @@ public class FileServiceImpl implements FileService {
         for (MultipartFile file : files) {
 
             // 1. S3 업로드
-            String fileUrl = uploadToS3(file);
+            S3UploadResult uploadResult = uploadToS3(file);
 
             // 2. 임시 파일 엔티티 생성 (post = null, isTemp = true)
-            File fileEntity = FileCreateRequest.Converter.toEntity(project, fileUrl, file, uploadedBy);
+            File fileEntity = FileCreateRequest.Converter.toEntity(project, uploadResult, uploadedBy);
 
             // 3. DB에 저장
             File saved = fileRepository.save(fileEntity);
@@ -176,27 +177,41 @@ public class FileServiceImpl implements FileService {
 
     // 6. S3 업로드 메서드
     @Override
-    public String uploadToS3(MultipartFile file) {
+    public S3UploadResult uploadToS3(MultipartFile file) {
 
         String originalFilename = file.getOriginalFilename();
-        String s3FileName = UUID.randomUUID() + "_" + originalFilename;
+        String storedFileName = UUID.randomUUID() + "_" + originalFilename;
 
         try (InputStream is = file.getInputStream()) {
 
             PutObjectRequest req = PutObjectRequest.builder()
                     .bucket(bucketName)
-                    .key(s3FileName)
+                    .key(storedFileName)
                     .acl(ObjectCannedACL.PUBLIC_READ)
                     .contentType(file.getContentType())
                     .contentLength(file.getSize())
                     .build();
 
             s3Client.putObject(req, RequestBody.fromInputStream(is, file.getSize()));
+
         } catch (Exception e) {
             throw new BusinessException(ErrorCode.FILE_UPLOAD_FAILED);
         }
-        return s3Client.utilities().getUrl(url -> url.bucket(bucketName).key(s3FileName))
+
+        String fileUrl = s3Client.utilities()
+                .getUrl(url -> url.bucket(bucketName).key(storedFileName))
                 .toString();
+
+        String fileType = extractFileType(originalFilename);
+
+        return new S3UploadResult(originalFilename, storedFileName, fileUrl, file.getSize(), fileType);
+    }
+
+    // 파일 확장자 추출 헬퍼 메서드
+    private String extractFileType(String filename) {
+        if (filename == null || filename.isEmpty()) return "unknown";
+        int lastDot = filename.lastIndexOf('.');
+        return lastDot >= 0 ? filename.substring(lastDot + 1).toLowerCase() : "unknown";
     }
 
     // 7. 삭제에 필요한 key 반환

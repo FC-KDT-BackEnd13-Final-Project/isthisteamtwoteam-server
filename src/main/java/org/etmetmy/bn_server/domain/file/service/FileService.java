@@ -3,6 +3,7 @@ package org.etmetmy.bn_server.domain.file.service;
 import jakarta.servlet.http.HttpSession;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
@@ -28,7 +29,7 @@ public interface FileService {
     void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId);
 
     // S3 업로드 메서드
-    public String uploadToS3(MultipartFile file);
+    public S3UploadResult uploadToS3(MultipartFile file);
 
     // 삭제에 필요한 key 반환
     public String getKeyFromFileUrls(String fileUrl);
