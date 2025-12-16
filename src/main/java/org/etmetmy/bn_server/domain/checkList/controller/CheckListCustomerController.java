@@ -4,11 +4,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.checkList.service.CheckListService;
-import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.etmetmy.bn_server.domain.project.dto.request.ProjectCheckListReasonRequest;
+import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.global.util.SessionUtil;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "CheckList", description = "체크리스트 관리 API")
 @RestController
@@ -19,15 +18,26 @@ public class CheckListCustomerController {
     private final CheckListService checkListService;
 
     @PatchMapping("/{checkListId}/checked")
-    public void updateCheckListItemStatus(
+    public CommonResponse<Object> updateChecked(
             @PathVariable Long projectId,
             @PathVariable Long checkListId,
-            @RequestBody CheckListCheckedUpdateRequest request,
             HttpSession session
     ){
-        Long userId = (Long) session.getAttribute("userId");
+        Long userId = SessionUtil.getLoginUserId(session);
 
-        checkListService.updateCheckListItemStatus(checkListId, userId, request.getChecked());
+        checkListService.updateChecked(projectId, checkListId, userId);
 
+        return CommonResponse.success("성공했습니다",null);
+    }
+
+    @PatchMapping("/{checkListId}/content")
+    public CommonResponse<Object> updateContent(
+            @PathVariable Long projectId,
+            @PathVariable Long checkListId,
+            @RequestBody ProjectCheckListReasonRequest reason
+    ){
+        checkListService.updateContent(projectId, checkListId, reason);
+
+        return CommonResponse.success("성공했습니다",null);
     }
 }

@@ -53,8 +53,14 @@ public class ProjectCheckList extends BaseEntity {
     @lombok.Builder.Default
     private List<Link> links = new ArrayList<>();
 
-    public void updateChecked(Boolean checked) {
-        this.checked = checked;
+    public void updateChecked(User user) {
+        this.checked = !checked;
+        if (this.checked) {
+            answererId = user;
+        }
+        else{
+            answererId = null;
+        }
     }
     public void updateReason(String reason) {
        this.reason = reason;

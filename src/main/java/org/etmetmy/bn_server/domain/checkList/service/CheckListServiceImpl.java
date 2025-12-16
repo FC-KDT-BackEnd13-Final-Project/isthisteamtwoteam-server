@@ -6,11 +6,17 @@ import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
+import org.etmetmy.bn_server.domain.project.dto.request.ProjectCheckListReasonRequest;
+import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
+import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
+import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.global.page.PageRequest;
 import org.springframework.data.domain.Page;
+import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +28,7 @@ import java.util.Optional;
 public class CheckListServiceImpl implements CheckListService {
     private final CheckListRepository checkListRepository;
     private final ProjectCheckListRepository projectCheckListRepository;
+    private final UserRepository userRepository;
 
     @Override
     public CheckListResponse save(CheckListCreateRequest request) {
@@ -35,14 +42,15 @@ public class CheckListServiceImpl implements CheckListService {
     public CheckListResponse update(Long checkListId, CheckListUpdateRequest request) {
 
         CheckList checkList = checkListRepository.findById(checkListId)
-                .orElseThrow(()-> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
         CheckListUpdateRequest.Converter.updateEntity(request, checkList);
 
         return CheckListResponse.Converter.from(checkList);
     }
 
     @Override
-    public void delete(Long checkListId) {checkListRepository.deleteById(checkListId);
+    public void delete(Long checkListId) {
+        checkListRepository.deleteById(checkListId);
     }
 
     // 페이지네이션 체크리스트 전체 조회
@@ -56,22 +64,28 @@ public class CheckListServiceImpl implements CheckListService {
     @Override
     public Page<CheckListResponse> searchCheckLists(String keyword, PageRequest pageRequest) {
         Page<CheckList> keywrodCheckListPage = checkListRepository.findByKeyword(keyword, pageRequest);
-                return keywrodCheckListPage.map(CheckListResponse.Converter::from);
-            }
-        
-            @Override
-            public void updateCheckListItemStatus(Long checkListId, Long userId, Boolean checked) {
-                ProjectCheckList projectCheckList = projectCheckListRepository.findById(checkListId)
-                        .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
-        
-                // You might want to add a check here to ensure the userId matches the answererId
-                // or has permission to update this checklist item.
-                // For now, only checkListId is used for identifying the item.
-                // if (!projectCheckList.getAnswererId().getId().equals(userId)) {
-                //     throw new BusinessException(ErrorCode.UNAUTHORIZED);
-                // }
-        
-                projectCheckList.updateChecked(checked);
-                projectCheckListRepository.save(projectCheckList);
-            }
-        }
+        return keywrodCheckListPage.map(CheckListResponse.Converter::from);
+    }
+
+    @Override
+    public void updateChecked(Long projectId, Long checkListId, Long userId) {
+        ProjectCheckList projectCheckList = projectCheckListRepository.findByProject_IdAndCheckListId(projectId, checkListId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+
+        User user = userRepository.findById(userId)
+                        .orElseThrow((UserNotFoundException::new));
+
+        projectCheckList.updateChecked(user);
+        projectCheckListRepository.save(projectCheckList);
+    }
+
+    @Override
+    public void updateContent(Long projectId, Long checkListId, ProjectCheckListReasonRequest reason) {
+        ProjectCheckList projectCheckList = projectCheckListRepository.findByProject_IdAndCheckListId(projectId, checkListId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+
+        projectCheckList.updateReason(reason.getReason());
+        projectCheckListRepository.save(projectCheckList);
+
+    }
+}
