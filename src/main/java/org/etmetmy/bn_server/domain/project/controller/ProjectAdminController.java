@@ -53,8 +53,8 @@ public class ProjectAdminController {
         projectService.createProject(request, image, loginUserId);
     }
 
-    // todo: 프로젝트 전체 조회 (페이지네이션, 검색)
-    @Operation(summary = "프로젝트 전체 조회", description = "모든 프로젝트 목록을 조회합니다")
+    // todo: 프로젝트 전체 조회 (페이지네이션, 검색, 삭제여부)
+    @Operation(summary = "프로젝트 전체 조회(페이징, 검색, 삭제여부)", description = "모든 프로젝트 목록을 조회합니다")
     @GetMapping
     public CommonResponse<Page<ProjectResponse>> getProjects(
 
@@ -73,8 +73,6 @@ public class ProjectAdminController {
 
         return CommonResponse.success("프로젝트 목록조회 성공", responses);
     }
-
-
 
     // todo: 개별 프로젝트 멤버 조회
     @Operation(summary = "프로젝트 멤버 조회", description = "특정 프로젝트의 멤버 목록을 조회합니다")
@@ -218,16 +216,6 @@ public class ProjectAdminController {
     public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(@PathVariable Long projectId, @RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForProject(projectId, role);
         return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
-    }
-
-    //todo: 삭제된 프로젝트 목록 조회
-    @Operation(summary = "삭제된 프로젝트 목록 조회", description = "휴지통에 있는 삭제된 프로젝트 목록을 조회합니다")
-    @GetMapping("/trash")
-    public CommonResponse<List<DeletedProjectResponse>> getDeletedProjectList(HttpSession session) {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        List<DeletedProjectResponse> response = projectService.getDeletedProjectList(loginUserId);
-
-        return CommonResponse.success("삭제된 프로젝트 목록 조회 성공", response);
     }
 
     //todo: 삭제된 프로젝트 복원
