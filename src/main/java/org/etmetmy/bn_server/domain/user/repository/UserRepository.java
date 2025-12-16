@@ -4,6 +4,8 @@ import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,17 +21,36 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
     Optional<User> findByEmail(String email);
 
+
+    //역할별 필터링 추가
+    @Query("SELECT u FROM User u JOIN u.company c " +
+            "WHERE u.role = :role " +
+            "AND (:name IS NULL OR u.name LIKE %:name%) " +
+            "AND (:email IS NULL OR u.email LIKE %:email%) " +
+            "AND (:companyName IS NULL OR c.companyName LIKE %:companyName%) " +
+            "AND (:companyType IS NULL OR c.type = :companyType)")
+    Page<User> findByRoleAndDynamicFilters(
+            @Param("role") Role role,
+            @Param("name") String name,
+            @Param("email") String email,
+            @Param("companyName") String companyName,
+            @Param("companyType") CompanyType companyType,
+            Pageable pageable
+    );
+
     @Query("SELECT u FROM User u JOIN u.company c " +
             "WHERE (:name IS NULL OR u.name LIKE %:name%) " +
             "AND (:email IS NULL OR u.email LIKE %:email%) " +
             "AND (:companyName IS NULL OR c.companyName LIKE %:companyName%) " +
             "AND (:companyType IS NULL OR c.type = :companyType)")
-    List<User> findByNamicMembers(
+    Page<User> findByNamicMembers(
             @Param("name") String name,
             @Param("email") String email,
             @Param("companyName") String companyName,
-            @Param("companyType") CompanyType companyType // Enum 타입으로 받음
+            @Param("companyType") CompanyType companyType,
+            Pageable pageable
     );
+
     @Query("SELECT new org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse(u.profileImg, u.name) " +
             "FROM User u " +
             "WHERE u.id = :userId")

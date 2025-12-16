@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
@@ -16,12 +17,18 @@ import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -78,31 +85,50 @@ public class UserServiceImpl implements UserService{
 
     // 검색 조회
     @Override
-    public UserDataResponse searchUsers(String name, String email) {
+    public UserDataResponse searchUsers(String name, String email, Pageable pageable) {
+        // 1. 역할별로 각각 조회
+        Page<User> adminPage = userRepository.findByRoleAndDynamicFilters(
+                Role.ADMIN, name, email, null, null, pageable
+        );
 
-        // 1. 회원 목록 조회
-        List<User> allMembers = userRepository.findByNamicMembers(name, email, null,null);
+        Page<User> developerPage = userRepository.findByRoleAndDynamicFilters(
+                Role.DEVELOPER, name, email, null, null, pageable
+        );
+
+        Page<User> customerPage = userRepository.findByRoleAndDynamicFilters(
+                Role.CUSTOMER, name, email, null, null, pageable
+        );
 
         // 2. 회사 목록 조회
-        List<Company> allCompanies = companyRepository.findAll();
+        Sort companySort = Sort.by(Sort.Direction.DESC, "companyId");
+        Pageable companyPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                companySort
+        );
+        Page<Company> companyPage = companyRepository.findAll(companyPageable);
 
-        // 3. 회원 목록 역할별 분리
-        List<AdminUserResponse> adminResponses = AdminUserResponse.Converter.fromList(allMembers);
-
-        List<DeveloperUserResponse> developerResponses = DeveloperUserResponse.Converter.fromList(allMembers);
-
-        List<CustomerUserResponse> customerResponses = CustomerUserResponse.Converter.fromList(allMembers);
+        // 3. 각 역할별 Response 변환
+        List<AdminUserResponse> adminResponses = AdminUserResponse.Converter.fromList(
+                adminPage.getContent()
+        );
+        List<DeveloperUserResponse> developerResponses = DeveloperUserResponse.Converter.fromList(
+                developerPage.getContent()
+        );
+        List<CustomerUserResponse> customerResponses = CustomerUserResponse.Converter.fromList(
+                customerPage.getContent()
+        );
+        List<CompanySearchResponse> companyResponses = CompanySearchResponse.Converter.fromList(
+                companyPage.getContent()
+        );
 
         // 4. UserItems 객체 생성
-        UserItems<AdminUserResponse> adminItems = UserItems.create(adminResponses);
-        UserItems<DeveloperUserResponse> developerItems = UserItems.create(developerResponses);
-        UserItems<CustomerUserResponse> customerItems = UserItems.create(customerResponses);
+        UserItems<AdminUserResponse> adminItems = UserItems.Converter.fromPage(adminPage, adminResponses);
+        UserItems<DeveloperUserResponse> developerItems = UserItems.Converter.fromPage(developerPage, developerResponses);
+        UserItems<CustomerUserResponse> customerItems = UserItems.Converter.fromPage(customerPage, customerResponses);
+        UserItems<CompanySearchResponse> companyItems = UserItems.Converter.fromPage(companyPage, companyResponses);
 
-        // 5. 회사 목록 DTO 변환
-        List<CompanySearchResponse> companyResponses = CompanySearchResponse.Converter.fromList(allCompanies);
-
-        UserItems<CompanySearchResponse> companyItems = UserItems.create(companyResponses);
-
+        // 5. 최종 Response 생성
         return UserDataResponse.Converter.createResponse(
                 adminItems,
                 developerItems,

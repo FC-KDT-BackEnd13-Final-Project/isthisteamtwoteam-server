@@ -1,20 +1,30 @@
 package org.etmetmy.bn_server.domain.user.dto.response;
 
-import lombok.Getter;
+import lombok.*;
+import org.springframework.data.domain.Page;
+
 import java.util.List;
 
-@Getter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserItems<T> {
-    private final int total;
-    private final List<T> items;
+    private long total;
+    private List<T> items;
+    private int currentPage;
+    private int totalPages;
+    private int pageSize;
 
-    private UserItems(List<T> items) {
-        this.items = items;
-        this.total = items.size();
-    }
-
-    // 서비스에서 사용할 정적 팩토리 메서드
-    public static <T> UserItems<T> create(List<T> items) {
-        return new UserItems<>(items);
+    public static class Converter {
+        // Page 객체로부터 UserItems 생성
+        public static <T> UserItems<T> fromPage(Page<?> page, List<T> convertedItems) {
+            UserItems<T> userItems = new UserItems<>();
+            userItems.setItems(convertedItems);
+            userItems.setTotal(page.getTotalElements());
+            userItems.setCurrentPage(page.getNumber());
+            userItems.setTotalPages(page.getTotalPages());
+            userItems.setPageSize(page.getSize());
+            return userItems;
+        }
     }
 }
