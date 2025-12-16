@@ -8,6 +8,7 @@ import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.dto.response.UserDataResponse;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface UserService {
@@ -17,7 +18,8 @@ public interface UserService {
     @Transactional
     Long deleteMember(Long memberId);
 
-    UserDataResponse searchUsers(String name, String email);
+    UserDataResponse searchUsers(String name, String email, Pageable pageable);
+
     Long joinUser(UserDto userDto);
     User login(UserLoginDto loginDto);
     UserProfileImgNameResponse getProfileImgName(Long userId);
