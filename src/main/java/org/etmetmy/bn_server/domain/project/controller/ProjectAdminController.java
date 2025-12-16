@@ -5,9 +5,11 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
+import org.etmetmy.bn_server.domain.file.service.FileServiceImpl;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 
@@ -25,6 +27,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,18 +43,32 @@ public class ProjectAdminController {
     private final ProjectMemberService projectMemberService;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
+    private final FileServiceImpl fileServiceImpl;
 
     // todo: 프로젝트 생성
-    @Operation(summary = "프로젝트 생성", description = "새로운 프로젝트를 생성합니다 (이미지 포함 가능)")
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "프로젝트 생성", description = "새로운 프로젝트를 생성합니다")
     @ActivityLogger(action = "CREATE", targetType = "Project")
-    public void createProject(
+    @PostMapping(value = "/api/v1/admin/projects", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public CommonResponse<ProjectCreateResponse> createProject(
             HttpSession session,
-            @RequestPart("data") ProjectCreateRequest request,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
+            @RequestBody @Valid ProjectCreateRequest request
+    ) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-        projectService.createProject(request, image, loginUserId);
+        ProjectCreateResponse response = projectService.createProject(request, loginUserId);
+        return CommonResponse.success("프로젝트가 생성되었습니다.", response);
     }
+
+    // todo : 프로젝트 이미지 업로드
+    @PostMapping(value = "/api/v1/admin/projects/{projectId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public CommonResponse<ProjectUpdateResponse> uploadImage(
+            @PathVariable Long projectId,
+            @RequestPart(value= "image", required= false) MultipartFile image
+    ) {
+        ProjectUpdateResponse response = projectService.updateProjectImage(projectId, image);
+        return CommonResponse.success("프로젝트 이미지 업로드 성공", response);
+    }
+
+
 
     // todo: 프로젝트 전체 조회 (페이지네이션, 검색, 삭제여부)
     @Operation(summary = "프로젝트 전체 조회(페이징, 검색, 삭제여부)", description = "모든 프로젝트 목록을 조회합니다")
