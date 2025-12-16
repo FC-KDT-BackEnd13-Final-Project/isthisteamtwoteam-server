@@ -21,6 +21,17 @@ public interface FileRepository extends JpaRepository<File, Long> {
            "AND f.isDeleted = false")
     List<File> findByProjectId(@Param("projectId") Long projectId);
 
+    // project_id로 직접 조회 (네이티브 쿼리 사용)
+    @Query(value = "SELECT file_id, comment_id, created_at, deleted_at, deleted_by, " +
+                   "file_path, file_size, file_name as file_title, file_type, " +
+                   "is_deleted, is_temp, post_id, project_id, project_check_list_id, " +
+                   "updated_at, uploaded_by " +
+                   "FROM file " +
+                   "WHERE project_id = :projectId " +
+                   "AND is_deleted = false",
+           nativeQuery = true)
+    List<File> findAllByProjectId(@Param("projectId") Long projectId);
+
     List<File> findByPost(Post post);
 
     @Query("SELECT f FROM File f " +
