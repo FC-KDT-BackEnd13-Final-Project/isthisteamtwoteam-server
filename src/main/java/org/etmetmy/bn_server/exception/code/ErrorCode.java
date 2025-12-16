@@ -18,6 +18,7 @@ public enum ErrorCode {
     BOARD_POST_NOT_FOUND(404, "B001", "게시글을 찾을 수 없습니다."),
     BOARD_PERMISSION_DENIED(403, "B003", "게시글 수정/삭제 권한이 없습니다."),
     BOARD_ALREADY_DELETED(400, "B004", "이미 삭제된 게시글입니다."),
+    BOARD_NOT_DELETED(400, "B004", "이미 삭제된 게시글입니다."),
     BOARD_INVALID_FILTER(400,"B005", "유효하지 않은 게시글 필터입니다."),
     POST_PROJECT_MISMATCH(400, "P014", "게시글이 해당 프로젝트에 속하지 않습니다."),
 
