@@ -221,7 +221,7 @@ public class UserServiceImpl implements UserService{
 
         sendResetCodeMail(email, code);
 
-        return PasswordFindResponse.of(email, RESET_CODE_EXPIRES_SECONDS);
+        return PasswordFindResponse.Converter.of(email, RESET_CODE_EXPIRES_SECONDS);
     }
 
     // 비밀번호 재설정 - 코드 검증 및 비밀번호 변경
@@ -255,7 +255,7 @@ public class UserServiceImpl implements UserService{
         resetCode.markAsUsed();
         passwordResetCodeRepository.save(resetCode);
 
-        return new PasswordResetResponse(user.getId());
+        return PasswordResetResponse.Converter.from(user.getId());
     }
 
     // 이메일 발송 처리

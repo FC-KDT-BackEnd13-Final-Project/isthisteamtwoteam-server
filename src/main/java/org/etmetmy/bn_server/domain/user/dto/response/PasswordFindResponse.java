@@ -14,10 +14,9 @@ public class PasswordFindResponse {
     private int expiresInSeconds;
     //private String code; //테스트용 - 인증번호 12345
 
-    public static PasswordFindResponse of(String email, int expiresInSeconds) {
-        return PasswordFindResponse.builder()
-                .email(email)
-                .expiresInSeconds(expiresInSeconds)
-                .build();
+    public static class Converter {
+        public static PasswordFindResponse of(String email, int expiresInSeconds) {
+            return new PasswordFindResponse(email, expiresInSeconds);
+        }
     }
 }
