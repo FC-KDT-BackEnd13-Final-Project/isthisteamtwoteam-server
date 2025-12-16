@@ -28,6 +28,10 @@ public class File extends BaseEntity {
     private Long fileId;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
     private Post post;
 
@@ -67,10 +71,6 @@ public class File extends BaseEntity {
 
     @Column(name = "deleted_by")
     private Long deletedBy;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "project_id")
-    private Project project;
 
 
     public void softDelete(Long deletedBy) {

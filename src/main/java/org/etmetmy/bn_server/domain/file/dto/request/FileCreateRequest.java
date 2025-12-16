@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.springframework.web.multipart.MultipartFile;
 
 @Getter
@@ -19,9 +20,9 @@ public class FileCreateRequest {
     public static class Converter {
 
         // 임시 파일 엔티티 생성 (MultipartFile 기반)
-        public static File toEntity(Post post, String fileUrl, MultipartFile file, Long uploadedBy) {
+        public static File toEntity(Project project, String fileUrl, MultipartFile file, Long uploadedBy) {
             return File.builder()
-                    .post(post)
+                    .project(project)
                     .fileTitle(extractFileName(fileUrl))
                     .filePath(fileUrl) // S3 저장 경로
                     .fileSize(file.getSize())

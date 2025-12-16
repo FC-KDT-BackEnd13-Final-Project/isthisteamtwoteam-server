@@ -81,6 +81,8 @@ public class FileServiceImpl implements FileService {
     @Transactional
     public List<TempFileListDTO> postFiles(Long projectId, List<MultipartFile> files,Long uploadedBy) {
 
+        Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+
         List<File> savedFiles = new ArrayList<>();
 
         for (MultipartFile file : files) {
@@ -89,7 +91,7 @@ public class FileServiceImpl implements FileService {
             String fileUrl = uploadToS3(file);
 
             // 2. 임시 파일 엔티티 생성 (post = null, isTemp = true)
-            File fileEntity = FileCreateRequest.Converter.toEntity(null, fileUrl, file, uploadedBy);
+            File fileEntity = FileCreateRequest.Converter.toEntity(project, fileUrl, file, uploadedBy);
 
             // 3. DB에 저장
             File saved = fileRepository.save(fileEntity);
