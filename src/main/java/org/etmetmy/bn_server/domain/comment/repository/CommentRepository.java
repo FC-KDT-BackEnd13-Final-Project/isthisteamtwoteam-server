@@ -11,24 +11,24 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    // 1. 특정 Post에 대한 최상위 댓글 조회 (parent가 NULL인 댓글)
+    // 1. 특정 Post에 대한 최상위 댓글 조회 (parent가 NULL인 댓글, 삭제되지 않은 댓글만)
     @Query("SELECT c FROM Comment c " +
             "JOIN FETCH c.user u " +
-            "WHERE c.post.postId = :postId AND c.parent IS NULL " +
+            "WHERE c.post.postId = :postId AND c.parent IS NULL AND c.isDeleted = false " +
             "ORDER BY c.createdAt ASC")
     List<Comment> findRootCommentsByPostId(@Param("postId") Long postId);
 
-    // 2. 특정 부모 댓글 ID에 대한 대댓글 조회
+    // 2. 특정 부모 댓글 ID에 대한 대댓글 조회 (삭제되지 않은 댓글만)
     @Query("SELECT c FROM Comment c " +
             "JOIN FETCH c.user u " +
-            "WHERE c.parent = :parentCommentId " +
+            "WHERE c.parent = :parentCommentId AND c.isDeleted = false " +
             "ORDER BY c.createdAt ASC")
     List<Comment> findRepliesByParentId(@Param("parentCommentId") Long parentCommentId);
 
-    // 3. 특정 Post의 모든 댓글 조회 (한 번에)
+    // 3. 특정 Post의 모든 댓글 조회 (한 번에, 삭제되지 않은 댓글만)
     @Query("SELECT c FROM Comment c " +
             "JOIN FETCH c.user u " +
-            "WHERE c.post.postId = :postId " +
+            "WHERE c.post.postId = :postId AND c.isDeleted = false " +
             "ORDER BY c.createdAt ASC")
     List<Comment> findAllByPostId(@Param("postId") Long postId);
 }
