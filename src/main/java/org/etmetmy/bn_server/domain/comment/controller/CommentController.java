@@ -67,4 +67,16 @@ public class CommentController {
         CommentListResponse response = commentService.getCommentsByPostId(postId);
         return CommonResponse.success("댓글 목록 조회 성공", response);
     }
+
+    //todo: 댓글 삭제 (soft delete)
+    @Operation(summary = "댓글 삭제 (soft delete)", description = "해당 댓글과 함께 파일도 soft delete 합니다.")
+    @DeleteMapping("/comment/{commentId}")
+    public CommonResponse<Void> softDeleteComment(@PathVariable Long commentId, HttpServletRequest servletRequest)
+    {
+        HttpSession session = servletRequest.getSession(false);
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        commentService.softDeleteComment(commentId,userId);
+        return CommonResponse.success("댓글 삭제 성공", null);
+    }
 }

@@ -215,4 +215,31 @@ public class CommentServiceImpl implements CommentService {
         return CommentResponse.Converter.from(
                 comment, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links), List.of());
     }
+
+    // 댓글 삭제 (soft delete)
+    public void softDeleteComment(Long commentId, Long userId){
+
+        // 1. 댓글 조회
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOARD_COMMENT_NOT_FOUND));
+
+        // 2. 작성자 권한 검증 (작성자만 삭제 가능)
+        if(!comment.getUser().getId().equals(userId)){
+            throw new BusinessException(ErrorCode.COMMENT_PERMISSION_DENIED);
+        }
+
+        // 3. 이미 삭제된 댓글 확인
+        if (comment.getIsDeleted()) {
+            throw new BusinessException(ErrorCode.COMMENT_ALREADY_DELETED);
+        }
+        // 소프트 삭제
+        comment.softDelete(userId);
+        commentRepository.save(comment);
+
+        // 4. 댓글과 연결된 파일 삭제
+        List<File> file = fileRepository.findFilesByCommentId(comment.getCommentId());
+        for (File fileToDelete : file) {
+            fileToDelete.softDelete(userId);
+        }
+    }
 }

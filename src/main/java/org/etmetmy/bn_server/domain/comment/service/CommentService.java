@@ -12,4 +12,6 @@ public interface CommentService {
     CommentListResponse getCommentsByPostId(Long postId);
 
     CommentResponse updateComment(Long commentId, @Valid CommentUpdateRequest request, String clientIp, Long userId);
+
+    void softDeleteComment(Long commentId, Long userId);
 }
