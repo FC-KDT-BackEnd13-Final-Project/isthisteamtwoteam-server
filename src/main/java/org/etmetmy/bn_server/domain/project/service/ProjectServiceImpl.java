@@ -12,6 +12,7 @@ import org.etmetmy.bn_server.domain.file.service.FileServiceImpl;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
+import org.etmetmy.bn_server.domain.memo.entity.MemoType;
 import org.etmetmy.bn_server.domain.memo.repository.MemoRepository;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
@@ -269,6 +270,7 @@ public class ProjectServiceImpl implements ProjectService {
         Memo memo = Memo.builder()
                 .project(project)
                 .content(memoContent)
+                .memoType(MemoType.MAIN)
                 .build();
         memoRepository.save(memo);
     }
@@ -557,11 +559,17 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProjectDetailResponse getProjectDetail(Long projectId) {
+    public ProjectDetailResponse getProjectDetail(Long userId, Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        return ProjectDetailResponse.Converter.from(project);
+        Memo projectMemo = memoRepository.findByProjectId(projectId, MemoType.MAIN)
+                .orElseThrow(()-> new BusinessException(ErrorCode.MEMO_NOT_FOUND));
+
+        Memo userMemo = memoRepository.findByUserIdAndProjectId(userId,projectId, MemoType.USER)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_AND_USER_NOT_FOUND));
+
+        return ProjectDetailResponse.Converter.from(project,projectMemo,userMemo);
     }
 
     // 삭제된 프로젝트 복원
