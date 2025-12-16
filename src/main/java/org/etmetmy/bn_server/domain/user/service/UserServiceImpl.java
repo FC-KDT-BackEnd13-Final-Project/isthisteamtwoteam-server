@@ -1,33 +1,34 @@
 package org.etmetmy.bn_server.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
-import org.etmetmy.bn_server.domain.user.dto.request.*;
+import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
+import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.dto.response.*;
-import org.etmetmy.bn_server.domain.user.entity.PasswordResetCode;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
-import org.etmetmy.bn_server.domain.user.repository.PasswordResetCodeRepository;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
-import org.etmetmy.bn_server.config.MailServiceProvider;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
 import java.util.List;
 
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -38,11 +39,6 @@ public class UserServiceImpl implements UserService{
     private final CompanyService companyService;
     private final PasswordEncoder passwordEncoder;
     private final ProjectMemberRepository projectMemberRepository;
-    private final PasswordResetCodeRepository passwordResetCodeRepository;
-    private final JavaMailSender mailSender;
-
-    private static final int RESET_CODE_EXPIRES_SECONDS = 300;
-
 
     // 회원 정보 수정 (Update)
     @Override
@@ -89,31 +85,50 @@ public class UserServiceImpl implements UserService{
 
     // 검색 조회
     @Override
-    public UserDataResponse searchUsers(String name, String email) {
+    public UserDataResponse searchUsers(String name, String email, Pageable pageable) {
+        // 1. 역할별로 각각 조회
+        Page<User> adminPage = userRepository.findByRoleAndDynamicFilters(
+                Role.ADMIN, name, email, null, null, pageable
+        );
 
-        // 1. 회원 목록 조회
-        List<User> allMembers = userRepository.findByNamicMembers(name, email, null,null);
+        Page<User> developerPage = userRepository.findByRoleAndDynamicFilters(
+                Role.DEVELOPER, name, email, null, null, pageable
+        );
+
+        Page<User> customerPage = userRepository.findByRoleAndDynamicFilters(
+                Role.CUSTOMER, name, email, null, null, pageable
+        );
 
         // 2. 회사 목록 조회
-        List<Company> allCompanies = companyRepository.findAll();
+        Sort companySort = Sort.by(Sort.Direction.DESC, "companyId");
+        Pageable companyPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                companySort
+        );
+        Page<Company> companyPage = companyRepository.findAll(companyPageable);
 
-        // 3. 회원 목록 역할별 분리
-        List<AdminUserResponse> adminResponses = AdminUserResponse.Converter.fromList(allMembers);
-
-        List<DeveloperUserResponse> developerResponses = DeveloperUserResponse.Converter.fromList(allMembers);
-
-        List<CustomerUserResponse> customerResponses = CustomerUserResponse.Converter.fromList(allMembers);
+        // 3. 각 역할별 Response 변환
+        List<AdminUserResponse> adminResponses = AdminUserResponse.Converter.fromList(
+                adminPage.getContent()
+        );
+        List<DeveloperUserResponse> developerResponses = DeveloperUserResponse.Converter.fromList(
+                developerPage.getContent()
+        );
+        List<CustomerUserResponse> customerResponses = CustomerUserResponse.Converter.fromList(
+                customerPage.getContent()
+        );
+        List<CompanySearchResponse> companyResponses = CompanySearchResponse.Converter.fromList(
+                companyPage.getContent()
+        );
 
         // 4. UserItems 객체 생성
-        UserItems<AdminUserResponse> adminItems = UserItems.create(adminResponses);
-        UserItems<DeveloperUserResponse> developerItems = UserItems.create(developerResponses);
-        UserItems<CustomerUserResponse> customerItems = UserItems.create(customerResponses);
+        UserItems<AdminUserResponse> adminItems = UserItems.Converter.fromPage(adminPage, adminResponses);
+        UserItems<DeveloperUserResponse> developerItems = UserItems.Converter.fromPage(developerPage, developerResponses);
+        UserItems<CustomerUserResponse> customerItems = UserItems.Converter.fromPage(customerPage, customerResponses);
+        UserItems<CompanySearchResponse> companyItems = UserItems.Converter.fromPage(companyPage, companyResponses);
 
-        // 5. 회사 목록 DTO 변환
-        List<CompanySearchResponse> companyResponses = CompanySearchResponse.Converter.fromList(allCompanies);
-
-        UserItems<CompanySearchResponse> companyItems = UserItems.create(companyResponses);
-
+        // 5. 최종 Response 생성
         return UserDataResponse.Converter.createResponse(
                 adminItems,
                 developerItems,
@@ -175,88 +190,4 @@ public class UserServiceImpl implements UserService{
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
         user.setPassword(encodedPassword);
     }
-
-    // 비밀번호 찾기 - 인증 코드 발송
-    @Override
-    @Transactional
-    public PasswordFindResponse sendPasswordResetCode(PasswordFindRequest request) {
-        String email = request.getEmail();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("가입되지 않은 이메일입니다."));
-
-        String code = generate6DigitCode();
-
-        // 기존 코드가 있으면 재사용, 없으면 새로 생성
-        PasswordResetCode resetCode = passwordResetCodeRepository.findByUserId(user.getId())
-                .map(existing -> {
-                    existing.reset(email, code);
-                    return existing;
-                })
-                .orElseGet(() -> new PasswordResetCode(user, email, code));
-
-        passwordResetCodeRepository.save(resetCode);
-
-        sendResetCodeMail(email, code);
-
-        return PasswordFindResponse.of(email, RESET_CODE_EXPIRES_SECONDS);
-    }
-
-    // 비밀번호 재설정 - 코드 검증 및 비밀번호 변경
-    @Override
-    @Transactional
-    public PasswordResetResponse resetPassword(PasswordResetVerifyCodeRequest request) {
-        String email = request.getEmail();
-        String code = request.getCode();
-        String newPassword = request.getNewPassword();
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("가입되지 않은 이메일입니다."));
-
-        PasswordResetCode resetCode = passwordResetCodeRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new BusinessException(ErrorCode.RESET_CODE_NOT_FOUND));
-
-        if (resetCode.isUsed()) {
-            throw new BusinessException(ErrorCode.RESET_CODE_ALREADY_USED);
-        }
-
-        if (resetCode.isExpired()) {
-            throw new BusinessException(ErrorCode.EXPIRED_RESET_CODE);
-        }
-
-        if (!resetCode.getCode().equals(code)) {
-            throw new BusinessException(ErrorCode.INVALID_RESET_CODE);
-        }
-
-        user.setPassword(passwordEncoder.encode(newPassword));
-
-        resetCode.markAsUsed();
-        passwordResetCodeRepository.save(resetCode);
-
-        return new PasswordResetResponse(user.getId());
-    }
-
-    // 이메일 발송 처리
-    private void sendResetCodeMail(String email, String code) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        //message.setFrom(fromEmail);
-        message.setTo(email);
-        message.setSubject("[BN] 비밀번호 재설정 인증코드");
-        message.setText(
-                "비밀번호 재설정 인증코드입니다.\n\n" +
-                        "인증코드: " + code + "\n\n" +
-                        "인증코드는 5분 후 만료됩니다."
-        );
-
-        mailSender.send(message);
-    }
-
-    // 6자리 인증 코드 생성
-    private String generate6DigitCode() {
-        SecureRandom r = new SecureRandom();
-        int n = r.nextInt(900000) + 100000;
-        return String.valueOf(n);
-    }
-
-
 }

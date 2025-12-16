@@ -20,6 +20,10 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.etmetmy.bn_server.web.SessionConst;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "User", description = "사용자 인증 및 관리 API")
@@ -87,10 +91,11 @@ public class UserController {
     @GetMapping("/admin/users")
     public CommonResponse<UserDataResponse> searchUsers(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String email
+            @RequestParam(required = false) String email,
+            @ParameterObject
+            @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        UserDataResponse usersBoardData = userService.searchUsers(name, email);
-
+        UserDataResponse usersBoardData = userService.searchUsers(name, email, pageable);
         return CommonResponse.success("대시보드 데이터를 성공적으로 조회하였습니다.", usersBoardData);
     }
 

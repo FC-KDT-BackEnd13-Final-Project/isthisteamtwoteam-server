@@ -25,6 +25,8 @@ public interface PostService {
     PostCreateResponse updatePost(Long postId, @Valid PostUpdateRequest requestDto, Long loginUserId);
 
     void completePost(Long projectId, Long postId, Long loginUserId);
+
+    void softDeletePost(Long postId, Long userId);
 }
 
 
