@@ -5,8 +5,6 @@ import lombok.Getter;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
-import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
-import org.etmetmy.bn_server.domain.post.entity.Post;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,8 +22,7 @@ public class CommentResponse {
 
     private final List<FileInfoDTO> files;
     private final List<LinkInfoDTO> links;
-
-    private final List<CommentResponse> replies;
+    private final List<CommentResponse> replies; // 대댓글 목록
 
     public static class Converter {
         public static CommentResponse from(
