@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.project.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,6 +17,8 @@ import java.util.List;
 @AllArgsConstructor
 public class ProjectCreateRequest {
     private String projectName;
+
+    @JsonIgnore //swagger에서 입력 무시용
     private String projectImageUrl; // URL만 저장(파일 업로드 후)
 
     private String startDate;

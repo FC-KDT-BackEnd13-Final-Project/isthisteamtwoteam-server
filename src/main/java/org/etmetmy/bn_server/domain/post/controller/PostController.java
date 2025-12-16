@@ -2,16 +2,18 @@ package org.etmetmy.bn_server.domain.post.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
 import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListByStageResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
@@ -129,5 +131,17 @@ public class PostController {
 
         postService.softDeletePost(postId,userId);
         return CommonResponse.success("게시글 삭제 성공", null);
+    }
+
+    //todo: 삭제된 게시글 복원
+    @Operation(summary = "게시글 복원", description = "휴지통에 있는 게시글을 복원합니다")
+    @PatchMapping("/posts/restore")
+    public CommonResponse<PostRestoreResponse> restoreDeletedPost(
+            HttpSession session, @Valid @RequestBody PostRestoreRequest request)
+    {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        PostRestoreResponse response = postService.restoreDeletedPost(loginUserId, request);
+
+        return CommonResponse.success("삭제된 게시글 복원 성공", response);
     }
 }

@@ -109,4 +109,10 @@ public class Post extends BaseEntity {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deletedBy;
     }
+
+    // 게시글 restore
+    public void restore() {
+        isDeleted = false;
+        deletedAt = null;
+    }
 }
