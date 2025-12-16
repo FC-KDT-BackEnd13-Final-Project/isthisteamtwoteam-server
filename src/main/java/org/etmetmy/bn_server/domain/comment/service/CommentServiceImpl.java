@@ -97,14 +97,12 @@ public class CommentServiceImpl implements CommentService {
         List<Comment> comments = commentRepository.findAllByPostId(postId);
 
         // 3. 댓글 ID 기준 파일/링크 맵 구성
-        List<File> files = fileRepository.findByPost_PostIdAndCommentIsNotNull(postId);
-
-        Map<Long, List<FileInfoDTO>> fileMap = files.stream()
+        Map<Long, List<FileInfoDTO>> fileMap = fileRepository.findByPostId(postId).stream()
                 .filter(f -> f.getComment() != null && !f.getIsDeleted()) // null, 삭제 파일 제외
                 .collect(Collectors.groupingBy(
                         f -> f.getComment().getCommentId(),
                         Collectors.mapping(
-                                f -> FileInfoDTO.Converter.from(List.of(f)).getFirst(), // 단일 객체를 리스트로 감싸 기존 Converter 호출
+                                f -> FileInfoDTO.Converter.from(List.of(f)).getFirst(),
                                 Collectors.toList()
                         )
                 ));

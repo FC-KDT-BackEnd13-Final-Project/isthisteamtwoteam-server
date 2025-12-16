@@ -16,11 +16,11 @@ public class CommentListResponse {
 
     public static class Converter{
         public static CommentListResponse from(Post post,
-                                               List<Comment> rootComments,
+                                               List<Comment> allComments,
                                                List<CommentResponse> commentResponse) {
             return CommentListResponse.builder()
                     .postId(post.getPostId())
-                    .totalCount(rootComments.size())
+                    .totalCount(allComments.size())
                     .comments(commentResponse)
                     .build();
         }
