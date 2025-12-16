@@ -19,7 +19,7 @@ public class CheckListCustomerController {
     private final CheckListService checkListService;
 
     @PatchMapping("/{checkListId}/checked")
-    public void checkedUpdate(
+    public void updateCheckListItemStatus(
             @PathVariable Long projectId,
             @PathVariable Long checkListId,
             @RequestBody CheckListCheckedUpdateRequest request,
