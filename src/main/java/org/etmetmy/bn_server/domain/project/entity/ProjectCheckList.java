@@ -52,4 +52,11 @@ public class ProjectCheckList extends BaseEntity {
     @OneToMany(mappedBy = "projectCheckList", cascade = CascadeType.ALL, orphanRemoval = true)
     @lombok.Builder.Default
     private List<Link> links = new ArrayList<>();
+
+    public void updateChecked(Boolean checked) {
+        this.checked = checked;
+    }
+    public void updateReason(String reason) {
+       this.reason = reason;
+    }
 }

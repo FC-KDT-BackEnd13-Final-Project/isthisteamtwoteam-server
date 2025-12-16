@@ -17,4 +17,8 @@ public interface CheckListService {
     Page<CheckListResponse> getCheckLists(PageRequest pageRequest);
 
     Page<CheckListResponse> searchCheckLists(String keyword, PageRequest pageRequest);
+
+    void checkedUpdate(Long projectId, Long userId);
+
+    void updateCheckListItemStatus(Long checkListId, Long userId, Boolean checked);
 }

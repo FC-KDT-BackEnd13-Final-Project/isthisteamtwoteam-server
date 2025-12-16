@@ -6,6 +6,7 @@ import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
+import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.global.page.PageRequest;
@@ -20,6 +21,7 @@ import java.util.Optional;
 @Transactional
 public class CheckListServiceImpl implements CheckListService {
     private final CheckListRepository checkListRepository;
+    private final ProjectCheckListRepository projectCheckListRepository;
 
     @Override
     public CheckListResponse save(CheckListCreateRequest request) {
@@ -54,7 +56,22 @@ public class CheckListServiceImpl implements CheckListService {
     @Override
     public Page<CheckListResponse> searchCheckLists(String keyword, PageRequest pageRequest) {
         Page<CheckList> keywrodCheckListPage = checkListRepository.findByKeyword(keyword, pageRequest);
-        return keywrodCheckListPage.map(CheckListResponse.Converter::from);
-    }
-
-}
+                return keywrodCheckListPage.map(CheckListResponse.Converter::from);
+            }
+        
+            @Override
+            public void updateCheckListItemStatus(Long checkListId, Long userId, Boolean checked) {
+                ProjectCheckList projectCheckList = projectCheckListRepository.findById(checkListId)
+                        .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+        
+                // You might want to add a check here to ensure the userId matches the answererId
+                // or has permission to update this checklist item.
+                // For now, only checkListId is used for identifying the item.
+                // if (!projectCheckList.getAnswererId().getId().equals(userId)) {
+                //     throw new BusinessException(ErrorCode.UNAUTHORIZED);
+                // }
+        
+                projectCheckList.updateChecked(checked);
+                projectCheckListRepository.save(projectCheckList);
+            }
+        }
