@@ -69,10 +69,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     @Query("select p from Project p where (p.isDeleted IS NULL OR p.isDeleted = false)")
     List<Project> findActiveProjects();
 
-    // 삭제된 프로젝트 조회
-    @Query("select p from Project p where p.isDeleted = true")
-    List<Project> findDeletedProjects();
-
     // 특정 프로젝트 ID 리스트에서 진행 중인 프로젝트만 조회 (고객용 대시보드)
     @Query("SELECT p FROM Project p " +
             "JOIN FETCH p.stage s " +

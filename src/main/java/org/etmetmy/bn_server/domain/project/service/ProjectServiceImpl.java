@@ -564,20 +564,6 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectDetailResponse.Converter.from(project);
     }
 
-    // (휴지통 페이지) 삭제된 프로젝트 목록 조회
-    @Override
-    @Transactional(readOnly = true)
-    public List<DeletedProjectResponse> getDeletedProjectList(Long loginUserId) {
-        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
-
-        if (user.getRole() != Role.ADMIN) {
-            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
-        }
-        List<Project> projects = projectRepository.findDeletedProjects();
-
-        return DeletedProjectResponse.Converter.from(projects);
-    }
-
     // 삭제된 프로젝트 복원
     @Override
     @Transactional
