@@ -193,9 +193,13 @@ public class ProjectAdminController {
     @Operation(summary = "프로젝트 상세 조회", description = "특정 프로젝트의 상세 정보를 조회합니다")
     @GetMapping("/{projectId}")
     public CommonResponse<ProjectDetailResponse> getProjectDetail(
-            @PathVariable Long projectId
+            @PathVariable Long projectId,
+            HttpSession session
     ) {
-        ProjectDetailResponse response = projectService.getProjectDetail(projectId);
+
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        ProjectDetailResponse response = projectService.getProjectDetail(userId, projectId);
         return CommonResponse.success("프로젝트 조회 성공", response);
     }
 

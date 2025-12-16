@@ -16,16 +16,23 @@ import java.util.List;
 public interface FileRepository extends JpaRepository<File, Long> {
 
     @Query("SELECT f FROM File f " +
-           "JOIN FETCH f.post p " +
-           "WHERE p.project.id = :projectId " +
-           "AND f.isDeleted = false")
+            "JOIN FETCH f.post p " +
+            "WHERE p.project.id = :projectId " +
+            "AND f.isDeleted = false")
     List<File> findByProjectId(@Param("projectId") Long projectId);
+
+    // project_id로 직접 조회 (네이티브 쿼리 사용)
+    @Query("SELECT f " +
+            "FROM File f " +
+            "WHERE f.project.id = :projectId " +
+            "AND f.isDeleted = false")
+    List<File> findAllByProjectId(@Param("projectId") Long projectId);
 
     List<File> findByPost(Post post);
 
     @Query("SELECT f FROM File f " +
-           "WHERE f.projectCheckList.projectCheckListId = :projectCheckListId " +
-           "AND f.isDeleted = false")
+            "WHERE f.projectCheckList.projectCheckListId = :projectCheckListId " +
+            "AND f.isDeleted = false")
     List<File> findByProjectCheckListId(@Param("projectCheckListId") Long projectCheckListId);
 
     @Query("select f from File f " +

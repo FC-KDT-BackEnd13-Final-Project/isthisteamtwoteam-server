@@ -6,25 +6,28 @@ import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
-import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
-import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.*;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
 import org.etmetmy.bn_server.domain.user.dto.response.*;
+import org.etmetmy.bn_server.domain.user.entity.PasswordResetCode;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.domain.user.repository.PasswordResetCodeRepository;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.security.SecureRandom;
 import java.util.List;
 
 
@@ -39,6 +42,10 @@ public class UserServiceImpl implements UserService{
     private final CompanyService companyService;
     private final PasswordEncoder passwordEncoder;
     private final ProjectMemberRepository projectMemberRepository;
+    private final PasswordResetCodeRepository passwordResetCodeRepository;
+    private final MailSender mailSender;
+
+    private static final int RESET_CODE_EXPIRES_SECONDS = 300;
 
     // 회원 정보 수정 (Update)
     @Override
@@ -190,4 +197,88 @@ public class UserServiceImpl implements UserService{
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
         user.setPassword(encodedPassword);
     }
+
+    // 비밀번호 찾기 - 인증 코드 발송
+    @Override
+    @Transactional
+    public PasswordFindResponse sendPasswordResetCode(PasswordFindRequest request) {
+        String email = request.getEmail();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("가입되지 않은 이메일입니다."));
+
+        String code = generate6DigitCode();
+
+        // 기존 코드가 있으면 재사용, 없으면 새로 생성
+        PasswordResetCode resetCode = passwordResetCodeRepository.findByUserId(user.getId())
+                .map(existing -> {
+                    existing.reset(email, code);
+                    return existing;
+                })
+                .orElseGet(() -> new PasswordResetCode(user, email, code));
+
+        passwordResetCodeRepository.save(resetCode);
+
+        sendResetCodeMail(email, code);
+
+        return PasswordFindResponse.Converter.of(email, RESET_CODE_EXPIRES_SECONDS);
+    }
+
+    // 비밀번호 재설정 - 코드 검증 및 비밀번호 변경
+    @Override
+    @Transactional
+    public PasswordResetResponse resetPassword(PasswordResetVerifyCodeRequest request) {
+        String email = request.getEmail();
+        String code = request.getCode();
+        String newPassword = request.getNewPassword();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("가입되지 않은 이메일입니다."));
+
+        PasswordResetCode resetCode = passwordResetCodeRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.RESET_CODE_NOT_FOUND));
+
+        if (resetCode.isUsed()) {
+            throw new BusinessException(ErrorCode.RESET_CODE_ALREADY_USED);
+        }
+
+        if (resetCode.isExpired()) {
+            throw new BusinessException(ErrorCode.EXPIRED_RESET_CODE);
+        }
+
+        if (!resetCode.getCode().equals(code)) {
+            throw new BusinessException(ErrorCode.INVALID_RESET_CODE);
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+
+        resetCode.markAsUsed();
+        passwordResetCodeRepository.save(resetCode);
+
+        return PasswordResetResponse.Converter.from(user.getId());
+    }
+
+    // 이메일 발송 처리
+    private void sendResetCodeMail(String email, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        //message.setFrom(fromEmail);
+        message.setTo(email);
+        message.setSubject("[BN] 비밀번호 재설정 인증코드");
+        message.setText(
+                "비밀번호 재설정 인증코드입니다.\n\n" +
+                        "인증코드: " + code + "\n\n" +
+                        "인증코드는 5분 후 만료됩니다."
+        );
+
+        mailSender.send(message);
+    }
+
+    // 6자리 인증 코드 생성
+    private String generate6DigitCode() {
+        SecureRandom r = new SecureRandom();
+        int n = r.nextInt(900000) + 100000;
+        return String.valueOf(n);
+    }
+
+
 }
