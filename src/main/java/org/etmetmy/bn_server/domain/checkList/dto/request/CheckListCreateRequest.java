@@ -11,12 +11,6 @@ import java.util.List;
 public class CheckListCreateRequest {
     private String content;
 
-    // S3에 업로드된 파일 정보 목록
-    private List<Long> fileIds;
-
-    // 링크 URL 목록
-    private List<String> linkUrls;
-
     // 내부 Converter
     public static class Converter{
 
