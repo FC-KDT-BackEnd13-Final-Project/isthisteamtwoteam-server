@@ -35,14 +35,13 @@ public class FileInfoDTO {
     @JsonProperty("fileType")
     private String fileType;
 
-
     /**
      * File 엔티티 리스트를 FileInfo DTO 리스트로 변환
      * 삭제된 파일은 제외
      */
     public static class Converter {
-        public static List<FileInfoDTO> from(List<File> files) {
 
+        public static List<FileInfoDTO> from(List<File> files) {
             // 1. files가 null 이면 빈 리스트 반환
             if (files == null) {
                 return new ArrayList<>();

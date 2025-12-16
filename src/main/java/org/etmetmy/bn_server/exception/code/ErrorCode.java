@@ -21,22 +21,27 @@ public enum ErrorCode {
 
     // 게시글 관련 에러
     BOARD_POST_NOT_FOUND(404, "B001", "게시글을 찾을 수 없습니다."),
-    BOARD_COMMENT_NOT_FOUND(404, "B002", "댓글을 찾을 수 없습니다."),
-    PARENT_COMMENT_NOT_FOUND(404, "B002_1", "부모 댓글을 찾을 수 없습니다."),
     BOARD_PERMISSION_DENIED(403, "B003", "게시글 수정/삭제 권한이 없습니다."),
     BOARD_ALREADY_DELETED(400, "B004", "이미 삭제된 게시글입니다."),
     BOARD_INVALID_FILTER(400,"B005", "유효하지 않은 게시글 필터입니다."),
     POST_PROJECT_MISMATCH(400, "P014", "게시글이 해당 프로젝트에 속하지 않습니다."),
 
+    // 댓글 관련 에러
+    BOARD_COMMENT_NOT_FOUND(404, "C001", "댓글을 찾을 수 없습니다."),
+    INVALID_PARENT_COMMENT(400, "C002", "유효하지 않은 부모 댓글입니다."),
+    PARENT_COMMENT_NOT_FOUND(404, "C003", "부모 댓글을 찾을 수 없습니다."),
+    COMMENT_PERMISSION_DENIED(403,"C004","댓글 수정/삭제 권한이 없습니다."),
 
-    INVALID_INPUT_VALUE(400, "C001", "잘못된 입력값입니다."),
-    INVALID_TYPE_VALUE(400, "C002", "잘못된 타입입니다."),
-    INVALID_NOT_ALLOWED(405, "C003", "허용되지 않은 HTTP 메서드입니다."),
-    INTERNAL_SERVER_ERROR(500, "C004", "서버 오류가 발생했습니다."),
-    ENTITY_NOT_FOUND(404, "C005", "요청한 리소스를 찾을 수 없습니다."),
+    //공통 에러
+    INVALID_INPUT_VALUE(400, "I001", "잘못된 입력값입니다."),
+    INVALID_TYPE_VALUE(400, "I002", "잘못된 타입입니다."),
+    INVALID_NOT_ALLOWED(405, "I003", "허용되지 않은 HTTP 메서드입니다."),
+    INTERNAL_SERVER_ERROR(500, "I004", "서버 오류가 발생했습니다."),
+    ENTITY_NOT_FOUND(404, "E005", "요청한 리소스를 찾을 수 없습니다."),
 
+    // 프로젝트 관련 에러
     PROJECT_NOT_FOUND(404, "P001", "프로젝트를 찾을 수 없습니다."),
-    PROJECT_ALREADY_EXISTS(409, "P002", "이미 존재하는 프로젝트입니다."),  // ← 수정!
+    PROJECT_ALREADY_EXISTS(409, "P002", "이미 존재하는 프로젝트입니다."),
     PROJECT_PERMISSION_DENIED(403, "P003", "프로젝트 접근 권한이 없습니다."),
     PROJECT_CANNOT_DELETE(400, "P004", "진행 중인 프로젝트는 삭제할 수 없습니다."),
     PROJECT_NAME_DUPLICATE(409, "P005", "중복된 프로젝트명입니다."),

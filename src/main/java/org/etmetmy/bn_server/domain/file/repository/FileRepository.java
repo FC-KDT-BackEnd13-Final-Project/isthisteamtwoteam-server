@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.file.repository;
 
+import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
@@ -30,4 +31,13 @@ public interface FileRepository extends JpaRepository<File, Long> {
     @Query("select f from File f " +
             "where f.post.postId = :postId and f.isDeleted = false")
     List<File> findFilesByPostId(Long postId);
+
+    @Query("select f from File f " +
+            "where f.comment.commentId = :commentId and f.isDeleted = false")
+    List<File> findFilesByCommentId(Long commentId);
+
+    @Query("select f from File f where f.comment.post.postId = :postId")
+    List<File> findByPostId(@Param("postId") Long postId);
+
+    List<File> findByPost_PostIdAndCommentIsNotNull(Long postId);
 }

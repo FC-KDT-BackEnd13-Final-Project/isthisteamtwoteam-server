@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
+import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 
 import java.util.ArrayList;
@@ -24,7 +26,6 @@ public class LinkInfoDTO {
 
 
     public static class Converter {
-
         public static List<LinkInfoDTO> from(List<Link> links) {
             if (links == null || links.isEmpty()) {
                 return List.of();

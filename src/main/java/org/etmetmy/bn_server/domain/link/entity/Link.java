@@ -44,6 +44,7 @@ public class Link extends BaseEntity { //다른 패키지에서 접근
     private Long uploadedBy;
 
     @Column(name = "is_deleted", nullable = false)
+    @lombok.Builder.Default
     private Boolean isDeleted = false;
 
     @Column(name = "deleted_at")

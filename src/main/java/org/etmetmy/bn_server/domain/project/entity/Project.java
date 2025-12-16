@@ -53,16 +53,20 @@ public class Project extends BaseEntity {
     private Stage stage;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @lombok.Builder.Default
     private List<Post> posts = new ArrayList<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @lombok.Builder.Default
     private List<ProjectCheckList> projectCheckLists = new ArrayList<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @lombok.Builder.Default
     private List<Memo> memos = new ArrayList<>();
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    @lombok.Builder.Default
+    private Boolean isDeleted = false;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
