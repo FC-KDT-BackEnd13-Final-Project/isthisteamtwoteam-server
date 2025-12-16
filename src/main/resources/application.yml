@@ -54,5 +54,7 @@ logging:
     root: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
+    org.etmetmy.bn_server.global.aop.ActivityLogAspect: DEBUG
+    org.etmetmy.bn_server.domain.activityLog: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

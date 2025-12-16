@@ -67,67 +67,61 @@ public class ProjectServiceImpl implements ProjectService {
     private final CompanyRepository companyRepository;
     private final FileService fileService;
 
+
     @Override
     @Transactional
-    public void createProject(ProjectCreateRequest request, MultipartFile image, Long loginUserId) {
+    public ProjectCreateResponse createProject(ProjectCreateRequest request, Long loginUserId) {
 
-        // 1. 엔티티 조회
+        // 1. Stage 조회
         Stage startStage = getStartStage(request.getStage());
+
+        // 2. Company 조회
         Company company = companyRepository.findById(request.getCompanyId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
 
-        // 2. Project 생성 및 저장 (시작 단계 설정 포함)
-        Project project = ProjectCreateRequest.Converter.toEntity(request, company, loginUserId, startStage);
+        // 3. Project 생성
+        Project project = ProjectCreateRequest.Converter
+                .toEntity(request, company, loginUserId, startStage);
+
         Project savedProject = projectRepository.save(project);
 
-        // 3. 이미지가 있을 경우 S3에 업로드하고 URL 받기
-        if (image != null && !image.isEmpty()) {
-            // S3 업로드
-            String imageUrl = fileService.uploadToS3(image).getFileUrl();
-            // 프로젝트에 이미지 주소 저장
-            project.setProjectImageUrl(imageUrl);
-        }
-
-        // 4. Memo 생성 및 저장
+        // 4. Memo
         createMemoIfPresent(request.getMemo(), savedProject);
 
-        // 5. 프로젝트 멤버 생성 및 저장
+        // 5. Project Members
         if (hasMembers(request)) {
-            // List<Long>을 List<ProjectMemberRequest>로 변환 (생성자 사용)
             List<ProjectMemberRequest> memberRequests = request.getMembers().stream()
                     .map(ProjectMemberRequest::new)
-                    .collect(Collectors.toList());
+                    .toList();
 
-            List<ProjectMember> projectMembers = createProjectMembers(
+            List<ProjectMember> members = createProjectMembers(
                     memberRequests,
                     savedProject,
                     loginUserId
             );
-            // 빈 리스트가 아닐 때만 저장
-            if (!projectMembers.isEmpty()) {
-                projectMemberRepository.saveAll(projectMembers);
+
+            if (!members.isEmpty()) {
+                projectMemberRepository.saveAll(members);
             }
         }
 
-        // 6. 체크리스트 생성 및 저장
+        // 6. CheckLists
         if (request.getSelectedChecklistIds() != null && !request.getSelectedChecklistIds().isEmpty()) {
-            List<ProjectCheckList> projectCheckLists = request.getSelectedChecklistIds().stream()
-                    .map(checkListId -> {
-                        Long checkListIdLong = checkListId.longValue();
-                        // CheckList 존재 여부 확인
-                        checkListRepository.findById(checkListIdLong)
-                                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+            List<ProjectCheckList> projectCheckLists =
+                    request.getSelectedChecklistIds().stream()
+                            .map(id -> {
+                                checkListRepository.findById(id.longValue())
+                                        .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+                                return ProjectAddCheckListRequest.Converter
+                                        .toEntity(savedProject, id.longValue());
+                            })
+                            .toList();
 
-                        // ProjectAddCheckListRequest.Converter 재사용
-                        return ProjectAddCheckListRequest.Converter.toEntity(savedProject, checkListIdLong);
-                    })
-                    .toList();
-
-            if (!projectCheckLists.isEmpty()) {
-                projectChecklistRepository.saveAll(projectCheckLists);
-            }
+            projectChecklistRepository.saveAll(projectCheckLists);
         }
+        return ProjectCreateResponse.Converter.from(savedProject);
     }
+
 
     @Override
     @Transactional

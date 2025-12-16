@@ -14,6 +14,7 @@ import org.etmetmy.bn_server.domain.activityLog.event.ActivityLogEvent;
 import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.ReplyPostCreateResponse;
+import org.etmetmy.bn_server.domain.project.dto.response.ProjectCreateResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -120,14 +121,24 @@ public class ActivityLogAspect {
         String[] parameterNames = signature.getParameterNames();
         Object[] args = joinPoint.getArgs();
 
+        // 1. 파라미터에서 projectId 찾기
         for (int i = 0; i < parameterNames.length; i++) {
             if ("projectId".equals(parameterNames[i]) && args[i] instanceof Long) {
                 return (Long) args[i];
             }
         }
 
-        if (result instanceof Long && "Project".equals(findTargetType(joinPoint))) {
-            return (Long) result;
+        // 2. CommonResponse 언래핑
+        Object unwrapped = unwrapCommonResponse(result);
+
+        // 3. ProjectCreateResponse에서 projectId 추출
+        if (unwrapped instanceof ProjectCreateResponse projectResponse) {
+            return projectResponse.getProjectId();
+        }
+
+        // 4. 반환값이 Long이고 targetType이 Project인 경우
+        if (unwrapped instanceof Long && "Project".equals(findTargetType(joinPoint))) {
+            return (Long) unwrapped;
         }
 
         return null;
@@ -163,9 +174,12 @@ public class ActivityLogAspect {
             if (unwrapped instanceof PostCreateResponse postResponse) {
                 return postResponse.getPostId();
             }
-            /*if (unwrapped instanceof ReplyPostCreateResponse replyResponse) {
-                return replyResponse.getPostId();
-            }*/
+        }
+
+        if ("Project".equalsIgnoreCase(targetType)) {
+            if (unwrapped instanceof ProjectCreateResponse projectResponse) {
+                return projectResponse.getProjectId();
+            }
         }
 
         // 3. 일반적인 Long 타입 반환 값 처리
