@@ -38,6 +38,4 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     @Query("select f from File f where f.comment.post.postId = :postId")
     List<File> findByPostId(@Param("postId") Long postId);
-
-    List<File> findByPost_PostIdAndCommentIsNotNull(Long postId);
 }
