@@ -83,7 +83,7 @@ public class ProjectServiceImpl implements ProjectService {
         // 3. 이미지가 있을 경우 S3에 업로드하고 URL 받기
         if (image != null && !image.isEmpty()) {
             // S3 업로드
-            String imageUrl = fileService.uploadToS3(image);
+            String imageUrl = fileService.uploadToS3(image).getFileUrl();
             // 프로젝트에 이미지 주소 저장
             project.setProjectImageUrl(imageUrl);
         }
@@ -607,7 +607,7 @@ public class ProjectServiceImpl implements ProjectService {
         // 이미지가 있을 경우 S3에 업로드하고 URL 받기
         if (image != null && !image.isEmpty()) {
             // S3 업로드
-            String imageUrl = fileService.uploadToS3(image);
+            String imageUrl = fileService.uploadToS3(image).getFileUrl();
             // 프로젝트에 이미지 주소 저장
             project.setProjectImageUrl(imageUrl);
             projectRepository.save(project);

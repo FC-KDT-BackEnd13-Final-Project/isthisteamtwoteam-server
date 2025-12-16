@@ -118,18 +118,16 @@ public class PostController {
 
     // todo: 게시글 수정 API
     @Operation(summary = "게시글 수정", description = "게시글을 수정합니다")
-    @PatchMapping("/{projectId}/posts/{postId}")
+    @PatchMapping("/posts/{postId}")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     public CommonResponse<PostCreateResponse> updatePost(
-            @PathVariable Long projectId,
             @PathVariable Long postId,
             @Valid @RequestBody PostUpdateRequest requestDto,
             HttpSession session) {
 
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
-        PostCreateResponse response = postService.updatePost(
-                projectId, postId, requestDto, loginUserId);
+        PostCreateResponse response = postService.updatePost(postId, requestDto, loginUserId);
         return CommonResponse.success("게시글 수정 성공", response);
     }
 }

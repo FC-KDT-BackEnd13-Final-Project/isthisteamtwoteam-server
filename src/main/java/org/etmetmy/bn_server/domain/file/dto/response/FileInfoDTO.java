@@ -23,8 +23,8 @@ public class FileInfoDTO {
     @JsonProperty("fileId")
     private Long fileId;
 
-    @JsonProperty("fileName")
-    private String fileName;
+    @JsonProperty("fileOriginalFileName")
+    private String fileOriginalFileName;
 
     @JsonProperty("fileSize")
     private Long fileSize;
@@ -59,7 +59,7 @@ public class FileInfoDTO {
                 // File 엔티티의 정보를 FileInfo DTO로 변환
                 fileInfos.add(FileInfoDTO.builder()
                         .fileId(file.getFileId())
-                        .fileName(file.getFileTitle())
+                        .fileOriginalFileName(file.getOriginalFileTitle())
                         .fileSize(file.getFileSize())
                         .fileUrl(file.getFilePath())
                         .fileType(file.getFileType())
