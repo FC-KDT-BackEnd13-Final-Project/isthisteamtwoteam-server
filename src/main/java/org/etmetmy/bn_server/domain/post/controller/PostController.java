@@ -15,8 +15,6 @@ import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
-import org.etmetmy.bn_server.domain.project.dto.request.ProjectRestoreRequest;
-import org.etmetmy.bn_server.domain.project.dto.response.ProjectRestoreResponse;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.web.bind.annotation.PathVariable;

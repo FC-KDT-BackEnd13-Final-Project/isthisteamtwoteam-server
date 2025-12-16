@@ -332,10 +332,10 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PostRestoreResponse restoreDeletedPost(Long loginUserId, PostRestoreRequest request){
 
-        // 1. 권한 검증
+        // 1. 권한 검증 (관리자만)
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
         if (user.getRole() != Role.ADMIN) {
-            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
+            throw new BusinessException(ErrorCode.DELETED_BOARD_ACCESS_DENIED);
         }
 
         // 2. 요청한 프로젝트 ID 조회
@@ -344,7 +344,7 @@ public class PostServiceImpl implements PostService {
 
         // 3. 존재 개수 비교
         if (posts.size() != postIds.size()) {
-            throw new ProjectNotFoundException("존재하지 않는 게시글이 포함되어 있습니다.");
+            throw new BoardNotFoundException("존재하지 않는 게시글이 포함되어 있습니다.");
         }
 
         // 4. 삭제 여부 체크 후 restore
@@ -362,7 +362,7 @@ public class PostServiceImpl implements PostService {
         });
 
         postRepository.saveAll(posts);
-        return PostRestoreResponse.Converter.from(posts);
+        return PostRestoreResponse.Converter.from(posts, user.getId());
     }
 
     // 프로젝트–게시글 소속 검증

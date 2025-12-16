@@ -21,12 +21,16 @@ public class PostRestoreResponse {
     @JsonProperty("restored_ids")
     private List<Long> restoredIds;
 
+    @JsonProperty("user_id")
+    private Long userId;
+
     public static class Converter {
-        public static PostRestoreResponse from(List<Post> posts) {
+        public static PostRestoreResponse from(List<Post> posts, Long userId) {
 
             return PostRestoreResponse.builder()
                     .restoredCount((long)posts.size())
                     .restoredIds(posts.stream().map(Post::getPostId).toList())
+                    .userId(userId)
                     .build();
         }
     }
