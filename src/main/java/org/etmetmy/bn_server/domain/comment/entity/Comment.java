@@ -42,21 +42,41 @@ public class Comment extends BaseEntity {
     @Column(name = "ip", length = 45)
     private String ip;
 
-    @Column(name = "comment_id2")
-    private Long commentId2;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Comment parent;
 
     //삭제(프로젝트 삭제 시 soft delete)
     @Column(name = "is_deleted", nullable = false)
+    @lombok.Builder.Default
     private Boolean isDeleted = false;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
+    @Column(name =  "deleted_by")
+    private Long deletedBy;
+
     //파일 목록
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @lombok.Builder.Default
     private List<File> files = new ArrayList<>();
 
     //링크 목록
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @lombok.Builder.Default
     private List<Link> links = new ArrayList<>();
+
+
+    // 댓글 업데이트 메서드
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    // 댓글 soft delete
+    public void softDelete(Long deletedBy) {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
+    }
 }

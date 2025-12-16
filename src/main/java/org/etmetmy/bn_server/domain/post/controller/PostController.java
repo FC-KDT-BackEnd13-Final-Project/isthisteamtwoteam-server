@@ -116,6 +116,7 @@ public class PostController {
         }
     }
 
+    // todo: 게시글 수정 API
     @Operation(summary = "게시글 수정", description = "게시글을 수정합니다")
     @PatchMapping("/{projectId}/posts/{postId}")
     @ActivityLogger(targetType = "Post", action = "UPDATE")

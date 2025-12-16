@@ -72,7 +72,7 @@ public class UserController {
 
     //todo: 로그아웃
     @Operation(summary = "로그아웃", description = "현재 세션을 종료하고 로그아웃합니다")
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public CommonResponse<Object> logout(
             HttpServletRequest request
     ){

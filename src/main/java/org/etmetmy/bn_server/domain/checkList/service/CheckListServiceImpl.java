@@ -40,8 +40,7 @@ public class CheckListServiceImpl implements CheckListService {
     }
 
     @Override
-    public void delete(Long checkListId) {
-        checkListRepository.deleteById(checkListId);
+    public void delete(Long checkListId) {checkListRepository.deleteById(checkListId);
     }
 
     // 페이지네이션 체크리스트 전체 조회
