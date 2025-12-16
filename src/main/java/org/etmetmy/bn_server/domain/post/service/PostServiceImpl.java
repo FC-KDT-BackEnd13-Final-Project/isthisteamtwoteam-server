@@ -195,8 +195,8 @@ public class PostServiceImpl implements PostService {
 
         // 3. Stage 조회
         Stage stage = null;
-        if (requestDto.getStageId() != null) {
-            stage = stageRepository.findById(requestDto.getStageId())
+        if (requestDto.getStage() != null) {
+            stage = stageRepository.findByStageName(requestDto.getStage())
                     .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
         }
 
