@@ -1,7 +1,6 @@
 package org.etmetmy.bn_server.domain.post.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,8 +26,8 @@ public class PostUpdateRequest {
     @NotBlank(message = "본문은 필수입니다.")
     private String content;
 
-    @NotNull(message = "단계 ID는 필수입니다.")
-    private Long stageId;
+    @NotBlank(message = "단계는 필수입니다.")
+    private String stage;
 
     private Long parentId;
 

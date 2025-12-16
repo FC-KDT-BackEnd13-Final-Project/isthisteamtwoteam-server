@@ -80,6 +80,10 @@ public class Post extends BaseEntity {
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    @Column(name =  "deleted_by")
+    private Long deletedBy;
+
     //요청 (1:1 관계)
     @OneToOne(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private Request request;
@@ -97,5 +101,12 @@ public class Post extends BaseEntity {
     }
     public void updateCompletedStatus(Boolean isCompleted) {
         this.isCompleted = isCompleted;
+    }
+
+    // 게시글 soft delete
+    public void softDelete(Long deletedBy) {
+        this.isDeleted = true;
+        this.deletedAt = LocalDateTime.now();
+        this.deletedBy = deletedBy;
     }
 }

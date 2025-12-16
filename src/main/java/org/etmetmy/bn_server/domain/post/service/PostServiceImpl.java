@@ -195,8 +195,8 @@ public class PostServiceImpl implements PostService {
 
         // 3. Stage 조회
         Stage stage = null;
-        if (requestDto.getStageId() != null) {
-            stage = stageRepository.findById(requestDto.getStageId())
+        if (requestDto.getStage() != null) {
+            stage = stageRepository.findByStageName(requestDto.getStage())
                     .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
         }
 
@@ -294,6 +294,36 @@ public class PostServiceImpl implements PostService {
 
         // 완료 상태로 업데이트
         post.updateCompletedStatus(true);
+    }
+
+    // 게시글 삭제 (soft delete)
+    @Override
+    @Transactional
+    public void softDeletePost(Long postId, Long userId){
+
+        // 1. 엔티티 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOARD_POST_NOT_FOUND));
+        List<Comment>  comments = commentRepository.findAllByPostId(post.getPostId());
+
+        // 2. 작성자 권한 검증 (작성자만 삭제 가능)
+        if(!post.getUser().getId().equals(userId)){
+            throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
+        }
+
+        // 3. 이미 삭제된 게시글 확인
+        if (post.getIsDeleted()) {
+            throw new BusinessException(ErrorCode.BOARD_ALREADY_DELETED);
+        }
+
+        // 4. 게시글 soft delete
+        post.softDelete(userId);
+
+        // 5. 게시글과 연결된 파일 삭제
+        List<File> postFiles = fileRepository.findFilesByPostId(post.getPostId());
+        for (File fileToDelete : postFiles) {
+            fileToDelete.softDelete(userId);
+        }
     }
 
     // 프로젝트–게시글 소속 검증

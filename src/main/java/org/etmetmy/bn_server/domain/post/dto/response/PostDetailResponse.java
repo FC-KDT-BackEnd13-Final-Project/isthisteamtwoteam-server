@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 @Getter
 @Builder
 public class PostDetailResponse {
-  
+
+    private final Long projectId;
     private final Long postId;
     private final Long parentPostId; // null or Id 번호
     private final Long userId;
@@ -48,9 +49,10 @@ public class PostDetailResponse {
             List<LinkInfoDTO> linkInfos = LinkInfoDTO.Converter.from(post.getLinks());
 
             // 댓글 변환 (계층 구조 포함)
-            List<CommentResponse> commentCreateRespons = convertCommentsToHierarchy(comments);
+            List<CommentResponse> commentCreateResponse = convertCommentsToHierarchy(comments);
 
             return PostDetailResponse.builder()
+                    .projectId(post.getProject().getId())
                     .postId(post.getPostId())
                     .parentPostId(post.getParentPostId())
                     .userId(author.getId())
@@ -66,7 +68,7 @@ public class PostDetailResponse {
                             ? request.getApproveStatus().getDescription()
                             : null)
                     .rejectionReason(request != null ? request.getRejectReason() : null)
-                    .comments(commentCreateRespons)
+                    .comments(commentCreateResponse)
                     .build();
         }
 

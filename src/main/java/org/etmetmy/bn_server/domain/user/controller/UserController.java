@@ -8,10 +8,10 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserSessionDto;
-import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
-import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.*;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
+import org.etmetmy.bn_server.domain.user.dto.response.PasswordFindResponse;
+import org.etmetmy.bn_server.domain.user.dto.response.PasswordResetResponse;
 import org.etmetmy.bn_server.domain.user.dto.response.UserDataResponse;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -130,6 +130,27 @@ public class UserController {
         userService.changePassword(loginUserId, request);
 
         return CommonResponse.success("비밀번호가 성공적으로 변경되었습니다.", null);
+    }
+
+
+    // todo: 비밀번호 찾기 - 이메일 인증코드 전송
+    @Operation(summary = "비밀번호 찾기 - 인증 코드 발송", description = "이메일로 비밀번호 재설정 인증 코드를 발송합니다")
+    @PostMapping("/password/find")
+    public CommonResponse<PasswordFindResponse> sendPasswordResetCode(
+            @Valid @RequestBody PasswordFindRequest request
+    ) {
+        PasswordFindResponse response = userService.sendPasswordResetCode(request);
+        return CommonResponse.success("인증 코드가 이메일로 발송되었습니다.", response);
+    }
+
+    // todo: 비밀번호 찾기 - 인증코드 확인 및 비밀번호 재설정
+    @Operation(summary = "비밀번호 재설정", description = "인증 코드 확인 후 새 비밀번호로 재설정합니다")
+    @PostMapping("/password/reset")
+    public CommonResponse<PasswordResetResponse> resetPassword(
+            @Valid @RequestBody PasswordResetVerifyCodeRequest request
+    ) {
+        PasswordResetResponse response = userService.resetPassword(request);
+        return CommonResponse.success("비밀번호가 성공적으로 변경되었습니다.", response);
     }
 
     /**

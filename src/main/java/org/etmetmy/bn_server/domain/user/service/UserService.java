@@ -1,10 +1,10 @@
 package org.etmetmy.bn_server.domain.user.service;
 
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
-import org.etmetmy.bn_server.domain.user.dto.request.UserChangePasswordRequest;
-import org.etmetmy.bn_server.domain.user.dto.request.UserUpdateRequest;
+import org.etmetmy.bn_server.domain.user.dto.request.*;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.user.dto.request.UserLoginDto;
+import org.etmetmy.bn_server.domain.user.dto.response.PasswordFindResponse;
+import org.etmetmy.bn_server.domain.user.dto.response.PasswordResetResponse;
 import org.etmetmy.bn_server.domain.user.dto.response.UserDataResponse;
 import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -26,5 +26,12 @@ public interface UserService {
 
     @Transactional
     void changePassword(Long userId, UserChangePasswordRequest request);
+
+    @Transactional
+    PasswordFindResponse sendPasswordResetCode(PasswordFindRequest request);
+
+     //*비밀번호 재설정 - 인증 코드 확인 및 비밀번호 변경
+    @Transactional
+    PasswordResetResponse resetPassword(PasswordResetVerifyCodeRequest request);
 
 }
