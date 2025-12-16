@@ -2,6 +2,7 @@ package org.etmetmy.bn_server.domain.post.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -129,5 +130,16 @@ public class PostController {
 
         PostCreateResponse response = postService.updatePost(postId, requestDto, loginUserId);
         return CommonResponse.success("게시글 수정 성공", response);
+    }
+
+    //todo: 게시글 삭제 (soft delete)
+    @Operation(summary = "게시글 삭제 (soft delete)", description = "해당 게시글과 함께 댓글, 파일도 soft delete 합니다.")
+    @DeleteMapping("/posts/{postId}")
+    public CommonResponse<Void> softDeletePost(@PathVariable Long postId, HttpSession session)
+    {
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        postService.softDeletePost(postId,userId);
+        return CommonResponse.success("게시글 삭제 성공", null);
     }
 }
