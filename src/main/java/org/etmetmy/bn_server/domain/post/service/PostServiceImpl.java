@@ -324,17 +324,6 @@ public class PostServiceImpl implements PostService {
         for (File fileToDelete : postFiles) {
             fileToDelete.softDelete(userId);
         }
-
-        // 게시글의 모든 댓글 soft delete
-        for (Comment comment : comments) {
-            comment.softDelete(userId);
-
-            // 댓글의 파일도 soft delete
-            List<File> commentFiles = fileRepository.findFilesByCommentId(comment.getCommentId());
-            for (File file : commentFiles) {
-                file.softDelete(userId);
-            }
-        }
     }
 
     // 프로젝트–게시글 소속 검증
