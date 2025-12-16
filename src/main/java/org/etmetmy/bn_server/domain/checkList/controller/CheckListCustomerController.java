@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.checkList.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,8 @@ public class CheckListCustomerController {
 
     private final CheckListService checkListService;
 
+    // todo : 체크리스트 체크 기능
+    @Operation(summary = "체크리스트 체크 기능", description = "체크를 누를때마다 true, false 전환")
     @PatchMapping("/{checkListId}/checked")
     public CommonResponse<Object> updateChecked(
             @PathVariable Long projectId,
@@ -30,6 +33,8 @@ public class CheckListCustomerController {
         return CommonResponse.success("성공했습니다",null);
     }
 
+    // todo : 체크리스트 답변 내용 업데이트
+    @Operation(summary = "체크리스트 답변 내용 업데이트", description = "답변 내용 업데이트")
     @PatchMapping("/{checkListId}/content")
     public CommonResponse<Object> updateContent(
             @PathVariable Long projectId,
