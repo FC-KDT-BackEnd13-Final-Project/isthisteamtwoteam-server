@@ -19,6 +19,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())  // ✅ 개발 중이라면 CSRF 완전 비활성화
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/password/**").permitAll()
                         .anyRequest().permitAll()  // ✅ 모든 요청 허용
                 );
 
