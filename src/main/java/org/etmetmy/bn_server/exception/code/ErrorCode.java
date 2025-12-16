@@ -26,6 +26,7 @@ public enum ErrorCode {
     INVALID_PARENT_COMMENT(400, "C002", "유효하지 않은 부모 댓글입니다."),
     PARENT_COMMENT_NOT_FOUND(404, "C003", "부모 댓글을 찾을 수 없습니다."),
     COMMENT_PERMISSION_DENIED(403,"C004","댓글 수정/삭제 권한이 없습니다."),
+    COMMENT_ALREADY_DELETED(400, "B002_3", "이미 삭제된 댓글입니다."),
 
     //공통 에러
     INVALID_INPUT_VALUE(400, "I001", "잘못된 입력값입니다."),
