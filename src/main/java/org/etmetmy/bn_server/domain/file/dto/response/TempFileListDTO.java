@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
 public class TempFileListDTO {
 
     private Long fileId;
-    private String fileTitle;
+    private String fileS3Name;
+    private String fileOriginalFileName;
     private String filePath;
     private String fileType;
     private Long fileSize;
@@ -34,7 +35,8 @@ public class TempFileListDTO {
         public static TempFileListDTO from(File file) {
             return TempFileListDTO.builder()
                     .fileId(file.getFileId())
-                    .fileTitle(file.getFileTitle())
+                    .fileS3Name(file.getS3FileTitle())
+                    .fileOriginalFileName(file.getOriginalFileTitle())
                     .filePath(file.getFilePath())
                     .fileType(file.getFileType())
                     .fileSize(file.getFileSize())
