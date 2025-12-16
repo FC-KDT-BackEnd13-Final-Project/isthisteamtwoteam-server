@@ -8,6 +8,7 @@ import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 
+// todo: project 상세 조회 시 필요한 파일 목록
 @Getter
 @Builder
 @NoArgsConstructor
