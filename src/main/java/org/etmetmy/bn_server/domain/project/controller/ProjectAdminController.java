@@ -38,8 +38,6 @@ public class ProjectAdminController {
 
     private final ProjectService projectService;
     private final ProjectMemberService projectMemberService;
-    private final ProjectRepository projectRepository;
-    private final ProjectMemberRepository projectMemberRepository;
 
     // todo: 프로젝트 생성
     @Operation(summary = "프로젝트 생성", description = "새로운 프로젝트를 생성합니다 (이미지 포함 가능)")
