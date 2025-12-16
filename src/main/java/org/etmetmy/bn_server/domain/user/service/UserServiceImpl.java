@@ -13,9 +13,11 @@ import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.PasswordResetCodeRepository;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.config.MailServiceProvider;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,7 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -175,6 +176,7 @@ public class UserServiceImpl implements UserService{
         user.setPassword(encodedPassword);
     }
 
+    // 비밀번호 찾기 - 인증 코드 발송
     @Override
     @Transactional
     public PasswordFindResponse sendPasswordResetCode(PasswordFindRequest request) {
@@ -185,20 +187,22 @@ public class UserServiceImpl implements UserService{
 
         String code = generate6DigitCode();
 
+        // 기존 코드가 있으면 재사용, 없으면 새로 생성
+        PasswordResetCode resetCode = passwordResetCodeRepository.findByUserId(user.getId())
+                .map(existing -> {
+                    existing.reset(email, code);
+                    return existing;
+                })
+                .orElseGet(() -> new PasswordResetCode(user, email, code));
 
-        passwordResetCodeRepository.findByEmail(email)
-                .ifPresent(passwordResetCodeRepository::delete);
-
-        PasswordResetCode resetCode = new PasswordResetCode(email, code);
         passwordResetCodeRepository.save(resetCode);
 
-        // 메일 전송은 지금 주석 처리 상태 그대로 유지 가능
-        // sendResetCodeMail(email, code);
+        sendResetCodeMail(email, code);
 
-        // ✅ dot 반환을 쓰려면 PasswordFindResponse에 from()이 있어야 함(아래 참고)
-        return PasswordFindResponse.from(email, RESET_CODE_EXPIRES_SECONDS);
+        return PasswordFindResponse.of(email, RESET_CODE_EXPIRES_SECONDS);
     }
 
+    // 비밀번호 재설정 - 코드 검증 및 비밀번호 변경
     @Override
     @Transactional
     public PasswordResetResponse resetPassword(PasswordResetVerifyCodeRequest request) {
@@ -209,33 +213,45 @@ public class UserServiceImpl implements UserService{
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("가입되지 않은 이메일입니다."));
 
-        PasswordResetCode resetCode = passwordResetCodeRepository.findByEmail(email)
+        PasswordResetCode resetCode = passwordResetCodeRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new BusinessException(ErrorCode.RESET_CODE_NOT_FOUND));
 
-        // ✅ getUsed() -> isUsed()
         if (resetCode.isUsed()) {
             throw new BusinessException(ErrorCode.RESET_CODE_ALREADY_USED);
         }
 
-        // ✅ isExpired(LocalDateTime.now()) -> isExpired()
         if (resetCode.isExpired()) {
             throw new BusinessException(ErrorCode.EXPIRED_RESET_CODE);
         }
 
-        // ✅ matches(code) -> getCode().equals(code)
         if (!resetCode.getCode().equals(code)) {
             throw new BusinessException(ErrorCode.INVALID_RESET_CODE);
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
 
-        // ✅ use() -> markAsUsed()
         resetCode.markAsUsed();
         passwordResetCodeRepository.save(resetCode);
 
         return new PasswordResetResponse(user.getId());
     }
 
+    // 이메일 발송 처리
+    private void sendResetCodeMail(String email, String code) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        //message.setFrom(fromEmail);
+        message.setTo(email);
+        message.setSubject("[BN] 비밀번호 재설정 인증코드");
+        message.setText(
+                "비밀번호 재설정 인증코드입니다.\n\n" +
+                        "인증코드: " + code + "\n\n" +
+                        "인증코드는 5분 후 만료됩니다."
+        );
+
+        mailSender.send(message);
+    }
+
+    // 6자리 인증 코드 생성
     private String generate6DigitCode() {
         SecureRandom r = new SecureRandom();
         int n = r.nextInt(900000) + 100000;

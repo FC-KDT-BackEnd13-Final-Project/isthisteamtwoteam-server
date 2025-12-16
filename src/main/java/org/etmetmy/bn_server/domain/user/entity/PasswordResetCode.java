@@ -12,7 +12,7 @@ import org.etmetmy.bn_server.global.entity.BaseEntity;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "\"PasswordResetCode\"")
+@Table(name = "password_reset_code")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -23,20 +23,20 @@ public class PasswordResetCode extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "password_reset_code_id")
     private Long id;
-    @Column(nullable = false)
+    @Column(name = "email", nullable = false)
     private String email;
-    @Column(nullable = false, length = 6)
+    @Column(name = "code", nullable = false, length = 6)
     private String code;
 
-    @Column(nullable = false)
+    @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;
 
-    @Column(nullable = false)
+    @Column(name = "used", nullable = false)
     private boolean used;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     /**
@@ -53,10 +53,18 @@ public class PasswordResetCode extends BaseEntity {
         this.used = true;
     }
 
-    public PasswordResetCode(String email, String code) {
+    public void reset(String email, String code) {
         this.email = email;
         this.code = code;
-        this.expiryDate = LocalDateTime.now().plusMinutes(10); // 10분 유효
+        this.expiryDate = LocalDateTime.now().plusMinutes(5);
+        this.used = false;
+    }
+
+    public PasswordResetCode(User user, String email, String code) {
+        this.user = user;
+        this.email = email;
+        this.code = code;
+        this.expiryDate = LocalDateTime.now().plusMinutes(5); // 10분 유효
         this.used = false;
     }
 

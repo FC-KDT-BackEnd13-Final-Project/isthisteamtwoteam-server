@@ -10,11 +10,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class PasswordFindResponse {
-
     private String email;
     private int expiresInSeconds;
+    //private String code; //테스트용 - 인증번호 12345
 
-    public static PasswordFindResponse from(String email, int expiresInSeconds) {
-        return new PasswordFindResponse(email, expiresInSeconds);
+    public static PasswordFindResponse of(String email, int expiresInSeconds) {
+        return PasswordFindResponse.builder()
+                .email(email)
+                .expiresInSeconds(expiresInSeconds)
+                .build();
     }
 }
