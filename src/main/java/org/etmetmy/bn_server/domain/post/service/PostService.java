@@ -2,11 +2,14 @@ package org.etmetmy.bn_server.domain.post.service;
 
 import jakarta.validation.Valid;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListByStageResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
+import org.etmetmy.bn_server.domain.project.dto.response.ProjectRestoreResponse;
 
 import java.util.List;
 
@@ -28,6 +31,8 @@ public interface PostService {
     void completePost(Long projectId, Long postId, Long loginUserId);
 
     void softDeletePost(Long postId, Long userId);
+
+    PostRestoreResponse restoreDeletedPost(Long loginUserId, PostRestoreRequest request);
 }
 
 

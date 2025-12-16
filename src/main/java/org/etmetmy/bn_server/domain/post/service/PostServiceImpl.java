@@ -15,11 +15,13 @@ import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.link.service.LinkService;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListByStageResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
 import org.etmetmy.bn_server.domain.post.entity.*;
 import org.etmetmy.bn_server.domain.post.repository.PostNumberCounterRepository;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
@@ -314,6 +316,44 @@ public class PostServiceImpl implements PostService {
         for (File fileToDelete : postFiles) {
             fileToDelete.softDelete(userId);
         }
+    }
+
+    // 게시글 복원
+    @Override
+    @Transactional
+    public PostRestoreResponse restoreDeletedPost(Long loginUserId, PostRestoreRequest request){
+
+        // 1. 권한 검증 (관리자만)
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        if (user.getRole() != Role.ADMIN) {
+            throw new BusinessException(ErrorCode.DELETED_BOARD_ACCESS_DENIED);
+        }
+
+        // 2. 요청한 프로젝트 ID 조회
+        List<Long> postIds = request.getPostIds();
+        List<Post> posts = postRepository.findAllById(postIds);
+
+        // 3. 존재 개수 비교
+        if (posts.size() != postIds.size()) {
+            throw new BoardNotFoundException("존재하지 않는 게시글이 포함되어 있습니다.");
+        }
+
+        // 4. 삭제 여부 체크 후 restore
+        posts.forEach(post -> {
+            if (!post.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.BOARD_NOT_DELETED);
+            }
+            post.restore();
+
+            // 게시글 내 파일도 restore
+            List<File> postFiles = fileRepository.findFilesByPostId(post.getPostId());
+            for (File fileToDelete : postFiles) {
+                fileToDelete.restore();
+            }
+        });
+
+        postRepository.saveAll(posts);
+        return PostRestoreResponse.Converter.from(posts, user.getId());
     }
 
     // 프로젝트–게시글 소속 검증

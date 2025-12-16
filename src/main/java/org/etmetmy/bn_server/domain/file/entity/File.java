@@ -81,6 +81,11 @@ public class File extends BaseEntity {
         this.deletedBy = deletedBy;
     }
 
+    public void restore() {
+        isDeleted = false;
+        deletedAt = null;
+    }
+
     // 공통 내부 처리
     private void attach(Post post, Comment comment, Long uploadedBy) {
         this.post = post;
