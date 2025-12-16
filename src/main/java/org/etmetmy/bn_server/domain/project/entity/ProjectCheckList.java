@@ -40,6 +40,9 @@ public class ProjectCheckList extends BaseEntity {
     @Column(name = "checked")
     private Boolean checked;
 
+    @Column(name = "reason")
+    private String reason;
+
     //파일 목록
     @OneToMany(mappedBy = "projectCheckList", cascade = CascadeType.ALL, orphanRemoval = true)
     @lombok.Builder.Default
@@ -49,4 +52,17 @@ public class ProjectCheckList extends BaseEntity {
     @OneToMany(mappedBy = "projectCheckList", cascade = CascadeType.ALL, orphanRemoval = true)
     @lombok.Builder.Default
     private List<Link> links = new ArrayList<>();
+
+    public void updateChecked(User user) {
+        this.checked = !checked;
+        if (this.checked) {
+            answererId = user;
+        }
+        else{
+            answererId = null;
+        }
+    }
+    public void updateReason(String reason) {
+       this.reason = reason;
+    }
 }

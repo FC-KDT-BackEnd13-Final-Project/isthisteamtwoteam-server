@@ -91,31 +91,7 @@ public class PostController {
         postService.completePost(projectId, postId, loginUserId);
     }
 
-/*    // todo: 게시글 목록 조회 (필터) API
-    // all : 전체
-    // finished: 완료된 게시글
-    // unfinished : 미완료된 게시글
-    @Operation(summary = "게시글 목록 조회", description = "프로젝트의 게시글 목록을 조회합니다 (필터 및 단계별 조회 지원)")
-    @GetMapping("/{projectId}/posts")
-    public CommonResponse<List<PostListResponse>> getPostList(
-            @PathVariable Long projectId,
-            @RequestParam(name = "filter", required = false) String filter,
-            @RequestParam(name = "stage", required = false) String stage
-    ) {
-        List<PostListResponse> response;
 
-        // stage 파라미터가 명시적으로 제공된 경우
-        if (stage != null) {
-            response = postService.getPostListByStage(projectId, stage);
-            return CommonResponse.success("게시글 단계별 조회 성공", response);
-        }
-        // filter 파라미터가 제공되거나 파라미터가 없는 경우
-        else {
-            String filterValue = filter != null ? filter : "all";
-            response = postService.getPostListByProjectIdAndFilter(projectId, filterValue);
-            return CommonResponse.success("게시글 목록 조회 성공", response);
-        }
-    }*/
     // todo: 게시글 목록 조회 (필터) API
     // all : 전체
     // finished: 완료된 게시글
