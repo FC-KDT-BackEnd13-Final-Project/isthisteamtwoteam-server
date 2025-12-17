@@ -4,11 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
-import org.etmetmy.bn_server.domain.dashboard.dto.response.ProjectListResponse;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.file.service.FileService;
-import org.etmetmy.bn_server.domain.file.service.FileServiceImpl;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.memo.entity.Memo;
@@ -557,13 +555,11 @@ public class ProjectServiceImpl implements ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
-        Memo projectMemo = memoRepository.findByProjectId(projectId, MemoType.MAIN)
-                .orElseThrow(()-> new BusinessException(ErrorCode.MEMO_NOT_FOUND));
+        Optional<Memo> projectMemo = memoRepository.findByProjectId(projectId, MemoType.MAIN);
 
-        Memo userMemo = memoRepository.findByUserIdAndProjectId(userId,projectId, MemoType.USER)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_AND_USER_NOT_FOUND));
+        Optional<Memo> userMemo = memoRepository.findByUserIdAndProjectId(userId,projectId, MemoType.USER);
 
-        return ProjectDetailResponse.Converter.from(project,projectMemo,userMemo);
+        return ProjectDetailResponse.Converter.from(project, projectMemo.orElse(null), userMemo.orElse(null));
     }
 
     // 삭제된 프로젝트 복원
