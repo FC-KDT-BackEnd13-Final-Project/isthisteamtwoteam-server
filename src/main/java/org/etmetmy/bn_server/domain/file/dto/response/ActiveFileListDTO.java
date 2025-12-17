@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.apache.logging.log4j.message.StringFormattedMessage;
 import org.etmetmy.bn_server.domain.file.entity.File;
 
 import java.time.LocalDateTime;
@@ -25,7 +26,7 @@ public class ActiveFileListDTO {
     private String fileOriginalFileName;
     private String filePath;
     private String fileType;
-    private Long fileSize;
+    private String fileSize;
 
     private String postTitle;
     private Long postId;

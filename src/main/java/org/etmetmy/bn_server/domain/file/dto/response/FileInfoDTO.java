@@ -27,7 +27,7 @@ public class FileInfoDTO {
     private String fileOriginalFileName;
 
     @JsonProperty("fileSize")
-    private Long fileSize;
+    private String fileSize;
 
     @JsonProperty("fileUrl")
     private String fileUrl;
