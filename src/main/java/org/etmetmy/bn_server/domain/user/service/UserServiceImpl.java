@@ -280,5 +280,29 @@ public class UserServiceImpl implements UserService{
         return String.valueOf(n);
     }
 
+    @Override
+    @Transactional
+    public UserSelfUpdateResponse updateMyInfo(Long userId, UserSelfUpdateRequest request) {
+        // 1. 회원 찾기
+        User user = userRepository.findById(userId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 2. 바꿀 회사 찾기 (companyName이 null이 아닌 경우에만)
+        Company company = null;
+        if (request.getCompanyName() != null && !request.getCompanyName().isEmpty()) {
+            company = companyRepository.findByCompanyName(request.getCompanyName())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
+        }
+
+        user.updateInfo(request.getName(), null, request.getPhone(), company, null);
+
+        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+
+        return UserSelfUpdateResponse.Converter.from(user);
+    }
+
+
 
 }
