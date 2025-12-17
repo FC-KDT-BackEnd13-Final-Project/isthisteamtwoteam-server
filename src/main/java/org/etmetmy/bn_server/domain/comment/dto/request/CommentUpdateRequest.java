@@ -19,8 +19,6 @@ public class CommentUpdateRequest {
     @NotBlank(message = "댓글 내용은 필수입니다.")
     private String content;
 
-    private Long parentId;
-
     // 추가할 파일 ID 목록 (임시 파일 ID, 선택 사항)
     private List<Long> addFileIds;
 
