@@ -1,19 +1,15 @@
 package org.etmetmy.bn_server.domain.file.service;
 
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
-import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
 import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
-import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
-import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
@@ -26,7 +22,6 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.*;
-import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +32,6 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;

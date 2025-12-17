@@ -3,7 +3,6 @@ package org.etmetmy.bn_server.domain.file;
 import org.etmetmy.bn_server.config.SecurityConfig;
 import org.etmetmy.bn_server.domain.file.controller.FileController;
 import org.etmetmy.bn_server.global.ExceptionControllerAdvice;
-import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.service.FileService;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
