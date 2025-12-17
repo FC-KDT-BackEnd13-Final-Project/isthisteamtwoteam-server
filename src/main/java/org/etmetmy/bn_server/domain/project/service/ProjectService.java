@@ -53,4 +53,7 @@ public interface ProjectService {
 
     // 프로젝트 이미지 수정
     ProjectUpdateResponse updateProjectImage(Long projectId, MultipartFile image);
+
+    // 프로젝트 체크리스트 삭제
+    void checklistDeleted(Long projectId, Long checkListId);
 }

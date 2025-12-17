@@ -47,6 +47,8 @@ public class CheckListController {
         return CommonResponse.success("체크리스트를 삭제했습니다.");
     }
 
+
+
     // todo : 체크리스트 조회 및 검색
     @Operation(summary = "체크리스트 조회 및 검색", description = "체크리스트 목록을 조회하고 검색합니다 (페이징, 정렬 지원)")
     @GetMapping
