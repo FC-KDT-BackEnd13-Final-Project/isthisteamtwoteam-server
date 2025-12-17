@@ -15,13 +15,10 @@ import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.link.service.LinkService;
 import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.PostPermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
-import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.PostListByStageResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.*;
 import org.etmetmy.bn_server.domain.post.entity.*;
 import org.etmetmy.bn_server.domain.post.repository.PostNumberCounterRepository;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
@@ -354,6 +351,36 @@ public class PostServiceImpl implements PostService {
 
         postRepository.saveAll(posts);
         return PostRestoreResponse.Converter.from(posts, user.getId());
+    }
+
+    // 게시글 영구삭제 (hard delete)
+    @Override
+    @Transactional
+    public PostPermanentDeleteResponse deleteDeletedPost(Long loginUserId, @Valid PostPermanentDeleteRequest request){
+
+        // 1. 삭제 요청한 게시글 ID 목록 조회
+        List<Long> postIds = request.getPostIds();
+        List<Post> posts = postRepository.findAllById(postIds);
+
+        // 2. 존재 개수 비교
+        if (posts.size() != postIds.size()) {
+            throw new BoardNotFoundException("존재하지 않는 게시글이 포함되어 있습니다.");
+        }
+
+        // 3. 삭제 여부 체크
+        posts.forEach(project -> {
+            if (!project.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.BOARD_NOT_DELETED);}
+        });
+
+        // 4. S3 파일 삭제
+        List<File> files = fileRepository.findByPostIds(postIds);
+        fileService.deleteFilesFromS3(files);
+
+        // 5. 프로젝트 삭제 (Cascade로 연관 엔티티도 삭제)
+        postRepository.deleteAll(posts);
+
+        return PostPermanentDeleteResponse.Converter.from(posts);
     }
 
     // 프로젝트–게시글 소속 검증

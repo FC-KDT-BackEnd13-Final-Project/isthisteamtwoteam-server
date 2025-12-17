@@ -6,15 +6,8 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
-import org.etmetmy.bn_server.domain.post.dto.request.PostApprovalRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
-import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.PostDetailResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.PostListResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
-import org.etmetmy.bn_server.domain.post.dto.response.PostListByStageResponse;
+import org.etmetmy.bn_server.domain.post.dto.request.*;
+import org.etmetmy.bn_server.domain.post.dto.response.*;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
@@ -167,5 +160,17 @@ public class PostController {
         PostRestoreResponse response = postService.restoreDeletedPost(loginUserId, request);
 
         return CommonResponse.success("삭제된 게시글 복원 성공", response);
+    }
+
+    // Todo: 삭제된 게시글 영구삭제 (hard delete)
+    @DeleteMapping("/posts/trash")
+    public CommonResponse<PostPermanentDeleteResponse> deleteDeletedPost(
+            HttpSession session,
+            @Valid @RequestBody PostPermanentDeleteRequest request)
+    {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        PostPermanentDeleteResponse response = postService.deleteDeletedPost(loginUserId, request);
+
+        return CommonResponse.success("삭제된 게시글 영구삭제 성공", response);
     }
 }
