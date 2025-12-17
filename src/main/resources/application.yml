@@ -43,6 +43,7 @@ spring:
           timeout: 5000
           writetimeout: 5000
 
+
 aws:
   s3:
     access-key: ${AWS_ACCESS_KEY}
@@ -54,10 +55,6 @@ server:
   servlet:
     session:
       tracking-modes: cookie
-  tomcat:
-    max-swallow-size: -1
-    max-http-form-post-size: -1
-  max-http-request-header-size: 16384
 
 springdoc:
   api-docs:
@@ -71,7 +68,5 @@ logging:
     root: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
-    org.etmetmy.bn_server.global.aop.ActivityLogAspect: DEBUG
-    org.etmetmy.bn_server.domain.activityLog: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
