@@ -618,7 +618,7 @@ public class ProjectServiceImpl implements ProjectService {
     public void checklistDeleted(Long projectId, Long checkListId) {
         // 프로젝트 체크리스트 존재 확인
         ProjectCheckList projectCheckList = projectChecklistRepository.findByProject_IdAndCheckListId(projectId, checkListId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECTCHECKLIST_NOT_FOUND));
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_CHECKLIST_NOT_FOUND));
 
         // 파일 존재 확인
         List<File> files = fileRepository.findByProjectCheckListId(projectCheckList.getProjectCheckListId());
