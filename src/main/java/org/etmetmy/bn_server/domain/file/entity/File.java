@@ -52,7 +52,7 @@ public class File extends BaseEntity {
     private String filePath;
 
     @Column(name = "file_size", nullable = false)
-    private Long fileSize;
+    private String fileSize;
 
     @Column(name = "file_type", nullable = false, length = 100)
     private String fileType;

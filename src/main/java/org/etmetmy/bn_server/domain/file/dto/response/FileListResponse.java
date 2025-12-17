@@ -16,7 +16,7 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 public class FileListResponse {
     private Long fileId;
     private String fileTitle;
-    private Long fileSize;
+    private String fileSize;
     private String filePath;
 
     public static FileListResponse from(File file) {

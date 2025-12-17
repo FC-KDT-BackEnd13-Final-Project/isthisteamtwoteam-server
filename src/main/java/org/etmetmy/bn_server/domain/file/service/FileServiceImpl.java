@@ -208,8 +208,9 @@ public class FileServiceImpl implements FileService {
                 .toString();
 
         String fileType = extractFileType(originalFilename);
+        String fileSize = formatSize(file.getSize());
 
-        return new S3UploadResult(originalFilename, storedFileName, fileUrl, file.getSize(), fileType);
+        return new S3UploadResult(originalFilename, storedFileName, fileUrl, fileSize, fileType);
     }
 
     // 파일 확장자 추출 헬퍼 메서드
@@ -217,6 +218,12 @@ public class FileServiceImpl implements FileService {
         if (filename == null || filename.isEmpty()) return "unknown";
         int lastDot = filename.lastIndexOf('.');
         return lastDot >= 0 ? filename.substring(lastDot + 1).toLowerCase() : "unknown";
+    }
+
+    // 파일 사이즈를 포맷팅하는 헬퍼 메서드
+    private String formatSize(long bytes) {
+        double mb = bytes / (1024.0 * 1024.0);
+        return String.format("%.1fMB", mb);
     }
 
     // 7. 삭제에 필요한 key 반환
@@ -267,7 +274,6 @@ public class FileServiceImpl implements FileService {
         for (File file : files) {
             try {
                 String fileUrl = file.getFilePath();
-                Long fileId = file.getFileId();
 
                 // S3 key 추출
                 String key = getKeyFromFileUrls(fileUrl);

@@ -25,7 +25,7 @@ public class TempFileListDTO {
     private String fileOriginalFileName;
     private String filePath;
     private String fileType;
-    private Long fileSize;
+    private String fileSize;
 
     private Long uploadUserId;
     private LocalDateTime uploadedAt;
