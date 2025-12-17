@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.checkList.service;
 
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListCreateRequest;
+import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListFileLinkCreateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCheckListReasonRequest;
@@ -22,4 +23,8 @@ public interface CheckListService {
     void updateChecked(Long projectId, Long checkListId, Long userId);
 
     void updateContent(Long projectId, Long checkListId, ProjectCheckListReasonRequest reason);
+
+    void saveLink(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest linkCreateRequest);
+
+    void saveFile(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest fileCreateRequest);
 }

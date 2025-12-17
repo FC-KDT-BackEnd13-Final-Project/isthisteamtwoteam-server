@@ -5,16 +5,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
-import org.etmetmy.bn_server.domain.file.service.FileServiceImpl;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
 
-import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
-import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.project.service.ProjectMemberService;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.domain.user.entity.Role;
@@ -27,7 +23,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 

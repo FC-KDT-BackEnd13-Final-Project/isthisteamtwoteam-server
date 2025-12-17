@@ -7,6 +7,7 @@ import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -45,5 +46,8 @@ public interface FileService {
 
     // S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Comment에 저장
     void saveFiles(Comment comment, List<Long> fileIds, Long loginUserId);
+
+    // S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 ProjectCheckList에 저장
+    void saveFiles(ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId);
 }
 
