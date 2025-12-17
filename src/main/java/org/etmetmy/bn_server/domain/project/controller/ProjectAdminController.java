@@ -54,12 +54,11 @@ public class ProjectAdminController {
     @PostMapping(value = "/api/v1/admin/projects/{projectId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<ProjectUpdateResponse> uploadImage(
             @PathVariable Long projectId,
-            @RequestPart(value= "image", required= false) MultipartFile image
+            @RequestPart(value = "image", required = false) MultipartFile image
     ) {
         ProjectUpdateResponse response = projectService.updateProjectImage(projectId, image);
         return CommonResponse.success("프로젝트 이미지 업로드 성공", response);
     }
-
 
 
     // todo: 프로젝트 전체 조회 (페이지네이션, 검색, 삭제여부)
@@ -111,6 +110,16 @@ public class ProjectAdminController {
     public CommonResponse<List<ProjectAddCheckListResponse>> addCheckLists(@PathVariable Long projectId,
                                                                            @RequestBody ProjectAddCheckListRequest request) {
         return CommonResponse.success("체크리스트를 할당했습니다", projectService.checklistAdd(projectId, request));
+
+    }
+
+    // todo: 개별프로젝트에 체크리스트 삭제
+    @Operation(summary = "프로젝트 체크리스트 삭제", description = "프로젝트에 체크리스트를 삭제")
+    @DeleteMapping("/{projectId}/checklists/{checkListId}")
+    public CommonResponse<Object> addCheckLists(@PathVariable Long projectId,
+                                                                           @PathVariable Long checkListId) {
+        projectService.checklistDeleted(projectId, checkListId);
+        return CommonResponse.success("체크리스트를 삭제했습니다", null);
 
     }
 

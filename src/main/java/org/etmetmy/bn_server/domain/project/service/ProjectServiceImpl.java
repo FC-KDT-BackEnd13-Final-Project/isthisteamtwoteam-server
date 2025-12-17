@@ -369,7 +369,7 @@ public class ProjectServiceImpl implements ProjectService {
 
                     // CheckList 조회
                     CheckList checkList = checkListRepository.findById(checkListId)
-                            .orElseThrow(()-> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+                            .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
 
                     // File 조회 및 DTO 변환
                     List<File> files = fileRepository.findByProjectCheckListId(projectCheckListId);
@@ -557,7 +557,7 @@ public class ProjectServiceImpl implements ProjectService {
 
         Optional<Memo> projectMemo = memoRepository.findByProjectId(projectId, MemoType.MAIN);
 
-        Optional<Memo> userMemo = memoRepository.findByUserIdAndProjectId(userId,projectId, MemoType.USER);
+        Optional<Memo> userMemo = memoRepository.findByUserIdAndProjectId(userId, projectId, MemoType.USER);
 
         return ProjectDetailResponse.Converter.from(project, projectMemo.orElse(null), userMemo.orElse(null));
     }
@@ -597,7 +597,7 @@ public class ProjectServiceImpl implements ProjectService {
     // 프로젝트 이미지 수정
     @Override
     @Transactional
-    public ProjectUpdateResponse updateProjectImage(Long projectId, MultipartFile image){
+    public ProjectUpdateResponse updateProjectImage(Long projectId, MultipartFile image) {
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
@@ -611,5 +611,21 @@ public class ProjectServiceImpl implements ProjectService {
             projectRepository.save(project);
         }
         return ProjectUpdateResponse.Converter.from(project);
+    }
+
+    @Override
+    public void checklistDeleted(Long projectId, Long checkListId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        ProjectCheckList projectCheckList = projectChecklistRepository.findByProject_IdAndCheckListId(projectId, checkListId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECTCHECKLIST_NOT_FOUND));
+
+        List<File> files = fileRepository.findByProjectCheckListId(projectCheckList.getProjectCheckListId());
+        //List<Link> links = linkRepository.findByProjectCheckListId(projectCheckList.getProjectCheckListId());
+
+        fileService.deleteFilesFromS3(files);
+
+        projectChecklistRepository.delete(projectCheckList);
     }
 }
