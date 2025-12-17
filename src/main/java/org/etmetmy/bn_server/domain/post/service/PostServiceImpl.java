@@ -344,8 +344,8 @@ public class PostServiceImpl implements PostService {
 
             // 게시글 내 파일도 restore
             List<File> postFiles = fileRepository.findFilesByPostId(post.getPostId());
-            for (File fileToDelete : postFiles) {
-                fileToDelete.restore();
+            for (File fileToRestore : postFiles) {
+                fileToRestore.restore();
             }
         });
 
@@ -368,8 +368,8 @@ public class PostServiceImpl implements PostService {
         }
 
         // 3. 삭제 여부 체크
-        posts.forEach(project -> {
-            if (!project.getIsDeleted()) {
+        posts.forEach(post -> {
+            if (!post.getIsDeleted()) {
                 throw new BusinessException(ErrorCode.BOARD_NOT_DELETED);}
         });
 
@@ -377,7 +377,7 @@ public class PostServiceImpl implements PostService {
         List<File> files = fileRepository.findByPostIds(postIds);
         fileService.deleteFilesFromS3(files);
 
-        // 5. 프로젝트 삭제 (Cascade로 연관 엔티티도 삭제)
+        // 5. 게시글 삭제 (Cascade로 연관 엔티티도 삭제)
         postRepository.deleteAll(posts);
 
         return PostPermanentDeleteResponse.Converter.from(posts);

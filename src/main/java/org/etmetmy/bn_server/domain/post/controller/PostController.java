@@ -163,6 +163,7 @@ public class PostController {
     }
 
     // Todo: 삭제된 게시글 영구삭제 (hard delete)
+    @Operation(summary = "삭제된 게시글 영구삭제", description = "휴지통에 있는 게시글을 DB와 S3에서 완전히 삭제합니다")
     @DeleteMapping("/posts/trash")
     public CommonResponse<PostPermanentDeleteResponse> deleteDeletedPost(
             HttpSession session,
