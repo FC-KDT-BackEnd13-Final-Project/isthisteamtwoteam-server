@@ -3,10 +3,7 @@ package org.etmetmy.bn_server.domain.user.service;
 import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.user.dto.request.*;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.user.dto.response.PasswordFindResponse;
-import org.etmetmy.bn_server.domain.user.dto.response.PasswordResetResponse;
-import org.etmetmy.bn_server.domain.user.dto.response.UserDataResponse;
-import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
+import org.etmetmy.bn_server.domain.user.dto.response.*;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,4 +31,6 @@ public interface UserService {
     @Transactional
     PasswordResetResponse resetPassword(PasswordResetVerifyCodeRequest request);
 
+    @Transactional
+    UserSelfUpdateResponse updateMyInfo(Long userId, UserSelfUpdateRequest request);
 }

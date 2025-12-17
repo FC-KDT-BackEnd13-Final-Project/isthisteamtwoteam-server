@@ -10,10 +10,7 @@ import org.etmetmy.bn_server.domain.company.entity.CompanyType;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserSessionDto;
 import org.etmetmy.bn_server.domain.user.dto.request.*;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
-import org.etmetmy.bn_server.domain.user.dto.response.PasswordFindResponse;
-import org.etmetmy.bn_server.domain.user.dto.response.PasswordResetResponse;
-import org.etmetmy.bn_server.domain.user.dto.response.UserDataResponse;
-import org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse;
+import org.etmetmy.bn_server.domain.user.dto.response.*;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.service.UserService;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
@@ -151,6 +148,16 @@ public class UserController {
     ) {
         PasswordResetResponse response = userService.resetPassword(request);
         return CommonResponse.success("비밀번호가 성공적으로 변경되었습니다.", response);
+    }
+
+    @Operation(summary = "본인 정보 수정", description = "로그인한 사용자가 자신의 정보를 수정합니다")
+    @PutMapping("/users/{userId}")
+    public CommonResponse<UserSelfUpdateResponse> updateMyInfo(@RequestBody UserSelfUpdateRequest request, HttpSession session) {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+        UserSelfUpdateResponse response = userService.updateMyInfo(loginUserId, request);
+
+        return CommonResponse.success("사용자 정보 수정 완료", response);
     }
 
     /**
