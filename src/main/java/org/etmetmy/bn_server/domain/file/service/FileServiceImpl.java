@@ -4,12 +4,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
+import org.etmetmy.bn_server.domain.file.dto.request.FilePermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
+import org.etmetmy.bn_server.domain.file.dto.response.FilePermanentDeleteResponse;
 import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
 import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.post.dto.response.PostPermanentDeleteResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
@@ -48,7 +51,6 @@ public class FileServiceImpl implements FileService {
     private final UserRepository userRepository;
     private final FileRepository fileRepository;
     private final ProjectRepository projectRepository;
-    private final ProjectMemberRepository projectMemberRepository;
     private final PostRepository postRepository;
     private final S3Client s3Client;
 
@@ -137,6 +139,9 @@ public class FileServiceImpl implements FileService {
 
         // 2. 요청한 파일 ID 조회
         List<Long> fileIds = request.getFileIds();
+        if (fileIds == null || fileIds.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
         List<File> files = fileRepository.findAllById(fileIds);
 
         // 3. 존재 개수 비교
@@ -156,36 +161,40 @@ public class FileServiceImpl implements FileService {
         return FileRestoreResponse.Converter.from(files, loginUserId);
     }
 
-    // 5. 삭제된 파일 영구 삭제 (hard delete)
+    // 6. 삭제된 파일 영구 삭제 (hard delete)
     @Override
     @Transactional
-    public void deleteHardFile(Long projectId, List<Long> fileIds) {
+    public FilePermanentDeleteResponse hardDeleteFiles(Long loginUserId, @Valid FilePermanentDeleteRequest request) {
 
+        // 1. 권한 검증 (관리자만)
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        if (user.getRole() != Role.ADMIN) {
+            throw new BusinessException(ErrorCode.DELETED_FILE_ACCESS_DENIED);
+        }
+
+        // 2. 요청한 파일 ID 조회
+        List<Long> fileIds = request.getFileIds();
+        if (fileIds == null || fileIds.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);
+        }
         List<File> files = fileRepository.findAllById(fileIds);
 
-        // 파일 개수 검증
+        // 3. 존재 개수 비교
         if (files.size() != fileIds.size()) {
-            throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
+            throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
         }
 
         for (File file : files) {
-
-            // 프로젝트 소속 검증 (악의적 요청 가정)
-            if (file.getPost() == null ||
-                    file.getPost().getProject() == null ||
-                    !file.getPost().getProject().getId().equals(projectId)) {
-                throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
-            }
-
-            // 2. 삭제된 파일인지 검증 (영구 삭제는 isDeleted == true인 파일만 허용)
+            // 삭제된 파일인지 검증 (영구 삭제는 isDeleted == true인 파일만 허용)
             if (!file.getIsDeleted()) {
                 throw new BusinessException(ErrorCode.FILE_NOT_DELETED);
             }
         }
         deleteFilesFromS3AndDb(files);
+        return FilePermanentDeleteResponse.Converter.from(files);
     }
 
-    // 6. S3 업로드 메서드
+    // 7. S3 업로드 메서드
     @Override
     public S3UploadResult uploadToS3(MultipartFile file) {
 
@@ -231,7 +240,7 @@ public class FileServiceImpl implements FileService {
         return String.format("%.1fMB", mb);
     }
 
-    // 7. 삭제에 필요한 key 반환
+    // 8. 삭제에 필요한 key 반환
     @Override
     public String getKeyFromFileUrls(String fileUrl) {
         try {
@@ -245,7 +254,7 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    // 8. S3에서 파일 삭제 후 DB 레코드도 삭제
+    // 9. S3에서 파일 삭제 후 DB 레코드도 삭제
     @Override
     public void deleteFilesFromS3AndDb(List<File> files) {
         for (File file : files) {
@@ -273,7 +282,7 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    // 9. S3에서 파일 삭제
+    // 10. S3에서 파일 삭제
     @Override
     public void deleteFilesFromS3(List<File> files) {
         for (File file : files) {
@@ -297,28 +306,28 @@ public class FileServiceImpl implements FileService {
         }
     }
 
-    // 10. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
+    // 11. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
     @Override
     @Transactional
     public void saveFiles(Post post, List<Long> fileIds, Long loginUserId) {
         saveFilesInternal(post, null, null, fileIds, loginUserId);
     }
 
-    // 11. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
+    // 12. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
     @Override
     @Transactional
     public void saveFiles(Comment comment, List<Long> fileIds, Long loginUserId) {
         saveFilesInternal(null, comment, null, fileIds, loginUserId);
     }
 
-    // 12. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
+    // 13. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
     @Override
     @Transactional
     public void saveFiles(ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId) {
         saveFilesInternal(null, null, projectCheckList, fileIds, loginUserId);
     }
 
-    // 13. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post/Comment에 저장
+    // 14. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post/Comment에 저장
     private void saveFilesInternal(Post post, Comment comment, ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId) {
         if (fileIds == null || fileIds.isEmpty()) {
             return;
