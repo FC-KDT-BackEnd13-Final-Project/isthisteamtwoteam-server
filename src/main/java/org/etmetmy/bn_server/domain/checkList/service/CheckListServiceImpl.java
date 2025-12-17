@@ -2,10 +2,14 @@ package org.etmetmy.bn_server.domain.checkList.service;
 
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListCreateRequest;
+import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListFileLinkCreateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
+import org.etmetmy.bn_server.domain.file.service.FileService;
+import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
+import org.etmetmy.bn_server.domain.link.service.LinkService;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCheckListReasonRequest;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
@@ -29,6 +33,9 @@ public class CheckListServiceImpl implements CheckListService {
     private final CheckListRepository checkListRepository;
     private final ProjectCheckListRepository projectCheckListRepository;
     private final UserRepository userRepository;
+
+    private final LinkService linkService;
+    private final FileService fileService;
 
     @Override
     public CheckListResponse save(CheckListCreateRequest request) {
@@ -87,5 +94,17 @@ public class CheckListServiceImpl implements CheckListService {
         projectCheckList.updateReason(reason.getReason());
         projectCheckListRepository.save(projectCheckList);
 
+    }
+
+    @Override
+    public void saveLink(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest linkCreateRequest) {
+        ProjectCheckList projectCheckList = projectCheckListRepository.findByProject_IdAndCheckListId(projectId, checkListId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow((UserNotFoundException::new));
+        // 3. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 게시글과 연동
+
+        linkService.saveLinks(projectCheckList, linkCreateRequest.getLinkUrls(), user.getId());
     }
 }

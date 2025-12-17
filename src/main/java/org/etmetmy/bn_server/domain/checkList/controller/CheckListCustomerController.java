@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListFileLinkCreateRequest;
 import org.etmetmy.bn_server.domain.checkList.service.CheckListService;
+import org.etmetmy.bn_server.domain.link.service.LinkService;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCheckListReasonRequest;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class CheckListCustomerController {
 
     private final CheckListService checkListService;
+    private final LinkService linkService;
 
     // todo : 체크리스트 체크 기능
     @Operation(summary = "체크리스트 체크 기능", description = "체크를 누를때마다 true, false 전환")
@@ -45,4 +48,37 @@ public class CheckListCustomerController {
 
         return CommonResponse.success("성공했습니다",null);
     }
+
+    // todo : 체크리스트에 파일 추가
+    @Operation(summary = "체크리스트 파일 추가", description = "체크리스트 파일 추가")
+    @PostMapping("/{checkListId}/link")
+    public CommonResponse<Object> createLink(
+            @PathVariable Long projectId,
+            @PathVariable Long checkListId,
+            @RequestBody CheckListFileLinkCreateRequest fileCreateRequest,
+            HttpSession session
+    ){
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        checkListService.saveLink(userId, projectId, checkListId, fileCreateRequest);
+
+        return CommonResponse.success("성공했습니다",null);
+    }
+
+    // todo : 체크리스트에 링크 추가
+    @Operation(summary = "체크리스트 링크 추가", description = "체크리스트 링크 추가")
+    @PostMapping("/{checkListId}/link")
+    public CommonResponse<Object> createLink(
+            @PathVariable Long projectId,
+            @PathVariable Long checkListId,
+            @RequestBody CheckListFileLinkCreateRequest linkCreateRequest,
+            HttpSession session
+    ){
+        Long userId = SessionUtil.getLoginUserId(session);
+
+        checkListService.saveLink(userId, projectId, checkListId, linkCreateRequest);
+
+        return CommonResponse.success("성공했습니다",null);
+    }
+
 }
