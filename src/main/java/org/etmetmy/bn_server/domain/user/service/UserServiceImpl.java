@@ -296,10 +296,6 @@ public class UserServiceImpl implements UserService{
 
         user.updateInfo(request.getName(), null, request.getPhone(), company, null);
 
-        if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
-
         return UserSelfUpdateResponse.Converter.from(user);
     }
 

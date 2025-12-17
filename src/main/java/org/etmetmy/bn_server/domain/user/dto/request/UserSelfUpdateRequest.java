@@ -10,8 +10,6 @@ import lombok.*;
 public class UserSelfUpdateRequest {
     private String name;
 
-    private String password;
-
     @JsonProperty("phone")
     private String phone;
 
