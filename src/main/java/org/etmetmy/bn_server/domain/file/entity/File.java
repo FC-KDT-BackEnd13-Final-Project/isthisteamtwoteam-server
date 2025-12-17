@@ -84,6 +84,7 @@ public class File extends BaseEntity {
     public void restore() {
         isDeleted = false;
         deletedAt = null;
+        this.deletedBy = null;
     }
 
     // 공통 내부 처리

@@ -1,14 +1,19 @@
 package org.etmetmy.bn_server.domain.file.service;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
+import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
 import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
+import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
@@ -32,6 +37,7 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.ObjectCannedACL;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -54,33 +60,6 @@ public class FileServiceImpl implements FileService {
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
-
-    // 1. 프로젝트별 파일 목록 조회
-    @Override
-    public List<ActiveFileListDTO> findAllByProjectId(Long projectId, HttpSession session) {
-
-        // 1. 로그인 사용자 확인
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-
-        User user = userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
-
-        // 2. 프로젝트 존재 여부 검증
-        projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-
-        // 3. 사용자 권한 검증
-        boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId);
-        if (!isMember && !user.getRole().equals(Role.ADMIN)) {
-            throw new ProjectPermissionDeniedException();
-        }
-
-        // 4. 파일 목록 조회
-        List<File> files = fileRepository.findByProjectId(projectId);
-
-        return ActiveFileListDTO.Converter.from(files);
-
-    }
 
     // 2. 임시 파일 업로드
     @Override
@@ -149,6 +128,38 @@ public class FileServiceImpl implements FileService {
         file.softDelete(loginUserId);
 
         fileRepository.save(file);
+    }
+
+    // 5. 삭제된 파일 복원
+    @Override
+    @Transactional
+    public FileRestoreResponse restoreDeletedFiles(Long loginUserId, @Valid FileRestoreRequest request){
+
+        // 1. 권한 검증 (관리자만)
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        if (user.getRole() != Role.ADMIN) {
+            throw new BusinessException(ErrorCode.DELETED_FILE_ACCESS_DENIED);
+        }
+
+        // 2. 요청한 파일 ID 조회
+        List<Long> fileIds = request.getFileIds();
+        List<File> files = fileRepository.findAllById(fileIds);
+
+        // 3. 존재 개수 비교
+        if (files.size() != fileIds.size()) {
+            throw new BusinessException(ErrorCode.FILE_NOT_IN_POST);
+        }
+
+        // 4. 삭제 여부 체크 후 restore
+        files.forEach(file -> {
+            if (!file.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.FILE_NOT_DELETED);
+            }
+            file.restore();
+        });
+
+        fileRepository.saveAll(files);
+        return FileRestoreResponse.Converter.from(files, loginUserId);
     }
 
     // 5. 삭제된 파일 영구 삭제 (hard delete)

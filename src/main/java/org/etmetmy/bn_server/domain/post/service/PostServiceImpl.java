@@ -326,7 +326,7 @@ public class PostServiceImpl implements PostService {
             throw new BusinessException(ErrorCode.DELETED_BOARD_ACCESS_DENIED);
         }
 
-        // 2. 요청한 프로젝트 ID 조회
+        // 2. 요청한 게시글 ID 조회
         List<Long> postIds = request.getPostIds();
         List<Post> posts = postRepository.findAllById(postIds);
 

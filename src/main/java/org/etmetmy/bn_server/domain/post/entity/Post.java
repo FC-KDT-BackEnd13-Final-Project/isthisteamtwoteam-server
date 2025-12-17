@@ -112,7 +112,8 @@ public class Post extends BaseEntity {
 
     // 게시글 restore
     public void restore() {
-        isDeleted = false;
-        deletedAt = null;
+        this.isDeleted = false;
+        this.deletedAt = null;
+        this.deletedBy = null;
     }
 }

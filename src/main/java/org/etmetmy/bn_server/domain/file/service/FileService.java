@@ -1,8 +1,9 @@
 package org.etmetmy.bn_server.domain.file.service;
 
-import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
-import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
+import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
 import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
@@ -13,9 +14,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface FileService {
-
-    //프로젝트별 파일 목록 조회
-    List<ActiveFileListDTO> findAllByProjectId(Long projectId, HttpSession session);
 
     // 임시 파일 업로드
     List<TempFileListDTO> postFiles(Long projectId, List<MultipartFile> files, Long uploadedBy);
@@ -49,5 +47,8 @@ public interface FileService {
 
     // S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 ProjectCheckList에 저장
     void saveFiles(ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId);
+
+    // 삭제된 파일 복원
+    public FileRestoreResponse restoreDeletedFiles(Long loginUserId, @Valid FileRestoreRequest request);
 }
 
