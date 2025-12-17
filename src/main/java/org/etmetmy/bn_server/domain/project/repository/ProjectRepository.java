@@ -99,5 +99,6 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     List<Project> findActiveProjectsByProjectIds(@Param("projectIds") List<Long> projectIds);
 
     Page<Project> findByProjectNameContainingIgnoreCaseAndIsDeleted(String searchKeyword, Boolean isDeleted, Pageable pageable);
+
     Page<Project> findByIsDeleted(Boolean isDeleted, Pageable pageable);
 }

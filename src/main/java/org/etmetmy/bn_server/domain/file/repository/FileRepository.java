@@ -28,8 +28,6 @@ public interface FileRepository extends JpaRepository<File, Long> {
             "AND f.isDeleted = false")
     List<File> findAllByProjectId(@Param("projectId") Long projectId);
 
-    List<File> findByPost(Post post);
-
     @Query("SELECT f FROM File f " +
             "WHERE f.projectCheckList.projectCheckListId = :projectCheckListId " +
             "AND f.isDeleted = false")
@@ -45,4 +43,7 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     @Query("select f from File f where f.comment.post.postId = :postId")
     List<File> findByPostId(@Param("postId") Long postId);
+
+    @Query("select f from File f where f.post.postId in :postIds")
+    List<File> findByPostIds(List<Long> postIds);
 }

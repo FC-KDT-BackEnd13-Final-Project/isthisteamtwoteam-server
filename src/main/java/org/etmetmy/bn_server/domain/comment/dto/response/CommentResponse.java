@@ -33,7 +33,7 @@ public class CommentResponse {
 
             return CommentResponse.builder()
                 .commentId(comment.getCommentId())
-                .parentId( comment.getParent() != null ? comment.getParent().getCommentId() : null )
+                .parentId(comment.getParent() != null ? comment.getParent().getCommentId() : null )
                 .userId(comment.getUser().getId())
                 .userName(comment.getUser().getName())
                 .content(comment.getContent())
