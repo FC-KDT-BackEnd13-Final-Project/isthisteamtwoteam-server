@@ -613,19 +613,20 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectUpdateResponse.Converter.from(project);
     }
 
+    // 프로젝트 체크리스트 삭제
     @Override
     public void checklistDeleted(Long projectId, Long checkListId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-
+        // 프로젝트 체크리스트 존재 확인
         ProjectCheckList projectCheckList = projectChecklistRepository.findByProject_IdAndCheckListId(projectId, checkListId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.PROJECTCHECKLIST_NOT_FOUND));
 
+        // 파일 존재 확인
         List<File> files = fileRepository.findByProjectCheckListId(projectCheckList.getProjectCheckListId());
-        //List<Link> links = linkRepository.findByProjectCheckListId(projectCheckList.getProjectCheckListId());
 
+        // S3 파일 삭제
         fileService.deleteFilesFromS3(files);
 
+        // 프로젝트 체크리스트 삭제 및 파일과 링크 자동 삭제
         projectChecklistRepository.delete(projectCheckList);
     }
 }

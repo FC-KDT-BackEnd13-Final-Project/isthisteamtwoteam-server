@@ -117,10 +117,9 @@ public class ProjectAdminController {
     @Operation(summary = "프로젝트 체크리스트 삭제", description = "프로젝트에 체크리스트를 삭제")
     @DeleteMapping("/{projectId}/checklists/{checkListId}")
     public CommonResponse<Object> addCheckLists(@PathVariable Long projectId,
-                                                                           @PathVariable Long checkListId) {
+                                                @PathVariable Long checkListId) {
         projectService.checklistDeleted(projectId, checkListId);
         return CommonResponse.success("체크리스트를 삭제했습니다", null);
-
     }
 
     // Todo : 개별 프로젝트 체크리스트 전체 조회
