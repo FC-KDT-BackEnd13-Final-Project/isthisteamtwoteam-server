@@ -25,4 +25,6 @@ public interface CheckListService {
     void updateContent(Long projectId, Long checkListId, ProjectCheckListReasonRequest reason);
 
     void saveLink(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest linkCreateRequest);
+
+    void saveFile(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest fileCreateRequest);
 }

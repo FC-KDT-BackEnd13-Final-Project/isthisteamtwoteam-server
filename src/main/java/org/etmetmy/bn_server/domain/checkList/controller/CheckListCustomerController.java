@@ -51,8 +51,8 @@ public class CheckListCustomerController {
 
     // todo : 체크리스트에 파일 추가
     @Operation(summary = "체크리스트 파일 추가", description = "체크리스트 파일 추가")
-    @PostMapping("/{checkListId}/link")
-    public CommonResponse<Object> createLink(
+    @PostMapping("/{checkListId}/file")
+    public CommonResponse<Object> createFile(
             @PathVariable Long projectId,
             @PathVariable Long checkListId,
             @RequestBody CheckListFileLinkCreateRequest fileCreateRequest,
@@ -60,7 +60,7 @@ public class CheckListCustomerController {
     ){
         Long userId = SessionUtil.getLoginUserId(session);
 
-        checkListService.saveLink(userId, projectId, checkListId, fileCreateRequest);
+        checkListService.saveFile(userId, projectId, checkListId, fileCreateRequest);
 
         return CommonResponse.success("성공했습니다",null);
     }

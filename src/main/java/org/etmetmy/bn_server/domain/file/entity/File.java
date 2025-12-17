@@ -87,20 +87,25 @@ public class File extends BaseEntity {
     }
 
     // 공통 내부 처리
-    private void attach(Post post, Comment comment, Long uploadedBy) {
+    private void attach(Post post, Comment comment, ProjectCheckList projectCheckList, Long uploadedBy) {
         this.post = post;
         this.comment = comment;
+        this.projectCheckList = projectCheckList;
         this.isTemp = false;
         this.uploadedBy = uploadedBy;
     }
 
     // 게시글에 연결
     public void attachToPost(Post post, Long uploadedBy) {
-        attach(post, null, uploadedBy);
+        attach(post, null,null, uploadedBy);
     }
 
     // 댓글에 연결
     public void attachToComment(Comment comment, Long uploadedBy) {
-        attach(null, comment, uploadedBy);
+        attach(null, comment, null, uploadedBy);
+    }
+
+    public void attachToProjectCheckList(ProjectCheckList projectCheckList, Long uploadedBy) {
+        attach(null, null, projectCheckList, uploadedBy);
     }
 }

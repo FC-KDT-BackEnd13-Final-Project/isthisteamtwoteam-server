@@ -13,13 +13,14 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
 import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.domain.user.entity.Role;
+import org.etmetmy.bn_server.domain.user.entity.User;
+import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
-import org.etmetmy.bn_server.exception.custom.BoardNotFoundException;
-import org.etmetmy.bn_server.exception.custom.BusinessException;
-import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
-import org.etmetmy.bn_server.exception.custom.ProjectPermissionDeniedException;
+import org.etmetmy.bn_server.exception.custom.*;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
 
+    private final UserRepository userRepository;
     private final FileRepository fileRepository;
     private final ProjectRepository projectRepository;
     private final ProjectMemberRepository projectMemberRepository;
@@ -60,13 +62,16 @@ public class FileServiceImpl implements FileService {
         // 1. 로그인 사용자 확인
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
         // 2. 프로젝트 존재 여부 검증
         projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
 
         // 3. 사용자 권한 검증
         boolean isMember = projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId);
-        if (!isMember) {
+        if (!isMember && !user.getRole().equals(Role.ADMIN)) {
             throw new ProjectPermissionDeniedException();
         }
 
@@ -80,7 +85,7 @@ public class FileServiceImpl implements FileService {
     // 2. 임시 파일 업로드
     @Override
     @Transactional
-    public List<TempFileListDTO> postFiles(Long projectId, List<MultipartFile> files,Long uploadedBy) {
+    public List<TempFileListDTO> postFiles(Long projectId, List<MultipartFile> files, Long uploadedBy) {
 
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
 
@@ -108,7 +113,7 @@ public class FileServiceImpl implements FileService {
 
         List<File> files = fileRepository.findAllById(fileIds);
         for (File file : files) {
-            if(file.getIsTemp()==false)
+            if (file.getIsTemp() == false)
                 throw new BusinessException(ErrorCode.FILE_NOT_TEMP);
         }
         deleteFilesFromS3AndDb(files);
@@ -285,18 +290,25 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public void saveFiles(Post post, List<Long> fileIds, Long loginUserId) {
-        saveFilesInternal(post, null, fileIds, loginUserId);
+        saveFilesInternal(post, null, null, fileIds, loginUserId);
     }
 
     // 11. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
     @Override
     @Transactional
     public void saveFiles(Comment comment, List<Long> fileIds, Long loginUserId) {
-        saveFilesInternal(null, comment, fileIds, loginUserId);
+        saveFilesInternal(null, comment, null, fileIds, loginUserId);
     }
 
-    // 12. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post/Comment에 저장
-    private void saveFilesInternal(Post post, Comment comment, List<Long> fileIds, Long loginUserId) {
+    // 12. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
+    @Override
+    @Transactional
+    public void saveFiles(ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId) {
+        saveFilesInternal(null, null, projectCheckList, fileIds, loginUserId);
+    }
+
+    // 13. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post/Comment에 저장
+    private void saveFilesInternal(Post post, Comment comment, ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId) {
         if (fileIds == null || fileIds.isEmpty()) {
             return;
         }
@@ -311,10 +323,12 @@ public class FileServiceImpl implements FileService {
         }
 
         for (File file : tempFiles) {
-            if (post != null) {
+            if (comment == null && projectCheckList == null) {
                 file.attachToPost(post, loginUserId);
-            } else {
+            } else if (post == null && projectCheckList == null) {
                 file.attachToComment(comment, loginUserId);
+            } else {
+                file.attachToProjectCheckList(projectCheckList, loginUserId);
             }
         }
 

@@ -103,8 +103,18 @@ public class CheckListServiceImpl implements CheckListService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow((UserNotFoundException::new));
-        // 3. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 게시글과 연동
 
         linkService.saveLinks(projectCheckList, linkCreateRequest.getLinkUrls(), user.getId());
+    }
+
+    @Override
+    public void saveFile(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest fileCreateRequest) {
+        ProjectCheckList projectCheckList = projectCheckListRepository.findByProject_IdAndCheckListId(projectId, checkListId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow((UserNotFoundException::new));
+
+        fileService.saveFiles(projectCheckList, fileCreateRequest.getFileIds(), user.getId());
     }
 }
