@@ -1,10 +1,13 @@
 package org.etmetmy.bn_server.domain.post.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+
+import java.time.LocalDateTime;
 
 
 @Getter
@@ -23,6 +26,9 @@ public class PostListResponse {
     private String createdIp;
     private Long parentId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime createdAt;
+
     public static PostListResponse from(Post post) {
         return PostListResponse.builder()
                 .postNumber(post.getPostNumber())  // ← Post 엔티티에서 가져오기
@@ -35,6 +41,7 @@ public class PostListResponse {
                 .stageName(post.getStage().getStageName())
                 .createdIp(post.getCreatedIp())
                 .parentId(post.getParentPostId())
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 }
