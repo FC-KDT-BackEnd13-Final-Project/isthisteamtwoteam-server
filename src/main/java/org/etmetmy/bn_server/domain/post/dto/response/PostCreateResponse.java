@@ -6,12 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.etmetmy.bn_server.domain.file.dto.response.ActiveFileListDTO;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
-import org.etmetmy.bn_server.domain.file.dto.response.UploadedFileDto;
-import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
-import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 
 import java.time.LocalDateTime;

@@ -71,6 +71,7 @@ public enum ErrorCode {
     FILE_DELETE_FAILED(500, "F006", "파일 삭제에 실패했습니다"),
     FILE_NOT_TEMP(400, "F007", "임시 파일이 아닙니다."),
     FILE_NOT_DELETED(400, "F008", "삭제된 파일만 영구 삭제할 수 있습니다."),
+    DELETED_FILE_ACCESS_DENIED(403,"F009","삭제된 파일에 접근 권한이 없습니다."),
 
     // 체크리스트 관련 에러
     CHECKLIST_NOT_FOUND(404,"D001","체크리스트를 찾을 수 없습니다."),
