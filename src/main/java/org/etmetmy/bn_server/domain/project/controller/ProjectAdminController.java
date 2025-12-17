@@ -157,7 +157,7 @@ public class ProjectAdminController {
         return CommonResponse.success("프로젝트 날짜 수정 성공", response);
     }
 
-    // todo: 개별 프로젝트 soft 삭제 (휴지으로 이동)
+    // todo: 개별 프로젝트 soft 삭제 (휴지통으로 이동)
     @Operation(summary = "프로젝트 삭제", description = "프로젝트를 휴지통으로 이동합니다 (soft delete)")
     @DeleteMapping("/{projectId}")
     @ActivityLogger(action = "DELETE", targetType = "Project")
