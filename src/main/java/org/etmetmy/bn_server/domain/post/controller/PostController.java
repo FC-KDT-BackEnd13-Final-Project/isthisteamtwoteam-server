@@ -63,7 +63,7 @@ public class PostController {
 
     // todo: 게시글 거절 API
     @Operation(summary = "게시글 거절", description = "게시글을 거절합니다 (사유 포함)")
-    @PatchMapping("posts/{postId}/reject")
+    @PatchMapping("/posts/{postId}/reject")
     public ResponseEntity<CommonResponse<Object>> rejectPost(
             @PathVariable Long postId,
             @RequestBody @Valid PostApprovalRequest request
