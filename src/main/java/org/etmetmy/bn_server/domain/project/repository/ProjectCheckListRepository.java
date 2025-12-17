@@ -11,4 +11,6 @@ import java.util.Optional;
 @Repository
 public interface ProjectCheckListRepository extends JpaRepository<ProjectCheckList, Long> {
     List<ProjectCheckList> findByProject(Project project);
+
+    Optional<ProjectCheckList> findByProject_IdAndCheckListId(Long projectId, Long checkListId);
 }
