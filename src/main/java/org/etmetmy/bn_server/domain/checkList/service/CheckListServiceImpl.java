@@ -7,16 +7,20 @@ import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
+import org.etmetmy.bn_server.domain.file.entity.File;
+import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.file.service.FileService;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.link.service.LinkService;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectCheckListReasonRequest;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
+import org.etmetmy.bn_server.exception.custom.ProjectPermissionDeniedException;
 import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.global.page.PageRequest;
 import org.springframework.data.domain.Page;
@@ -36,6 +40,7 @@ public class CheckListServiceImpl implements CheckListService {
 
     private final LinkService linkService;
     private final FileService fileService;
+    private final FileRepository fileRepository;
 
     @Override
     public CheckListResponse save(CheckListCreateRequest request) {
@@ -116,5 +121,16 @@ public class CheckListServiceImpl implements CheckListService {
                 .orElseThrow((UserNotFoundException::new));
 
         fileService.saveFiles(projectCheckList, fileCreateRequest.getFileIds(), user.getId());
+    }
+
+    @Override
+    public void deletefile(Long userId, Long fileId) {
+        File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
+
+        User user = userRepository.findById(userId)
+                .orElseThrow((UserNotFoundException::new));
+
+        file.softDelete(user.getId());
     }
 }
