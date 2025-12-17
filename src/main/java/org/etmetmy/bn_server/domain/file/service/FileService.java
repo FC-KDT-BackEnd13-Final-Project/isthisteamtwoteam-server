@@ -2,7 +2,9 @@ package org.etmetmy.bn_server.domain.file.service;
 
 import jakarta.validation.Valid;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
+import org.etmetmy.bn_server.domain.file.dto.request.FilePermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
+import org.etmetmy.bn_server.domain.file.dto.response.FilePermanentDeleteResponse;
 import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
 import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
 import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
@@ -20,9 +22,6 @@ public interface FileService {
 
     // 임시 파일 삭제 (hard delete)
     void deleteTempFile(Long projectId, List<Long> fileIds);
-
-    // 삭제된 파일 영구삭제
-    void deleteHardFile(Long projectId, List<Long> fileIds);
 
     // 업로드 된 파일 삭제 (soft delete)
     void deletePostFiles(Long projectId, Long postId, Long fileId, Long loginUserId);
@@ -50,5 +49,8 @@ public interface FileService {
 
     // 삭제된 파일 복원
     public FileRestoreResponse restoreDeletedFiles(Long loginUserId, @Valid FileRestoreRequest request);
+
+    // 삭제된 파일 영구 삭제
+    FilePermanentDeleteResponse hardDeleteFiles(Long loginUserId, @Valid FilePermanentDeleteRequest request);
 }
 
