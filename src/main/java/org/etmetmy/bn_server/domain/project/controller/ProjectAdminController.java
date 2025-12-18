@@ -40,26 +40,18 @@ public class ProjectAdminController {
     // todo: 프로젝트 생성
     @Operation(summary = "프로젝트 생성", description = "새로운 프로젝트를 생성합니다")
     @ActivityLogger(action = "CREATE", targetType = "Project")
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<ProjectCreateResponse> createProject(
             HttpSession session,
-            @RequestBody @Valid ProjectCreateRequest request
-    ) {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        ProjectCreateResponse response = projectService.createProject(request, loginUserId);
-        return CommonResponse.success("프로젝트가 생성되었습니다.", response);
-    }
-
-    // todo : 프로젝트 이미지 업로드
-    @PostMapping(value = "/{projectId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResponse<ProjectUpdateResponse> uploadImage(
-            @PathVariable Long projectId,
+            @RequestPart("request") @Valid ProjectCreateRequest request,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
-        ProjectUpdateResponse response = projectService.updateProjectImage(projectId, image);
-        return CommonResponse.success("프로젝트 이미지 업로드 성공", response);
-    }
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        ProjectCreateResponse response =
+                projectService.createProject(request, image, loginUserId);
 
+        return CommonResponse.success("프로젝트가 생성되었습니다.", response);
+    }
 
     // todo: 프로젝트 전체 조회 (페이지네이션, 검색, 삭제여부)
     @Operation(summary = "프로젝트 전체 조회(페이징, 검색, 삭제여부)", description = "모든 프로젝트 목록을 조회합니다")
@@ -144,8 +136,7 @@ public class ProjectAdminController {
 
     // todo: 프로젝트 이미지 수정
     @Operation(summary = "프로젝트 이미지 수정", description = "프로젝트의 이미지를 수정합니다")
-    @PatchMapping(value = "/{projectId}/image",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{projectId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<ProjectUpdateResponse> updateProjectImage(
             @PathVariable Long projectId,
             @RequestPart("image") MultipartFile image
