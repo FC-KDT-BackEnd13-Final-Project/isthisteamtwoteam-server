@@ -29,11 +29,15 @@ public class UserSelfUpdateResponse {
     @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonProperty("profile_url")
+    private String profileUrl;
+
     public static class Converter {
         public static UserSelfUpdateResponse from(User user) {
             return UserSelfUpdateResponse.builder()
                     .userId(user.getId())
                     .name(user.getName())
+                    .profileUrl(user.getProfileImg())
                     .phone(user.getPhone())
                     .companyName(user.getCompany().getCompanyName())
                     .updatedAt(user.getUpdatedAt())
