@@ -36,7 +36,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -137,7 +139,7 @@ public class PostServiceImpl implements PostService {
         // 필요한 엔티티 조회
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
-        Stage stage = stageRepository.findById(requestDto.getStageId()).orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
+        Stage stage = stageRepository.findByStageName(requestDto.getStageName()).orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
         Long postNumber = generatePostNumber(projectId);
 
@@ -335,18 +337,25 @@ public class PostServiceImpl implements PostService {
             throw new BoardNotFoundException("존재하지 않는 게시글이 포함되어 있습니다.");
         }
 
-        // 4. 삭제 여부 체크 후 restore
+        // 4. 삭제 여부 체크
         posts.forEach(post -> {
             if (!post.getIsDeleted()) {
                 throw new BusinessException(ErrorCode.BOARD_NOT_DELETED);
             }
+        });
+
+        // 5. 모든 게시글의 파일을 한 번에 조회 (N+1 문제 해결)
+        List<File> allFiles = fileRepository.findByPostIds(postIds);
+        Map<Long, List<File>> filesByPostId = allFiles.stream()
+                .collect(Collectors.groupingBy(file -> file.getPost().getPostId()));
+
+        // 6. 게시글과 파일 복원
+        posts.forEach(post -> {
             post.restore();
 
-            // 게시글 내 파일도 restore
-            List<File> postFiles = fileRepository.findFilesByPostId(post.getPostId());
-            for (File fileToRestore : postFiles) {
-                fileToRestore.restore();
-            }
+            // 게시글에 속한 파일 복원
+            List<File> postFiles = filesByPostId.getOrDefault(post.getPostId(), List.of());
+            postFiles.forEach(File::restore);
         });
 
         postRepository.saveAll(posts);

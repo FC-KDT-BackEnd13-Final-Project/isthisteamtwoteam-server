@@ -15,11 +15,19 @@ import java.util.List;
 
 public interface FileRepository extends JpaRepository<File, Long> {
 
+    // 단일 프로젝트 ID로 삭제되지 않은 파일 조회
     @Query("SELECT f FROM File f " +
             "JOIN FETCH f.post p " +
             "WHERE p.project.id = :projectId " +
             "AND f.isDeleted = false")
     List<File> findByProjectId(@Param("projectId") Long projectId);
+
+    // 다중 프로젝트의 게시글, 댓글, 체크리스트에 속한 파일 조회
+    @Query("SELECT DISTINCT f FROM File f " +
+            "WHERE f.post.project.id IN :projectIds " +
+            "   OR f.comment.post.project.id IN :projectIds " +
+            "   OR f.projectCheckList.project.id IN :projectIds")
+    List<File> findByProjectIds(@Param("projectIds") List<Long> projectIds);
 
     // project_id로 업로드된 파일 조회 (isTemp=false는 post/comment/checkList 중 하나에 연결됨을 보장)
     @Query("SELECT DISTINCT f " +
@@ -53,4 +61,6 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     @Query("select f from File f where f.post.postId in :postIds")
     List<File> findByPostIds(List<Long> postIds);
+
+    void deleteFileByFilePath(String filePath);
 }

@@ -354,4 +354,28 @@ public class FileServiceImpl implements FileService {
 
         fileRepository.saveAll(tempFiles);
     }
+
+    // 15. 프로필 이미지 수정 - 기존 이미지 삭제 (S3 + DB)
+    @Override
+    @Transactional
+    public void removeOldProfileImage(String oldImageUrl){
+
+        // S3 key 추출
+        String key = getKeyFromFileUrls(oldImageUrl);
+
+        // S3 삭제 요청
+        DeleteObjectRequest deleteRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key(key)
+                .build();
+        s3Client.deleteObject(deleteRequest);
+    }
+
+
+    //16. 프로필 이미지 수정 - 새 이미지 업로드 후 S3 이미지 URL 저장
+    public String uploadProfileImage(MultipartFile image, Long userId){
+        S3UploadResult uploadResult = uploadToS3(image);
+
+        return uploadResult.getFileUrl();
+    }
 }

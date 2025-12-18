@@ -21,7 +21,9 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Tag(name = "User", description = "사용자 인증 및 관리 API")
 @RequestMapping("/api/v1")
@@ -151,14 +153,27 @@ public class UserController {
         return CommonResponse.success("비밀번호가 성공적으로 변경되었습니다.", response);
     }
 
+    // todo: 회원정보 수정
     @Operation(summary = "본인 정보 수정", description = "로그인한 사용자가 자신의 정보를 수정합니다")
-    @PutMapping("/users/{userId}")
+    @PutMapping("/users")
     public CommonResponse<UserSelfUpdateResponse> updateMyInfo(@RequestBody UserSelfUpdateRequest request, HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
         UserSelfUpdateResponse response = userService.updateMyInfo(loginUserId, request);
 
         return CommonResponse.success("사용자 정보 수정 완료", response);
+    }
+
+    // todo: 회원정보 수정 - 이미지 업로드
+    @Operation(summary = "본인 이미지 수정", description = "로그인한 사용자가 자신의 프로필이미지를 수정합니다")
+    @PutMapping("/users/profile-image")
+    public CommonResponse<UserSelfUpdateResponse> uploadProfileImage(
+            @RequestPart MultipartFile image,
+            HttpSession session
+    ) {
+        Long userId = SessionUtil.getLoginUserId(session);
+        UserSelfUpdateResponse response = userService.updateProfileImage(userId, image);
+        return CommonResponse.success("프로필 이미지 변경 완료", response);
     }
 
     /**

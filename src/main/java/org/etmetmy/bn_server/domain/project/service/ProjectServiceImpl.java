@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.project.service;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.company.entity.Company;
@@ -59,7 +60,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
 
 @Slf4j
 @Service
@@ -568,7 +568,6 @@ public class ProjectServiceImpl implements ProjectService {
         ));
     }
 
-
     //프로젝트 진행단계 수정
     @Transactional
     @Override
@@ -658,6 +657,38 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectRestoreResponse.Converter.from(projects);
     }
 
+    // 삭제된 프로젝트 영구삭제
+    @Override
+    @Transactional
+    public ProjectHardDeleteResponse hardDeleteProject(Long loginUserId, @Valid ProjectHardDeleteRequest request){
+
+        // 1. 삭제 요청한 프로젝트 ID 목록 조회
+        List<Long> projectIds = request.getProjectIds();
+        List<Project> projects = projectRepository.findAllById(projectIds);
+
+        // 2. 존재 개수 비교
+        if (projects.size() != projectIds.size()) {
+            throw new ProjectNotFoundException("존재하지 않는 프로젝트가 포함되어 있습니다.");
+        }
+
+        // 3. 삭제 여부 체크
+        projects.forEach(project -> {
+            if (!project.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.PROJECT_NOT_DELETED);}
+        });
+
+        // 4. S3에서 삭제할 파일 목록 조회
+        List<File> files = fileRepository.findByProjectIds(projectIds);
+
+        // 5. S3 파일 먼저 삭제 (실패 시 예외 발생하여 트랜잭션 롤백)
+        fileService.deleteFilesFromS3(files);
+
+        // 6. DB 에서 프로젝트 삭제 (트랜잭션으로 보호, Cascade로 연관 엔티티도 삭제)
+        projectRepository.deleteAll(projects);
+
+        return ProjectHardDeleteResponse.Converter.from(projects);
+    }
+
     // 프로젝트 이미지 수정
     @Override
     @Transactional
@@ -671,7 +702,7 @@ public class ProjectServiceImpl implements ProjectService {
             // S3 업로드
             String imageUrl = fileService.uploadToS3(image).getFileUrl();
             // 프로젝트에 이미지 주소 저장
-            project.setProjectImageUrl(imageUrl);
+            project.updateProjectImage(imageUrl);
             projectRepository.save(project);
         }
         return ProjectUpdateResponse.Converter.from(project);
@@ -692,6 +723,33 @@ public class ProjectServiceImpl implements ProjectService {
 
         // 프로젝트 체크리스트 삭제 및 파일과 링크 자동 삭제
         projectChecklistRepository.delete(projectCheckList);
+    }
+
+    //개별 프로젝트에서 바로 체크리스트 추가
+    @Override
+    @Transactional
+    public ProjectCreateCheckListResponse createAndAddCheckList(Long projectId,ProjectCreateCheckListRequest request) {
+
+        // 1. 프로젝트 존재 확인
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 2. 프로젝트가 삭제되지 않았는지 확인
+        if (Boolean.TRUE.equals(project.getIsDeleted())) {
+            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "삭제된 프로젝트에는 체크리스트를 추가할 수 없습니다.");
+        }
+        // 3. 새로운 CheckList 생성
+        CheckList newCheckList = ProjectCreateCheckListRequest.Converter.toEntity(request);
+        CheckList savedCheckList = checkListRepository.save(newCheckList);
+
+        // 4. ProjectCheckList 매핑 생성
+        ProjectCheckList projectCheckList =
+                ProjectCreateCheckListRequest.Converter.toProjectCheckListEntity(project, savedCheckList.getCheckListId()
+                );
+        ProjectCheckList savedProjectCheckList = projectChecklistRepository.save(projectCheckList);
+
+        // 5. Response 반환
+        return ProjectCreateCheckListResponse.Converter.from(savedProjectCheckList, savedCheckList);
     }
     private String toJson(Object obj) {
         try {

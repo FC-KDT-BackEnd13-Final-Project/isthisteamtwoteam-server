@@ -68,7 +68,10 @@ public class User extends BaseEntity implements java.io.Serializable{
         }
     }
 
-    public void setPassword(String password) {
+    public void updatePassword(String password) {
         this.password = password;
+    }
+    public void updateProfileImage(String ImageUrl){
+        this.profileImg = ImageUrl;
     }
 }

@@ -7,6 +7,7 @@ import org.etmetmy.bn_server.domain.user.dto.response.*;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface UserService {
     @Transactional
@@ -33,4 +34,7 @@ public interface UserService {
 
     @Transactional
     UserSelfUpdateResponse updateMyInfo(Long userId, UserSelfUpdateRequest request);
+
+    // 회원정보 수정 - 이미지 업로드
+    UserSelfUpdateResponse updateProfileImage(Long userId, MultipartFile image);
 }

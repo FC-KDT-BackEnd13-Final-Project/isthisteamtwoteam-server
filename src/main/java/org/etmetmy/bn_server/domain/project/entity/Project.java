@@ -64,6 +64,9 @@ public class Project extends BaseEntity {
     @lombok.Builder.Default
     private List<Memo> memos = new ArrayList<>();
 
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProjectMember> projectMembers = new ArrayList<>();
+
     @Column(name = "is_deleted", nullable = false)
     @lombok.Builder.Default
     private Boolean isDeleted = false;
@@ -77,7 +80,7 @@ public class Project extends BaseEntity {
         deletedAt = null;
     }
 
-    public void setProjectImageUrl(String imageUrl) {
+    public void updateProjectImage(String imageUrl) {
         projectImageUrl = imageUrl;
     }
 }
