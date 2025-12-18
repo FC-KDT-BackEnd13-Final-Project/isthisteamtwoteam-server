@@ -9,6 +9,7 @@ import org.etmetmy.bn_server.domain.history.repository.HistoryPostRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -43,7 +44,7 @@ public class HistoryPostEventListener {
 
             // User 조회
             User changedByUser = userRepository.findById(event.getChangedByUserId())
-                    .orElseThrow(() -> new IllegalArgumentException("User not found: " + event.getChangedByUserId()));
+                    .orElseThrow(UserNotFoundException::new);
 
             // HistoryPost 엔티티 생성
             HistoryPost historyPost = createHistoryPost(

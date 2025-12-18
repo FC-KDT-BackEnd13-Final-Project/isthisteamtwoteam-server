@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.history.event;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.etmetmy.bn_server.domain.history.entity.ChangeType;
 import org.etmetmy.bn_server.domain.post.entity.Post;
@@ -9,6 +10,7 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
  * AOP에서 발행되어 EventListener에서 처리됩니다.
  */
 @Getter
+@AllArgsConstructor
 public class HistoryPostEvent {
 
     private final Post originalPost;      // 변경 전 데이터
@@ -16,18 +18,4 @@ public class HistoryPostEvent {
     private final ChangeType changeType;  // UPDATE, DELETE
     private final Long changedByUserId;   // 변경한 사용자 ID
     private final String changeIp;        // 변경 IP 주소
-
-    public HistoryPostEvent(
-            Post originalPost,
-            Post updatedPost,
-            ChangeType changeType,
-            Long changedByUserId,
-            String changeIp
-    ) {
-        this.originalPost = originalPost;
-        this.updatedPost = updatedPost;
-        this.changeType = changeType;
-        this.changedByUserId = changedByUserId;
-        this.changeIp = changeIp;
-    }
 }

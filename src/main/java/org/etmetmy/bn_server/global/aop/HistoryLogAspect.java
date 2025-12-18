@@ -21,6 +21,9 @@ import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
+import org.etmetmy.bn_server.exception.code.ErrorCode;
+import org.etmetmy.bn_server.exception.custom.BoardNotFoundException;
+import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.global.util.IpAddressUtil;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.context.ApplicationEventPublisher;
@@ -42,15 +45,13 @@ public class HistoryLogAspect {
     private final EntityManager entityManager;
 
     @Pointcut("@annotation(org.etmetmy.bn_server.global.aop.HistoryLogger)")
-    public void historyLoggerPointcut() {}
+    public void historyLoggerPointcut() {
+    }
 
     // ✅ @Around 사용 - 변경 전 데이터 캡처 가능
     @Around("historyLoggerPointcut() && @annotation(historyLogger)")
     public Object saveHistoryLog(ProceedingJoinPoint joinPoint, HistoryLogger historyLogger)
             throws Throwable {
-
-        log.info("=== HistoryLogAspect 시작 ===");
-        log.info("TargetType: {}, ChangeType: {}", historyLogger.targetType(), historyLogger.changeType());
 
         HttpServletRequest request = ((ServletRequestAttributes)
                 RequestContextHolder.getRequestAttributes()).getRequest();
@@ -67,17 +68,16 @@ public class HistoryLogAspect {
             default -> throw new IllegalArgumentException("지원하지 않는 targetType: " + historyLogger.targetType());
         }
 
-        log.info("=== HistoryLogAspect 종료 ===");
         return result;
     }
 
     // ==================== Post History ====================
     private Object handlePostHistory(ProceedingJoinPoint joinPoint, HistoryLogger historyLogger,
-                                      Long userId, String clientIp) throws Throwable {
+                                     Long userId, String clientIp) throws Throwable {
         // 1. 변경 전 데이터 조회 및 스냅샷 생성
         Long postId = extractPostId(joinPoint);
-        Post originalPost = postRepository.findById(postId).orElseThrow();
-        log.info("변경 전 데이터 조회 완료 - Post title: {}", originalPost.getTitle());
+        Post originalPost = postRepository.findById(postId)
+                .orElseThrow(BoardNotFoundException::new);
 
         // 변경 전 데이터를 스냅샷으로 복사
         Post originalSnapshot = createPostSnapshot(originalPost);
@@ -90,14 +90,12 @@ public class HistoryLogAspect {
         Post updatedPost = null;
         if (historyLogger.changeType() == ChangeType.UPDATE) {
             updatedPost = createPostSnapshot(originalPost);
-            log.info("변경 후 데이터 조회 완료 - Post title: {}", updatedPost.getTitle());
         }
 
         // 4. 히스토리 이벤트 발행
         eventPublisher.publishEvent(
                 new HistoryPostEvent(originalSnapshot, updatedPost, historyLogger.changeType(), userId, clientIp)
         );
-        log.info("HistoryPostEvent 발행 완료");
 
         return result;
     }
@@ -107,8 +105,8 @@ public class HistoryLogAspect {
                                         Long userId, String clientIp) throws Throwable {
         // 1. 변경 전 데이터 조회 및 스냅샷 생성
         Long commentId = extractCommentId(joinPoint);
-        Comment originalComment = commentRepository.findById(commentId).orElseThrow();
-        log.info("변경 전 데이터 조회 완료 - Comment content: {}", originalComment.getContent());
+        Comment originalComment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BOARD_COMMENT_NOT_FOUND));
 
         // 변경 전 데이터를 스냅샷으로 복사
         Comment originalSnapshot = createCommentSnapshot(originalComment);
@@ -121,25 +119,23 @@ public class HistoryLogAspect {
         Comment updatedComment = null;
         if (historyLogger.changeType() == ChangeType.UPDATE) {
             updatedComment = createCommentSnapshot(originalComment);
-            log.info("변경 후 데이터 조회 완료 - Comment content: {}", updatedComment.getContent());
         }
 
         // 4. 히스토리 이벤트 발행
         eventPublisher.publishEvent(
                 new HistoryCommentEvent(originalSnapshot, updatedComment, historyLogger.changeType(), userId, clientIp)
         );
-        log.info("HistoryCommentEvent 발행 완료");
 
         return result;
     }
 
     // ==================== File History ====================
     private Object handleFileHistory(ProceedingJoinPoint joinPoint, HistoryLogger historyLogger,
-                                      Long userId, String clientIp) throws Throwable {
+                                     Long userId, String clientIp) throws Throwable {
         // File은 CREATE, DELETE만 지원
         Long fileId = extractFileId(joinPoint);
-        File file = fileRepository.findById(fileId).orElseThrow();
-        log.info("File 데이터 조회 완료 - fileName: {}", file.getOriginalFileTitle());
+        File file = fileRepository.findById(fileId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.FILE_NOT_FOUND));
 
         // 메서드 실행
         Object result = joinPoint.proceed();
@@ -148,18 +144,17 @@ public class HistoryLogAspect {
         eventPublisher.publishEvent(
                 new HistoryFileEvent(file, historyLogger.changeType(), userId, clientIp)
         );
-        log.info("HistoryFileEvent 발행 완료");
 
         return result;
     }
 
     // ==================== Link History ====================
     private Object handleLinkHistory(ProceedingJoinPoint joinPoint, HistoryLogger historyLogger,
-                                      Long userId, String clientIp) throws Throwable {
+                                     Long userId, String clientIp) throws Throwable {
         // Link는 CREATE, DELETE만 지원
         Long linkId = extractLinkId(joinPoint);
-        Link link = linkRepository.findById(linkId).orElseThrow();
-        log.info("Link 데이터 조회 완료 - linkUrl: {}", link.getLinkUrl());
+        Link link = linkRepository.findById(linkId)
+                .orElseThrow(()->new BusinessException(ErrorCode.LINK_NOT_FOUND));
 
         // 메서드 실행
         Object result = joinPoint.proceed();
@@ -168,12 +163,12 @@ public class HistoryLogAspect {
         eventPublisher.publishEvent(
                 new HistoryLinkEvent(link, historyLogger.changeType(), userId, clientIp)
         );
-        log.info("HistoryLinkEvent 발행 완료");
 
         return result;
     }
 
     // ==================== Snapshot Creation ====================
+
     /**
      * Post 엔티티의 스냅샷을 생성합니다.
      * LazyInitializationException 방지를 위해 프록시 객체를 즉시 로딩합니다.
@@ -237,6 +232,7 @@ public class HistoryLogAspect {
     }
 
     // ==================== ID Extraction ====================
+
     /**
      * JoinPoint에서 postId를 추출합니다.
      */

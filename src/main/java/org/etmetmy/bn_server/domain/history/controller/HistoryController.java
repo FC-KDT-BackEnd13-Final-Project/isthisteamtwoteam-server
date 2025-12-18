@@ -19,6 +19,7 @@ public class HistoryController {
 
     private final HistoryService historyService;
 
+    // todo : 게시글 히스토리 조회
     @Operation(summary = "게시글 히스토리 조회", description = "특정 게시글의 모든 히스토리를 시간순으로 조회합니다")
     @GetMapping("/posts/{postId}")
     public CommonResponse<HistoryListResponse> getPostHistory(

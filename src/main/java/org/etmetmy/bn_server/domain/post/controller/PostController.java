@@ -78,6 +78,7 @@ public class PostController {
     // todo: 관리자 및 개발사가 게시글 완료하기 버튼 API
     @Operation(summary = "게시글 완료", description = "게시글을 완료 상태로 변경합니다")
     @PatchMapping("/{projectId}/posts/{postId}/completion")
+    @HistoryLogger(changeType = ChangeType.UPDATE, targetType = "Post")
     public void completePost(@PathVariable Long projectId,
                              @PathVariable Long postId,
                              HttpSession session) {
