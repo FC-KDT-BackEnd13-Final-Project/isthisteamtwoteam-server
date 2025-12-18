@@ -251,4 +251,17 @@ public class ProjectAdminController {
 
         return CommonResponse.success("삭제된 프로젝트 복원 성공", response);
     }
+
+    // Todo: 삭제된 프로젝트 영구삭제 (hard delete)
+    @Operation(summary = "프로젝트 영구삭제", description = "휴지통에 있는 프로젝트를 영구삭합니다")
+    @DeleteMapping("/trash")
+    public CommonResponse<ProjectHardDeleteResponse> hardDeleteProject(
+            HttpSession session,
+            @Valid @RequestBody ProjectHardDeleteRequest request)
+    {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        ProjectHardDeleteResponse response = projectService.hardDeleteProject(loginUserId, request);
+
+        return CommonResponse.success("삭제된 프로젝트 영구삭제 성공", response);
+    }
 }
