@@ -132,6 +132,22 @@ public class FileServiceImpl implements FileService {
         file.softDelete(loginUserId);
 
         fileRepository.save(file);
+
+        // 파일 히스토리 이벤트 발행 (DELETE)
+        String clientIp = null;
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attributes != null) {
+                HttpServletRequest request = attributes.getRequest();
+                clientIp = IpAddressUtil.getClientIp(request);
+            }
+        } catch (Exception e) {
+            // RequestContext가 없는 경우 null로 저장
+        }
+
+        eventPublisher.publishEvent(
+                new HistoryFileEvent(file, ChangeType.DELETE, loginUserId, clientIp)
+        );
     }
 
     // 5. 삭제된 파일 복원
