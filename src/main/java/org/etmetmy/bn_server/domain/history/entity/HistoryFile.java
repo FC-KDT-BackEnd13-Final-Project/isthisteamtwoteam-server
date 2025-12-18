@@ -9,9 +9,10 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
-@Table(name = "historycomment", indexes = {
-        @Index(name = "idx_original_comment_id", columnList = "original_comment_id"),
+@Table(name = "historyfile", indexes = {
+        @Index(name = "idx_original_file_id", columnList = "original_file_id"),
         @Index(name = "idx_post_id", columnList = "post_id"),
+        @Index(name = "idx_comment_id", columnList = "comment_id"),
         @Index(name = "idx_project_id", columnList = "project_id"),
         @Index(name = "idx_created_at", columnList = "created_at")
 })
@@ -19,31 +20,35 @@ import org.etmetmy.bn_server.global.entity.BaseEntity;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class HistoryComment extends BaseEntity {
+public class HistoryFile extends BaseEntity {
 
     // ============= 기본 정보 =============
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "history_comment_id")
-    private Long historyCommentId;
+    @Column(name = "history_file_id")
+    private Long historyFileId;
 
-    @Column(name = "original_comment_id", nullable = false)
-    private Long originalCommentId;
+    @Column(name = "original_file_id", nullable = false)
+    private Long originalFileId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "change_type", nullable = false, length = 20)
-    private ChangeType changeType;
+    private ChangeType changeType;  // CREATE, DELETE
 
-    // ============= 변경 전 (Before) 데이터 =============
+    // ============= 파일 정보 =============
 
-    @Column(name = "be_content", columnDefinition = "TEXT")
-    private String beContent;
+    @Column(name = "file_name", length = 255)
+    private String fileName;
 
-    // ============= 변경 후 (After) 데이터 =============
+    @Column(name = "file_path", length = 500)
+    private String filePath;
 
-    @Column(name = "af_content", columnDefinition = "TEXT")
-    private String afContent;
+    @Column(name = "file_size")
+    private String fileSize;
+
+    @Column(name = "file_type", length = 100)
+    private String fileType;
 
     // ============= 메타 정보 =============
 
@@ -58,6 +63,12 @@ public class HistoryComment extends BaseEntity {
 
     @Column(name = "post_id")
     private Long postId;
+
+    @Column(name = "comment_id")
+    private Long commentId;
+
+    @Column(name = "project_check_list_id")
+    private Long projectCheckListId;
 
     @Column(name = "project_id")
     private Long projectId;

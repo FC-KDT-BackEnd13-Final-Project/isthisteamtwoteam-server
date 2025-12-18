@@ -9,9 +9,10 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
-@Table(name = "historycomment", indexes = {
-        @Index(name = "idx_original_comment_id", columnList = "original_comment_id"),
+@Table(name = "historylink", indexes = {
+        @Index(name = "idx_original_link_id", columnList = "original_link_id"),
         @Index(name = "idx_post_id", columnList = "post_id"),
+        @Index(name = "idx_comment_id", columnList = "comment_id"),
         @Index(name = "idx_project_id", columnList = "project_id"),
         @Index(name = "idx_created_at", columnList = "created_at")
 })
@@ -19,31 +20,26 @@ import org.etmetmy.bn_server.global.entity.BaseEntity;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class HistoryComment extends BaseEntity {
+public class HistoryLink extends BaseEntity {
 
     // ============= 기본 정보 =============
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "history_comment_id")
-    private Long historyCommentId;
+    @Column(name = "history_link_id")
+    private Long historyLinkId;
 
-    @Column(name = "original_comment_id", nullable = false)
-    private Long originalCommentId;
+    @Column(name = "original_link_id", nullable = false)
+    private Long originalLinkId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "change_type", nullable = false, length = 20)
-    private ChangeType changeType;
+    private ChangeType changeType;  // CREATE, DELETE
 
-    // ============= 변경 전 (Before) 데이터 =============
+    // ============= 링크 정보 =============
 
-    @Column(name = "be_content", columnDefinition = "TEXT")
-    private String beContent;
-
-    // ============= 변경 후 (After) 데이터 =============
-
-    @Column(name = "af_content", columnDefinition = "TEXT")
-    private String afContent;
+    @Column(name = "link_url", length = 500)
+    private String linkUrl;
 
     // ============= 메타 정보 =============
 
@@ -58,6 +54,12 @@ public class HistoryComment extends BaseEntity {
 
     @Column(name = "post_id")
     private Long postId;
+
+    @Column(name = "comment_id")
+    private Long commentId;
+
+    @Column(name = "project_check_list_id")
+    private Long projectCheckListId;
 
     @Column(name = "project_id")
     private Long projectId;

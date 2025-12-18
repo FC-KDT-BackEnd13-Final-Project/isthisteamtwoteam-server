@@ -16,6 +16,8 @@ import org.etmetmy.bn_server.domain.post.dto.request.PostPermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostPermanentDeleteResponse;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
+import org.etmetmy.bn_server.global.aop.HistoryLogger;
+import org.etmetmy.bn_server.domain.history.entity.ChangeType;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -58,6 +60,7 @@ public class FileController {
     @Operation(summary = "게시글 파일 삭제", description = "게시글에 첨부된 파일을 삭제합니다 (soft delete)")
     @DeleteMapping("/posts/{postId}/files/{fileId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @HistoryLogger(changeType = ChangeType.DELETE, targetType = "File")
     public void deletePostFiles(
             @PathVariable Long projectId,
             @PathVariable Long postId,

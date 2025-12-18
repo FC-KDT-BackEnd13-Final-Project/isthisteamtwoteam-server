@@ -6,10 +6,12 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
+import org.etmetmy.bn_server.domain.history.entity.ChangeType;
 import org.etmetmy.bn_server.domain.post.dto.request.*;
 import org.etmetmy.bn_server.domain.post.dto.response.*;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.global.aop.HistoryLogger;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
@@ -103,6 +105,7 @@ public class PostController {
     // todo: 게시글 수정 API
     @Operation(summary = "게시글 수정", description = "게시글을 수정합니다")
     @PatchMapping("/posts/{postId}")
+    @HistoryLogger(changeType = ChangeType.UPDATE)
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     public CommonResponse<PostCreateResponse> updatePost(
             @PathVariable Long postId,

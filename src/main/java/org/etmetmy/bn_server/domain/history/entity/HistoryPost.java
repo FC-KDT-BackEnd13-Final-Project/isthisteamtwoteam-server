@@ -9,43 +9,76 @@ import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 @Entity
-@Table(name = "historypost")
+@Table(name = "historypost", indexes = {
+        @Index(name = "idx_original_post_id", columnList = "original_post_id"),
+        @Index(name = "idx_project_id", columnList = "project_id"),
+        @Index(name = "idx_created_at", columnList = "created_at")
+})
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
 public class HistoryPost extends BaseEntity {
 
+    // ============= 기본 정보 =============
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "post_id")
-    private Long postId;
+    @Column(name = "history_post_id")
+    private Long historyPostId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "original_post_id", nullable = false)
+    private Long originalPostId;
 
-    @Column(name = "author_id", nullable = false)
-    private Long authorId;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "change_type", nullable = false, length = 20)
+    private ChangeType changeType;
 
-    @Column(name = "be_title", length = 255)
-    private String beTitle; // before title
+    // ============= 변경 전 (Before) 데이터 =============
 
-    @Column(name = "af_title", nullable = false, length = 500)
-    private String afTitle; // after title
+    @Column(name = "be_title", length = 500)
+    private String beTitle;
 
-    @Column(name = "be_content", length = 255)
+    @Column(name = "be_content", columnDefinition = "TEXT")
     private String beContent;
 
-    @Column(name = "af_content", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "be_stage_id")
+    private Long beStageId;
+
+    @Column(name = "be_stage_name", length = 255)
+    private String beStageName;
+
+    @Column(name = "be_is_completed")
+    private Boolean beIsCompleted;
+
+    // ============= 변경 후 (After) 데이터 =============
+
+    @Column(name = "af_title", length = 500)
+    private String afTitle;
+
+    @Column(name = "af_content", columnDefinition = "TEXT")
     private String afContent;
 
-    @Column(name = "created_ip", length = 45)
-    private String createdIp;
+    @Column(name = "af_stage_id")
+    private Long afStageId;
 
-    @Column(name = "updated_ip", length = 45)
-    private String updatedIp;
+    @Column(name = "af_stage_name", length = 255)
+    private String afStageName;
 
-    @Column(name = "is_completed")
-    private Boolean isCompleted;
+    @Column(name = "af_is_completed")
+    private Boolean afIsCompleted;
+
+    // ============= 메타 정보 =============
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "changed_by_user_id", nullable = false)
+    private User changedByUser;
+
+    @Column(name = "change_ip", length = 45)
+    private String changeIp;
+
+    // ============= 추가 정보 (조회 최적화) =============
+
+    @Column(name = "project_id")
+    private Long projectId;
 }

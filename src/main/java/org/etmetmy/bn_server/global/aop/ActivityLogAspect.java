@@ -14,6 +14,8 @@ import org.etmetmy.bn_server.domain.activityLog.event.ActivityLogEvent;
 import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
 import org.etmetmy.bn_server.domain.post.dto.response.PostCreateResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.ReplyPostCreateResponse;
+import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectCreateResponse;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
@@ -41,6 +43,7 @@ public class ActivityLogAspect {
     private final ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
+    private final PostRepository postRepository;
 
     @Pointcut("@annotation(org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger)")
     public void activityLoggerPointcut() {}
@@ -136,7 +139,14 @@ public class ActivityLogAspect {
             return projectResponse.getProjectId();
         }
 
-        // 4. 반환값이 Long이고 targetType이 Project인 경우
+        // 4. PostCreateResponse인 경우 postId로 Post 조회하여 projectId 가져오기
+        if (unwrapped instanceof PostCreateResponse postResponse) {
+            return postRepository.findById(postResponse.getPostId())
+                    .map(post -> post.getProject() != null ? post.getProject().getId() : null)
+                    .orElse(null);
+        }
+
+        // 5. 반환값이 Long이고 targetType이 Project인 경우
         if (unwrapped instanceof Long && "Project".equals(findTargetType(joinPoint))) {
             return (Long) unwrapped;
         }
