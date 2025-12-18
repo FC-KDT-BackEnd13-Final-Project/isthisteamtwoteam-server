@@ -264,4 +264,16 @@ public class ProjectAdminController {
 
         return CommonResponse.success("삭제된 프로젝트 영구삭제 성공", response);
     }
+
+    // todo: 개별 프로젝트에서 바로 체크리스트 생성
+    @Operation(summary = "프로젝트 체크리스트 생성 및 추가", description = "개별 프로젝트에서 새로운 체크리스트를 생성하고 프로젝트에 추가합니다")
+    @PostMapping("/{projectId}/checklists/create")
+    public CommonResponse<ProjectCreateCheckListResponse> createAndAddCheckList(
+            @PathVariable Long projectId,
+            @RequestBody @Valid ProjectCreateCheckListRequest request
+    ) {
+        ProjectCreateCheckListResponse response = projectService.createAndAddCheckList(projectId, request);
+        return CommonResponse.success("체크리스트가 생성되고 프로젝트에 추가되었습니다.", response);
+    }
+
 }
