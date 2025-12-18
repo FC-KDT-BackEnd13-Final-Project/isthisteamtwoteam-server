@@ -60,7 +60,6 @@ public class ProjectAdminController {
         return CommonResponse.success("프로젝트 이미지 업로드 성공", response);
     }
 
-
     // todo: 프로젝트 전체 조회 (페이지네이션, 검색, 삭제여부)
     @Operation(summary = "프로젝트 전체 조회(페이징, 검색, 삭제여부)", description = "모든 프로젝트 목록을 조회합니다")
     @GetMapping
@@ -237,31 +236,5 @@ public class ProjectAdminController {
     public CommonResponse<List<ProjectMemberSearchResponse>> searchUsersForProject(@PathVariable Long projectId, @RequestParam("role") Role role) {
         List<ProjectMemberSearchResponse> responses = projectMemberService.searchUsersForProject(projectId, role);
         return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
-    }
-
-    //todo: 삭제된 프로젝트 복원
-    @Operation(summary = "프로젝트 복원", description = "휴지통에 있는 프로젝트를 복원합니다")
-    @PatchMapping("/trash/restore")
-    @ActivityLogger(action = "UPDATE", targetType = "Project")
-    public CommonResponse<ProjectRestoreResponse> restoreDeletedProject(
-            HttpSession session,
-            @Valid @RequestBody ProjectRestoreRequest request) {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        ProjectRestoreResponse response = projectService.restoreDeletedProject(loginUserId, request);
-
-        return CommonResponse.success("삭제된 프로젝트 복원 성공", response);
-    }
-
-    // Todo: 삭제된 프로젝트 영구삭제 (hard delete)
-    @Operation(summary = "프로젝트 영구삭제", description = "휴지통에 있는 프로젝트를 영구삭합니다")
-    @DeleteMapping("/trash")
-    public CommonResponse<ProjectHardDeleteResponse> hardDeleteProject(
-            HttpSession session,
-            @Valid @RequestBody ProjectHardDeleteRequest request)
-    {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        ProjectHardDeleteResponse response = projectService.hardDeleteProject(loginUserId, request);
-
-        return CommonResponse.success("삭제된 프로젝트 영구삭제 성공", response);
     }
 }

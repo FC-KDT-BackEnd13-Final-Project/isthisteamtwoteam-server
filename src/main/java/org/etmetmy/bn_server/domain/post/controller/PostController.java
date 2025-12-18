@@ -125,29 +125,4 @@ public class PostController {
         postService.softDeletePost(postId,userId);
         return CommonResponse.success("게시글 삭제 성공", null);
     }
-
-    //todo: 삭제된 게시글 복원
-    @Operation(summary = "게시글 복원", description = "휴지통에 있는 게시글을 복원합니다")
-    @PatchMapping("/posts/restore")
-    public CommonResponse<PostRestoreResponse> restoreDeletedPost(
-            HttpSession session, @Valid @RequestBody PostRestoreRequest request)
-    {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        PostRestoreResponse response = postService.restoreDeletedPost(loginUserId, request);
-
-        return CommonResponse.success("삭제된 게시글 복원 성공", response);
-    }
-
-    // Todo: 삭제된 게시글 영구삭제 (hard delete)
-    @Operation(summary = "삭제된 게시글 영구삭제", description = "휴지통에 있는 게시글을 DB와 S3에서 완전히 삭제합니다")
-    @DeleteMapping("/posts/trash")
-    public CommonResponse<PostPermanentDeleteResponse> deleteDeletedPost(
-            HttpSession session,
-            @Valid @RequestBody PostPermanentDeleteRequest request)
-    {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        PostPermanentDeleteResponse response = postService.deleteDeletedPost(loginUserId, request);
-
-        return CommonResponse.success("삭제된 게시글 영구삭제 성공", response);
-    }
 }
