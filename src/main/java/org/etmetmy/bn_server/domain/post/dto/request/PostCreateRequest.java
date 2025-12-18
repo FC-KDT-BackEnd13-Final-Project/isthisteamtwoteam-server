@@ -29,8 +29,8 @@ public class PostCreateRequest {
     @NotBlank(message = "본문은 필수입니다.")
     private String content;
 
-    @NotNull(message = "단계 ID는 필수입니다.")
-    private Long stageId;
+    @NotNull(message = "단계는 필수입니다.")
+    private String stageName;
 
     private Long parentId;
 
