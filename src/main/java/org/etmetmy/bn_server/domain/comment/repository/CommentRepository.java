@@ -11,6 +11,12 @@ import java.util.List;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
+    // 특정 댓글 ID를 통해 프로젝트 ID를 바로 조회하는 쿼리
+    @Query("SELECT p.project.id FROM Comment c " +
+            "JOIN c.post p " +
+            "WHERE c.commentId = :commentId")
+    Long findProjectIdByCommentId(@Param("commentId") Long commentId);
+
     // 1. 특정 Post에 대한 최상위 댓글 조회 (parent가 NULL인 댓글, 삭제되지 않은 댓글만)
     @Query("SELECT c FROM Comment c " +
             "JOIN FETCH c.user u " +
@@ -31,4 +37,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "WHERE c.post.postId = :postId AND c.isDeleted = false " +
             "ORDER BY c.createdAt ASC")
     List<Comment> findAllByPostId(@Param("postId") Long postId);
+
+    @Query("SELECT c.content FROM Comment c WHERE c.id = :commentId")
+    String findContentById(@Param("commentId") Long commentId);
 }

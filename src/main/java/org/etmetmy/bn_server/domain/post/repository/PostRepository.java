@@ -117,4 +117,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "AND p.project.id IN :projectIds " +
             "ORDER BY p.createdAt DESC")
     List<Post> findPostsWithRequestStatusByProjectIds(@Param("status") RequestStatus status, @Param("projectIds") List<Long> projectIds);
+
+    @Query("SELECT p.title FROM Post p WHERE p.id = :postId")
+    String findTitleById(@Param("postId") Long postId);
 }

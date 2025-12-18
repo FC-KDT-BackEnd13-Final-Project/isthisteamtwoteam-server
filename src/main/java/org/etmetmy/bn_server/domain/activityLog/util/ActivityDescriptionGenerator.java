@@ -1,86 +1,147 @@
 package org.etmetmy.bn_server.domain.activityLog.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
+import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.user.entity.User;
-import org.etmetmy.bn_server.global.CustomException;
-import org.etmetmy.bn_server.global.StatusCode;
 import org.springframework.stereotype.Component;
 
-/**
- * 활동 로그에 기록될 한글 설명을 생성
- */
 @Component
+@RequiredArgsConstructor
 public class ActivityDescriptionGenerator {
 
-    public String generate(ActivityAction action, String targetType, Long targetId,
-                           User user, Project project) {
+    private final PostRepository postRepository;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-        if (user == null) {
-            throw new CustomException(StatusCode.USER_NOT_FOUND);
-        }
-        if (project == null) {
-            throw new CustomException(StatusCode.PROJECT_NOT_FOUND);
-        }
+    public String generate(
+            ActivityAction action,
+            String targetType,
+            Long targetId,
+            User user,
+            Project project,
+            String detailJson
+    ) {
+        String userName = user != null ? user.getName() : "알 수 없는 사용자";
+        String projectName = project != null ? project.getProjectName() : "알 수 없는 프로젝트";
+        String actionDesc = action.getDescription();
 
-        String userName = user.getName();
-        String projectName = project.getProjectName();
+        return switch (targetType) {
+            case "Project" -> {
+                if (action == ActivityAction.UPDATE && detailJson != null) {
+                    String diffMessage = parseDiffMessage(detailJson, "프로젝트 이름");
+                    yield String.format("%s님이 %s했습니다.", userName, diffMessage);
+                }
+                yield String.format("%s님이 프로젝트 '%s'를 %s했습니다.",
+                        userName, projectName, actionDesc);
+            }
 
-        // targetType을 한글로 변환
-        String targetTypeKorean = convertTargetTypeToKorean(targetType);
+            case "Post" -> {
+                if (action == ActivityAction.UPDATE && detailJson != null) {
+                    String diffMessage = parseDiffMessage(detailJson, "게시글 제목");
+                    yield String.format("%s님이 %s했습니다.", userName, diffMessage);
+                }
+                String contentSnippet = extractContent(detailJson);
+                yield String.format("%s님이 게시글 '%s'를 %s했습니다.",
+                        userName, contentSnippet, actionDesc);
+            }
 
-        // 액션 타입에 따른 메시지 생성
-        return switch (action) {
-            case CREATE -> String.format("%s님이 [%s] 프로젝트에 새로운 %s을(를) 작성했습니다.",
-                    userName, projectName, targetTypeKorean);
+            case "Comment" -> {
+                if (action == ActivityAction.UPDATE && detailJson != null) {
+                    String diffMessage = parseDiffMessage(detailJson, "댓글 내용");
+                    yield String.format("%s님이 %s했습니다.", userName, diffMessage);
+                }
+                String contentSnippet = extractContent(detailJson);
+                yield String.format("%s님이 댓글[%s]을 %s했습니다.",
+                        userName, contentSnippet, actionDesc);
+            }
 
-            case UPDATE -> String.format("%s님이 [%s] 프로젝트의 %s을(를) 수정했습니다.",
-                    userName, projectName, targetTypeKorean);
+            case "ProjectMember" -> {
+                String memberName = extractMemberName(detailJson);
+                String memberRole = extractMemberRole(detailJson);
 
-            case DELETE -> String.format("%s님이 [%s] 프로젝트의 %s을(를) 삭제했습니다.",
-                    userName, projectName, targetTypeKorean);
+                if (action == ActivityAction.CREATE) {
+                    yield String.format("%s님이 프로젝트 '%s'에 %s(%s)을(를) 추가했습니다.",
+                            userName, projectName, memberName, memberRole);
+                } else if (action == ActivityAction.DELETE) {
+                    yield String.format("%s님이 프로젝트 '%s'에서 %s(%s)을(를) 제거했습니다.",
+                            userName, projectName, memberName, memberRole);
+                }
+                yield String.format("%s님이 프로젝트 멤버를 %s했습니다.",
+                        userName, actionDesc);
+            }
 
-            case APPROVE -> String.format("%s님이 [%s] 프로젝트의 %s 요청을 승인했습니다.",
-                    userName, projectName, targetTypeKorean);
-
-            case REJECT -> String.format("%s님이 [%s] 프로젝트의 %s 요청을 거절했습니다.",
-                    userName, projectName, targetTypeKorean);
-
-            case COMPLETE -> String.format("%s님이 [%s] 프로젝트의 %s을(를) 완료 처리했습니다.",
-                    userName, projectName, targetTypeKorean);
-
-            case ASSIGN -> String.format("%s님이 [%s] 프로젝트의 %s 담당자를 지정했습니다.",
-                    userName, projectName, targetTypeKorean);
-
-            case UNASSIGN -> String.format("%s님이 [%s] 프로젝트의 %s 담당자를 해제했습니다.",
-                    userName, projectName, targetTypeKorean);
-
-            case STATUS_CHANGE -> String.format("%s님이 [%s] 프로젝트의 %s 상태를 변경했습니다.",
-                    userName, projectName, targetTypeKorean);
-
-            case COMMENT_ADD -> String.format("%s님이 [%s] 프로젝트의 %s에 댓글을 작성했습니다.",
-                    userName, projectName, targetTypeKorean);
-
-            default -> String.format("%s님이 [%s] 프로젝트의 %s에 대해 작업을 수행했습니다.",
-                    userName, projectName, targetTypeKorean);
+            default -> String.format("%s님이 %s를 %s했습니다.",
+                    userName, targetType, actionDesc);
         };
     }
 
-    private String convertTargetTypeToKorean(String targetType) {
-        if (targetType == null) {
-            return "항목";
-        }
+    private String parseDiffMessage(String json, String defaultFieldName) {
+        try {
+            JsonNode node = objectMapper.readTree(json);
 
-        return switch (targetType.toLowerCase()) {
-            case "post" -> "게시글";
-            case "comment" -> "댓글";
-            case "project" -> "프로젝트";
-            case "user" -> "사용자";
-            case "file" -> "파일";
-            case "link" -> "링크";
-            case "task" -> "작업";
-            case "checklist" -> "체크리스트";
-            default -> targetType; // 알 수 없는 경우 원본 반환
-        };
+            String fieldName = defaultFieldName;
+            if (node.has("type") && "STAGE".equals(node.get("type").asText())) {
+                fieldName = "진행 단계";
+            }
+
+            String oldVal = node.path("old").asText("");
+            String newVal = node.path("new").asText("");
+
+            if (oldVal.equals(newVal) || oldVal.isEmpty()) {
+                return String.format("%s을(를) '%s'(으)로 수정", fieldName, newVal);
+            }
+            return String.format("%s을(를) '%s'에서 '%s'(으)로 변경", fieldName, oldVal, newVal);
+        } catch (Exception e) {
+            return "정보를 수정";
+        }
+    }
+
+    private String extractContent(String json) {
+        if (json == null) return "내용 없음";
+        try {
+            JsonNode node = objectMapper.readTree(json);
+            if (node.has("content")) return node.get("content").asText();
+            if (node.has("new")) return node.get("new").asText();
+            if (node.has("projectName")) return node.get("projectName").asText();
+            if (node.has("title")) return node.get("title").asText();
+            return "상세 내용";
+        } catch (Exception e) {
+            return "내용 없음";
+        }
+    }
+
+    private String extractMemberName(String json) {
+        if (json == null) return "알 수 없는 사용자";
+        try {
+            JsonNode node = objectMapper.readTree(json);
+            if (node.has("userName")) {
+                return node.get("userName").asText();
+            }
+        } catch (Exception e) {
+            // 예외 무시
+        }
+        return "알 수 없는 사용자";
+    }
+
+    private String extractMemberRole(String json) {
+        if (json == null) return "";
+        try {
+            JsonNode node = objectMapper.readTree(json);
+            if (node.has("role")) {
+                String role = node.get("role").asText();
+                return switch (role) {
+                    case "ADMIN" -> "관리자";
+                    case "DEVELOPER" -> "개발자";
+                    case "CUSTOMER" -> "고객사";
+                    default -> role;
+                };
+            }
+        } catch (Exception e) {
+            // 예외 무시
+        }
+        return "";
     }
 }
