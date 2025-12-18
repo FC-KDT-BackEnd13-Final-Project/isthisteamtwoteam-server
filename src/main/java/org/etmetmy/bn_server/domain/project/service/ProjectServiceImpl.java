@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.project.service;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.company.entity.Company;
@@ -567,12 +568,6 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request) {
 
-        // 권한 검증
-        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
-        if (user.getRole() != Role.ADMIN) {
-            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
-        }
-
         // 요청한 프로젝트 ID 조회
         List<Long> projectIds = request.getProjectIds();
         List<Project> projects = projectRepository.findAllById(projectIds);
@@ -592,6 +587,38 @@ public class ProjectServiceImpl implements ProjectService {
 
         projectRepository.saveAll(projects);
         return ProjectRestoreResponse.Converter.from(projects);
+    }
+
+    // 삭제된 프로젝트 영구삭제
+    @Override
+    @Transactional
+    public ProjectHardDeleteResponse hardDeleteProject(Long loginUserId, @Valid ProjectHardDeleteRequest request){
+
+        // 1. 삭제 요청한 프로젝트 ID 목록 조회
+        List<Long> projectIds = request.getProjectIds();
+        List<Project> projects = projectRepository.findAllById(projectIds);
+
+        // 2. 존재 개수 비교
+        if (projects.size() != projectIds.size()) {
+            throw new ProjectNotFoundException("존재하지 않는 프로젝트가 포함되어 있습니다.");
+        }
+
+        // 3. 삭제 여부 체크
+        projects.forEach(project -> {
+            if (!project.getIsDeleted()) {
+                throw new BusinessException(ErrorCode.PROJECT_NOT_DELETED);}
+        });
+
+        // 4. S3에서 삭제할 파일 목록 조회
+        List<File> files = fileRepository.findByProjectIds(projectIds);
+
+        // 5. S3 파일 먼저 삭제 (실패 시 예외 발생하여 트랜잭션 롤백)
+        fileService.deleteFilesFromS3(files);
+
+        // 6. DB 에서 프로젝트 삭제 (트랜잭션으로 보호, Cascade로 연관 엔티티도 삭제)
+        projectRepository.deleteAll(projects);
+
+        return ProjectHardDeleteResponse.Converter.from(projects);
     }
 
     // 프로젝트 이미지 수정
