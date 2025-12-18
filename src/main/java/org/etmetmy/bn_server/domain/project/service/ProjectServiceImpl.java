@@ -656,4 +656,31 @@ public class ProjectServiceImpl implements ProjectService {
         // 프로젝트 체크리스트 삭제 및 파일과 링크 자동 삭제
         projectChecklistRepository.delete(projectCheckList);
     }
+
+    //개별 프로젝트에서 바로 체크리스트 추가
+    @Override
+    @Transactional
+    public ProjectCreateCheckListResponse createAndAddCheckList(Long projectId,ProjectCreateCheckListRequest request) {
+
+        // 1. 프로젝트 존재 확인
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 2. 프로젝트가 삭제되지 않았는지 확인
+        if (Boolean.TRUE.equals(project.getIsDeleted())) {
+            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "삭제된 프로젝트에는 체크리스트를 추가할 수 없습니다.");
+        }
+        // 3. 새로운 CheckList 생성
+        CheckList newCheckList = ProjectCreateCheckListRequest.Converter.toEntity(request);
+        CheckList savedCheckList = checkListRepository.save(newCheckList);
+
+        // 4. ProjectCheckList 매핑 생성
+        ProjectCheckList projectCheckList =
+                ProjectCreateCheckListRequest.Converter.toProjectCheckListEntity(project, savedCheckList.getCheckListId()
+                );
+        ProjectCheckList savedProjectCheckList = projectChecklistRepository.save(projectCheckList);
+
+        // 5. Response 반환
+        return ProjectCreateCheckListResponse.Converter.from(savedProjectCheckList, savedCheckList);
+    }
 }
