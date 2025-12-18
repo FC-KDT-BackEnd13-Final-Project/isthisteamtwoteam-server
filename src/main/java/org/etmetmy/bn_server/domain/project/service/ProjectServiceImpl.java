@@ -28,7 +28,6 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
-import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
@@ -634,7 +633,7 @@ public class ProjectServiceImpl implements ProjectService {
             // S3 업로드
             String imageUrl = fileService.uploadToS3(image).getFileUrl();
             // 프로젝트에 이미지 주소 저장
-            project.setProjectImageUrl(imageUrl);
+            project.updateProjectImage(imageUrl);
             projectRepository.save(project);
         }
         return ProjectUpdateResponse.Converter.from(project);

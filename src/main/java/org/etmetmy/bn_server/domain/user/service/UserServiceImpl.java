@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.company.service.CompanyService;
+import org.etmetmy.bn_server.domain.file.repository.FileRepository;
+import org.etmetmy.bn_server.domain.file.service.FileService;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.user.dto.request.*;
 import org.etmetmy.bn_server.domain.user.dto.entity.UserDto;
@@ -26,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -40,12 +43,14 @@ public class UserServiceImpl implements UserService{
     private final UserRepository userRepository;
     private final CompanyRepository companyRepository;
     private final CompanyService companyService;
+    private final FileService fileService;
     private final PasswordEncoder passwordEncoder;
     private final ProjectMemberRepository projectMemberRepository;
     private final PasswordResetCodeRepository passwordResetCodeRepository;
     private final MailSender mailSender;
 
     private static final int RESET_CODE_EXPIRES_SECONDS = 300;
+    private final FileRepository fileRepository;
 
     // 회원 정보 수정 (Update)
     @Override
@@ -66,10 +71,33 @@ public class UserServiceImpl implements UserService{
         user.updateInfo(request.getName(), request.getEmail(), request.getPhone(), company, request.getRole());
 
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.updatePassword(passwordEncoder.encode(request.getPassword()));
         }
 
         return user.getId();
+    }
+
+    // 2. 회원 정보 수정 (이미지 업로드)
+    @Override
+    @Transactional
+    public UserSelfUpdateResponse updateProfileImage(Long userId, MultipartFile image){
+        if (image == null || image.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);}
+
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+        String oldProfileImg = user.getProfileImg();
+
+        // 1. 새 이미지 먼저 업로드
+        String newProfileImage = fileService.uploadProfileImage(image, userId);
+
+        // 2. 유저에 새 이미지 연결
+        user.updateProfileImage(newProfileImage);
+
+        // 3. 기존 이미지가 있었다면 S3에서 삭제
+        if (oldProfileImg != null) {
+            fileService.removeOldProfileImage(oldProfileImg);
+        }
+        return UserSelfUpdateResponse.Converter.from(user);
     }
 
     // 2. 회원 삭제 (Delete)
@@ -174,7 +202,7 @@ public class UserServiceImpl implements UserService{
         User newUser = UserDto.Converter.toUser(userDto,company);
 
         // 비밀번호 암호화
-        newUser.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        newUser.updatePassword(passwordEncoder.encode(userDto.getPassword()));
 
         Long userId = userRepository.save(newUser).getId();
 
@@ -195,7 +223,7 @@ public class UserServiceImpl implements UserService{
 
         // 3. 비밀번호 암호화 후 변경
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());
-        user.setPassword(encodedPassword);
+        user.updatePassword(encodedPassword);
     }
 
     // 비밀번호 찾기 - 인증 코드 발송
@@ -250,7 +278,7 @@ public class UserServiceImpl implements UserService{
             throw new BusinessException(ErrorCode.INVALID_RESET_CODE);
         }
 
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.updatePassword(passwordEncoder.encode(newPassword));
 
         resetCode.markAsUsed();
         passwordResetCodeRepository.save(resetCode);
@@ -298,7 +326,4 @@ public class UserServiceImpl implements UserService{
 
         return UserSelfUpdateResponse.Converter.from(user);
     }
-
-
-
 }
