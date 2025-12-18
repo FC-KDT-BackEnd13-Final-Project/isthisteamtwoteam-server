@@ -9,28 +9,30 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface ActivityLogRepository extends JpaRepository<ActivityLog, Long> {
 
-    // 페이지네이션 (기본 정렬: createdAt DESC)
-    @Query("SELECT a FROM ActivityLog a WHERE a.projectId = :projectId ORDER BY a.createdAt DESC")
-    Page<ActivityLog> findByProjectId(@Param("projectId") Long projectId, Pageable pageable);
+    // 기본 페이징 조회
+    Page<ActivityLog> findByProjectIdOrderByCreatedAtDesc(Long projectId, Pageable pageable);
 
-    // 액션별 필터링
-    List<ActivityLog> findByProjectIdAndActionOrderByCreatedAtDesc(Long projectId, ActivityAction action);
-
-    // 사용자별 필터링
-    List<ActivityLog> findByProjectIdAndUserIdOrderByCreatedAtDesc(Long projectId, Long userId);
-
-    // 기간별 필터링
-    List<ActivityLog> findByProjectIdAndCreatedAtBetweenOrderByCreatedAtDesc(
-            Long projectId,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+    // 특정 대상(게시글, 체크리스트 등)의 모든 이력 조회
+    Page<ActivityLog> findByProjectIdAndTargetTypeAndTargetIdOrderByCreatedAtDesc(
+            Long projectId, String targetType, Long targetId, Pageable pageable
     );
 
-    // 관리자용 (전체 조회)
-    @Query("SELECT a FROM ActivityLog a ORDER BY a.createdAt DESC")
-    Page<ActivityLog> findAll(Pageable pageable);
+    //필터링 조회
+    @Query("SELECT al FROM ActivityLog al " +
+            "WHERE al.projectId = :projectId " +
+            "AND (:action IS NULL OR al.action = :action) " +
+            "AND (:userId IS NULL OR al.userId = :userId) " +
+            "AND (CAST(:startDate AS timestamp) IS NULL OR al.createdAt >= :startDate) " +
+            "AND (CAST(:endDate AS timestamp) IS NULL OR al.createdAt <= :endDate)")
+    Page<ActivityLog> findByProjectIdWithFilters(
+            @Param("projectId") Long projectId,
+            @Param("action") ActivityAction action,
+            @Param("userId") Long userId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable
+    );
 }

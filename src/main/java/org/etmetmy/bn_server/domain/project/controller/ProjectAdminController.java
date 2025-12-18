@@ -125,6 +125,7 @@ public class ProjectAdminController {
 
     // todo: 개별 프로젝트 제목 수정
     @Operation(summary = "프로젝트 제목 수정", description = "프로젝트의 제목을 수정합니다")
+    @ActivityLogger(action = "UPDATE", targetType = "Project")
     @PatchMapping("/{projectId}/projectName")
     public CommonResponse<ProjectUpdateResponse> updateProjectName(
             @PathVariable Long projectId,
@@ -136,7 +137,9 @@ public class ProjectAdminController {
 
     // todo: 프로젝트 이미지 수정
     @Operation(summary = "프로젝트 이미지 수정", description = "프로젝트의 이미지를 수정합니다")
+
     @PatchMapping(value = "/{projectId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ActivityLogger(action = "UPDATE", targetType = "Project")
     public CommonResponse<ProjectUpdateResponse> updateProjectImage(
             @PathVariable Long projectId,
             @RequestPart("image") MultipartFile image
@@ -147,6 +150,7 @@ public class ProjectAdminController {
 
     // todo: 개별 프로젝트 날짜 수정
     @Operation(summary = "프로젝트 날짜 수정", description = "프로젝트의 시작일 및 종료일을 수정합니다")
+    @ActivityLogger(action = "UPDATE", targetType = "Project")
     @PatchMapping("/{projectId}/date")
     public CommonResponse<ProjectUpdateResponse> updateProjectDate(
             @PathVariable Long projectId,
@@ -255,4 +259,16 @@ public class ProjectAdminController {
 
         return CommonResponse.success("삭제된 프로젝트 영구삭제 성공", response);
     }
+
+    // todo: 개별 프로젝트에서 바로 체크리스트 생성
+    @Operation(summary = "프로젝트 체크리스트 생성 및 추가", description = "개별 프로젝트에서 새로운 체크리스트를 생성하고 프로젝트에 추가합니다")
+    @PostMapping("/{projectId}/checklists/create")
+    public CommonResponse<ProjectCreateCheckListResponse> createAndAddCheckList(
+            @PathVariable Long projectId,
+            @RequestBody @Valid ProjectCreateCheckListRequest request
+    ) {
+        ProjectCreateCheckListResponse response = projectService.createAndAddCheckList(projectId, request);
+        return CommonResponse.success("체크리스트가 생성되고 프로젝트에 추가되었습니다.", response);
+    }
+
 }

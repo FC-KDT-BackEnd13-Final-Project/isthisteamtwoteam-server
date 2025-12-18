@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.activityLog.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.etmetmy.bn_server.domain.activityLog.dto.request.ActivityLogCreateRequest;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class ActivityLogEventHandler {
 
     private final ActivityLogService activityLogService;
-
+    private final ObjectMapper objectMapper;
     @Async
     @EventListener
     public void handle(ActivityLogEvent event) {
@@ -30,6 +31,7 @@ public class ActivityLogEventHandler {
                     .targetType(event.targetType())
                     .targetId(event.targetId())
                     .ipAddress(event.ipAddress())
+                    .detail(event.detail())
                     .build();
 
             activityLogService.saveLog(request);

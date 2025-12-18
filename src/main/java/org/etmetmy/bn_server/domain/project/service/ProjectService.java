@@ -60,4 +60,7 @@ public interface ProjectService {
 
     // 프로젝트 영구삭제
     ProjectHardDeleteResponse hardDeleteProject(Long loginUserId, @Valid ProjectHardDeleteRequest request);
+
+    //개별 프로젝트에 바로 체크리스트 생성
+    ProjectCreateCheckListResponse createAndAddCheckList(Long projectId, ProjectCreateCheckListRequest request);
 }

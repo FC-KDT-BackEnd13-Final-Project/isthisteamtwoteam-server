@@ -64,6 +64,7 @@ public class UserController {
         HttpSession session = request.getSession(true);
         session.setMaxInactiveInterval(3600);
         session.setAttribute(SessionConst.LOGIN_MEMBER, user);
+        session.setAttribute("userId", user.getId());
         session.setAttribute(SessionConst.USER_ROLE, user.getRole());  // Role 저장 추가
 
         return CommonResponse.success("성공적으로 로그인을 완료했습니다.", user.getId());

@@ -11,6 +11,7 @@ import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -58,5 +59,6 @@ public interface FileService {
 
     // 프로필 이미지 수정 - 새 이미지 업로드 후 S3 이미지 URL 저장
     String uploadProfileImage(MultipartFile image, Long userId);
+
 }
 

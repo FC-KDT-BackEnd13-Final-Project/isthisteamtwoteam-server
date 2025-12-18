@@ -18,7 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -42,7 +41,8 @@ public class ActivityLogServiceImpl implements ActivityLogService {
                     request.targetType(),
                     request.targetId(),
                     user,
-                    project
+                    project,
+                    request.detail()
             );
 
             ActivityLog logEntity = ActivityLogCreateRequest.Converter.toEntity(
@@ -53,47 +53,44 @@ public class ActivityLogServiceImpl implements ActivityLogService {
             );
 
             activityLogRepository.save(logEntity);
-            log.debug("활동 로그 저장 완료: {}", logEntity.getDescription());
+            log.info("활동 로그 저장 완료: {}", logEntity.getDescription());
 
         } catch (Exception e) {
-            log.error("활동 로그 저장 실패: projectId={}, targetId={}, error={}",
-                    request.projectId(), request.targetId(), e.getMessage(), e);
+            log.error("활동 로그 저장 실패: projectId={}, targetType={}, targetId={}",
+                    request.projectId(), request.targetType(), request.targetId(), e);
+            // 로그 저장 실패가 비즈니스 로직에 영향을 주지 않도록 예외를 삼킴
         }
     }
 
-
     @Override
     @Transactional(readOnly = true)
-    public Page<ActivityLogResponse> getProjectLogsWithPaging(Long projectId, Pageable pageable) {
-        Page<ActivityLog> logs = activityLogRepository.findByProjectId(projectId, pageable);
+    public Page<ActivityLogResponse> getProjectLogsWithFilters(
+            Long projectId,
+            ActivityAction action,
+            Long userId,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            Pageable pageable
+    ) {
+        Page<ActivityLog> logs = activityLogRepository.findByProjectIdWithFilters(
+                projectId, action, userId, startDate, endDate, pageable
+        );
         return logs.map(ActivityLogResponse.Converter::from);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<ActivityLogResponse> getProjectLogsByAction(Long projectId, ActivityAction action) {
-        List<ActivityLog> logs = activityLogRepository.findByProjectIdAndActionOrderByCreatedAtDesc(projectId, action);
-        return ActivityLogResponse.Converter.fromList(logs);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ActivityLogResponse> getProjectLogsByUser(Long projectId, Long userId) {
-        List<ActivityLog> logs = activityLogRepository.findByProjectIdAndUserIdOrderByCreatedAtDesc(projectId, userId);
-        return ActivityLogResponse.Converter.fromList(logs);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<ActivityLogResponse> getProjectLogsByDateRange(
+    public Page<ActivityLogResponse> getTargetLogs(
             Long projectId,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            String targetType,
+            Long targetId,
+            Pageable pageable
     ) {
-        List<ActivityLog> logs = activityLogRepository.findByProjectIdAndCreatedAtBetweenOrderByCreatedAtDesc(
-                projectId, startDate, endDate
-        );
-        return ActivityLogResponse.Converter.fromList(logs);
+        Page<ActivityLog> logs = activityLogRepository
+                .findByProjectIdAndTargetTypeAndTargetIdOrderByCreatedAtDesc(
+                        projectId, targetType, targetId, pageable
+                );
+        return logs.map(ActivityLogResponse.Converter::from);
     }
 
     @Override
