@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.project.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +29,7 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
+import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
@@ -35,11 +37,21 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.etmetmy.bn_server.domain.activityLog.event.ActivityLogEvent;
+import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
+import org.etmetmy.bn_server.global.util.IpAddressUtil;
+import org.etmetmy.bn_server.web.SessionConst;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -65,7 +77,13 @@ public class ProjectServiceImpl implements ProjectService {
     private final LinkRepository linkRepository;
     private final CompanyRepository companyRepository;
     private final FileService fileService;
+    private final ObjectMapper objectMapper;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private HttpServletRequest request;
 
     @Override
     @Transactional
@@ -121,7 +139,6 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectCreateResponse.Converter.from(savedProject);
     }
 
-
     @Override
     @Transactional
     public int addProjectMembers(Long projectId, List<ProjectMemberRequest> members, Long createdById) {
@@ -139,6 +156,27 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         projectMemberRepository.saveAll(projectMembers);
+
+        // 각 멤버마다 개별 로그 발행
+        String ipAddress = IpAddressUtil.getClientIp(request);
+        for (ProjectMember member : projectMembers) {
+            Map<String, Object> detail = Map.of(
+                    "action", "added",
+                    "userName", member.getUser().getName(),
+                    "role", member.getUser().getRole().name()
+            );
+
+            eventPublisher.publishEvent(new ActivityLogEvent(
+                    projectId,
+                    createdById,
+                    ActivityAction.CREATE,
+                    "ProjectMember",
+                    member.getUser().getId(),
+                    ipAddress,
+                    toJson(detail)
+            ));
+        }
+
         return projectMembers.size();
     }
 
@@ -490,19 +528,44 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(ProjectNotFoundException::new);
 
         if (Boolean.TRUE.equals(project.getIsDeleted())) {
-            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "삭제된 프로젝트의 멤버는 수정할 수 없습니다.");
+            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE,
+                    "삭제된 프로젝트의 멤버는 수정할 수 없습니다.");
         }
 
-        // 2. 사용자 존재 확인 (선택 - 필요 없으면 이 부분은 빼도 됨)
-        userRepository.findById(userId)
+        // 2. 사용자 정보 조회 (로그용 - 삭제 전에 조회!)
+        User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+
+        String userName = user.getName();
+        String role = user.getRole().name();
 
         // 3. 프로젝트-멤버 매핑 삭제
         long deletedCount = projectMemberRepository.deleteByProjectIdAndUserId(projectId, userId);
 
         if (deletedCount == 0) {
-            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "프로젝트에 해당 멤버가 존재하지 않습니다.");
+            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+                    "프로젝트에 해당 멤버가 존재하지 않습니다.");
         }
+
+        // 4. 로그 발행
+        Long currentUserId = extractCurrentUserId();
+        String ipAddress = IpAddressUtil.getClientIp(request);
+
+        Map<String, Object> detail = Map.of(
+                "action", "removed",
+                "userName", userName,
+                "role", role
+        );
+
+        eventPublisher.publishEvent(new ActivityLogEvent(
+                projectId,
+                currentUserId,
+                ActivityAction.DELETE,
+                "ProjectMember",
+                userId,
+                ipAddress,
+                toJson(detail)
+        ));
     }
 
     //프로젝트 진행단계 수정
@@ -566,6 +629,12 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request) {
+
+        // 권한 검증
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        if (user.getRole() != Role.ADMIN) {
+            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
+        }
 
         // 요청한 프로젝트 ID 조회
         List<Long> projectIds = request.getProjectIds();
@@ -682,4 +751,32 @@ public class ProjectServiceImpl implements ProjectService {
         // 5. Response 반환
         return ProjectCreateCheckListResponse.Converter.from(savedProjectCheckList, savedCheckList);
     }
+    private String toJson(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (Exception e) {
+            log.error("JSON 변환 실패", e);
+            return null;
+        }
+    }
+
+    private Long extractCurrentUserId() {
+        try {
+            HttpServletRequest currentRequest = ((ServletRequestAttributes)
+                    RequestContextHolder.getRequestAttributes()).getRequest();
+
+            var session = currentRequest.getSession(false);
+            if (session != null) {
+                Object userObj = session.getAttribute(SessionConst.LOGIN_MEMBER);
+                if (userObj instanceof User user) {
+                    return user.getId();
+                }
+                return (Long) session.getAttribute("userId");
+            }
+        } catch (Exception e) {
+            log.warn("현재 사용자 ID 추출 실패", e);
+        }
+        return null;
+    }
+
 }

@@ -133,6 +133,7 @@ public class ProjectAdminController {
 
     // todo: 개별 프로젝트 제목 수정
     @Operation(summary = "프로젝트 제목 수정", description = "프로젝트의 제목을 수정합니다")
+    @ActivityLogger(action = "UPDATE", targetType = "Project")
     @PatchMapping("/{projectId}/projectName")
     public CommonResponse<ProjectUpdateResponse> updateProjectName(
             @PathVariable Long projectId,
@@ -144,6 +145,7 @@ public class ProjectAdminController {
 
     // todo: 프로젝트 이미지 수정
     @Operation(summary = "프로젝트 이미지 수정", description = "프로젝트의 이미지를 수정합니다")
+    @ActivityLogger(action = "UPDATE", targetType = "Project")
     @PatchMapping(value = "/{projectId}/image",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<ProjectUpdateResponse> updateProjectImage(
@@ -156,6 +158,7 @@ public class ProjectAdminController {
 
     // todo: 개별 프로젝트 날짜 수정
     @Operation(summary = "프로젝트 날짜 수정", description = "프로젝트의 시작일 및 종료일을 수정합니다")
+    @ActivityLogger(action = "UPDATE", targetType = "Project")
     @PatchMapping("/{projectId}/date")
     public CommonResponse<ProjectUpdateResponse> updateProjectDate(
             @PathVariable Long projectId,

@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.activityLog.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.dto.response.ActivityLogResponse;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Tag(name = "Activity Log", description = "활동 로그 조회 API")
 @RestController
@@ -26,70 +26,58 @@ public class ActivityLogController {
 
     private final ActivityLogService activityLogService;
 
-    // Todo: 프로젝트별 활동 로그 조회 (최신순, 페이지네이션)
-    // GET /api/v1/projects/{projectId}/logs
-
-    @Operation(summary = "프로젝트별 활동 로그 조회", description = "특정 프로젝트의 활동 로그를 페이지네이션하여 조회합니다")
+    /**
+     * 프로젝트별 활동 로그 조회 (통합 필터링)
+     * GET /api/v1/projects/{projectId}/logs?action=CREATE&userId=1&startDate=2025-12-01&page=0&size=20
+     */
+    @Operation(
+            summary = "프로젝트 활동 로그 조회 (통합 필터링)",
+            description = "특정 프로젝트의 활동 로그를 다양한 조건으로 필터링하여 조회합니다"
+    )
     @GetMapping("/projects/{projectId}/logs")
     public CommonResponse<Page<ActivityLogResponse>> getProjectLogs(
             @PathVariable Long projectId,
+
+            @Parameter(description = "액션 타입 필터 (CREATE, UPDATE, DELETE 등)")
+            @RequestParam(required = false) ActivityAction action,
+
+            @Parameter(description = "사용자 ID 필터")
+            @RequestParam(required = false) Long userId,
+
+            @Parameter(description = "시작일 (yyyy-MM-dd)")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+
+            @Parameter(description = "종료일 (yyyy-MM-dd)")
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+
+            @Parameter(description = "페이지 번호 (0부터 시작)")
             @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "페이지 크기")
             @RequestParam(defaultValue = "20") int size
     ) {
-        Pageable pageable = PageRequest.of(page, size);
-        Page<ActivityLogResponse> logs = activityLogService.getProjectLogsWithPaging(projectId, pageable);
+        LocalDateTime startDateTime = startDate != null ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = endDate != null ? endDate.atTime(23, 59, 59) : null;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+
+        Page<ActivityLogResponse> logs = activityLogService.getProjectLogsWithFilters(
+                projectId, action, userId, startDateTime, endDateTime, pageable
+        );
+
         return CommonResponse.success("활동 로그 조회 성공", logs);
     }
 
-
-    // Todo: 액션 타입 필터
-    //GET /api/v1/projects/{projectId}/logs/by-action?action=CREATE
-
-    @Operation(summary = "액션 타입별 활동 로그 조회", description = "특정 프로젝트의 활동 로그를 액션 타입으로 필터링하여 조회합니다")
-    @GetMapping("/projects/{projectId}/logs/by-action")
-    public CommonResponse<List<ActivityLogResponse>> getProjectLogsByAction(
-            @PathVariable Long projectId,
-            @RequestParam ActivityAction action
-    ) {
-        List<ActivityLogResponse> logs = activityLogService.getProjectLogsByAction(projectId, action);
-        return CommonResponse.success("활동 로그 조회 성공 (액션 필터)", logs);
-    }
-
-    //Todo: 사용자 필터
-    //GET /api/v1/projects/{projectId}/logs/by-user?userId=1
-
-    @Operation(summary = "사용자별 활동 로그 조회", description = "특정 프로젝트의 활동 로그를 사용자별로 필터링하여 조회합니다")
-    @GetMapping("/projects/{projectId}/logs/by-user")
-    public CommonResponse<List<ActivityLogResponse>> getProjectLogsByUser(
-            @PathVariable Long projectId,
-            @RequestParam Long userId
-    ) {
-        List<ActivityLogResponse> logs = activityLogService.getProjectLogsByUser(projectId, userId);
-        return CommonResponse.success("활동 로그 조회 성공 (사용자 필터)", logs);
-    }
-
-    //Todo: 기간 필터
-    //GET /api/v1/projects/{projectId}/logs/by-date?startDate=2025-12-01&endDate=2025-12-3
-
-    @Operation(summary = "기간별 활동 로그 조회", description = "특정 프로젝트의 활동 로그를 기간으로 필터링하여 조회합니다")
-    @GetMapping("/projects/{projectId}/logs/by-date")
-    public CommonResponse<List<ActivityLogResponse>> getLogsByDateRange(
-            @PathVariable Long projectId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
-    ) {
-        // LocalDate를 LocalDateTime으로 변환
-        LocalDateTime startDateTime = startDate.atStartOfDay();           // 2025-12-11 00:00:00
-        LocalDateTime endDateTime = endDate.atTime(23, 59, 59); // 2025-12-11 23:59:59
-
-        List<ActivityLogResponse> logs = activityLogService.getProjectLogsByDateRange(
-                projectId, startDateTime, endDateTime);
-        return CommonResponse.success("활동 로그 조회 성공", logs);
-    }
-
-    //Todo: 전체 활동 로그 조회
-    //GET /api/v1/admin/activity-logs?page=0&size=50
-    @Operation(summary = "전체 활동 로그 조회", description = "모든 프로젝트의 활동 로그를 페이지네이션하여 조회합니다 (관리자용)")
+    /**
+     * 전체 활동 로그 조회 (관리자용)
+     * GET /api/v1/admin/activity-logs?page=0&size=50
+     */
+    @Operation(
+            summary = "전체 활동 로그 조회",
+            description = "모든 프로젝트의 활동 로그를 조회합니다 (관리자용)"
+    )
     @GetMapping("/admin/activity-logs")
     public CommonResponse<Page<ActivityLogResponse>> getAllLogs(
             @RequestParam(defaultValue = "0") int page,
@@ -98,5 +86,28 @@ public class ActivityLogController {
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<ActivityLogResponse> logs = activityLogService.getAllLogsWithPaging(pageable);
         return CommonResponse.success("전체 활동 로그 조회 성공", logs);
+    }
+
+    /**
+     * 특정 대상의 활동 로그 조회
+     * GET /api/v1/projects/{projectId}/logs/target?targetType=Post&targetId=123
+     */
+    @Operation(
+            summary = "특정 대상의 활동 이력 조회",
+            description = "특정 게시글, 체크리스트 등의 모든 변경 이력을 조회합니다"
+    )
+    @GetMapping("/projects/{projectId}/logs/target")
+    public CommonResponse<Page<ActivityLogResponse>> getTargetLogs(
+            @PathVariable Long projectId,
+            @RequestParam String targetType,
+            @RequestParam Long targetId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<ActivityLogResponse> logs = activityLogService.getTargetLogs(
+                projectId, targetType, targetId, pageable
+        );
+        return CommonResponse.success("대상 활동 이력 조회 성공", logs);
     }
 }
