@@ -29,7 +29,7 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
-import org.etmetmy.bn_server.domain.user.entity.Role;
+import org.etmetmy.bn_server.domain.user.dto.response.UserSelfUpdateResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
@@ -87,7 +87,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     @Transactional
-    public ProjectCreateResponse createProject(ProjectCreateRequest request, Long loginUserId) {
+    public ProjectCreateResponse createProject(ProjectCreateRequest request, MultipartFile image, Long loginUserId) {
 
         // 1. Stage 조회
         Stage startStage = getStartStage(request.getStage());
@@ -97,9 +97,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
 
         // 3. Project 생성
-        Project project = ProjectCreateRequest.Converter
-                .toEntity(request, company, loginUserId, startStage);
-
+        Project project = ProjectCreateRequest.Converter.toEntity(request, company, loginUserId, startStage);
         Project savedProject = projectRepository.save(project);
 
         // 4. Memo
@@ -136,6 +134,14 @@ public class ProjectServiceImpl implements ProjectService {
 
             projectChecklistRepository.saveAll(projectCheckLists);
         }
+
+        // 7. 프로젝트 이미지 (선택사항)
+        if (image != null && !image.isEmpty()) {
+            String projectImageUrl = fileService.uploadToS3(image).getFileUrl();
+            savedProject.updateProjectImage(projectImageUrl);
+        }
+
+        // 8. Response 반환 (모든 업데이트 완료 후)
         return ProjectCreateResponse.Converter.from(savedProject);
     }
 
@@ -693,17 +699,21 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectUpdateResponse updateProjectImage(Long projectId, MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);}
 
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
+        Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+        String oldProfileImg = project.getProjectImageUrl();
 
-        // 이미지가 있을 경우 S3에 업로드하고 URL 받기
-        if (image != null && !image.isEmpty()) {
-            // S3 업로드
-            String imageUrl = fileService.uploadToS3(image).getFileUrl();
-            // 프로젝트에 이미지 주소 저장
-            project.updateProjectImage(imageUrl);
-            projectRepository.save(project);
+        // 1. 새 이미지 먼저 업로드 (S3, DB)
+        String newProjectImage = fileService.uploadToS3(image).getFileUrl();
+
+        // 2. 유저에 새 이미지 연결
+        project.updateProjectImage(newProjectImage);
+
+        // 3. 기존 이미지가 있었다면 S3에서 삭제
+        if (oldProfileImg != null) {
+            fileService.removeOldImage(oldProfileImg);
         }
         return ProjectUpdateResponse.Converter.from(project);
     }

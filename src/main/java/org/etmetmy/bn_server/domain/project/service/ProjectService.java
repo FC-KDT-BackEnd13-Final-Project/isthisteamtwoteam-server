@@ -17,7 +17,7 @@ import java.util.List;
 
 public interface ProjectService {
 
-    ProjectCreateResponse createProject(ProjectCreateRequest request, Long loginUserId);
+    ProjectCreateResponse createProject(ProjectCreateRequest request, MultipartFile image, Long loginUserId);
 
     int addProjectMembers(Long projectId, List<ProjectMemberRequest> members, Long createdById);
 
