@@ -11,16 +11,14 @@ import java.util.Optional;
 
 public interface MemoRepository extends JpaRepository<Memo,Long> {
     @Query("select m from Memo m " +
-            "where m.project.id = :projectId and m.memoType = :memoType and m.memoType = :memoType " +
+            "where m.project.id = :projectId and m.memoType = :memoType " +
             "order by m.createdAt")
     Optional<Memo> findByProjectId(@Param("projectId") Long projectId, @Param("memoType") MemoType memoType);
 
-    @Query("select  m from Memo m where m.project.id = :projectId and m.user.id = :userId and m.memoType = :memoType " +
-            "order by m.createdAt")
+    @Query("select  m from Memo m where m.project.id = :projectId and m.user.id = :userId and m.memoType = :memoType ")
     Optional<Memo> findByUserIdAndProjectId(@Param("userId") Long userId, @Param ("projectId") Long projectId , @Param("memoType") MemoType memoType);
 
     @Query("select m from Memo m " +
-            "where m.project.id = :projectId and m.memoType = :memoType " +
-            "order by m.createdAt desc")
+            "where m.project.id = :projectId and m.memoType = :memoType ")
     Optional<Memo> findProjectMemoByProjectId (@Param ("projectId") Long projectId , @Param("memoType") MemoType memoType);
 }
