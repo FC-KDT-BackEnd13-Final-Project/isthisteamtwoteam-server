@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.project.service;
 
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.ProjectListResponse;
 import org.etmetmy.bn_server.domain.project.dto.request.*;
 import org.etmetmy.bn_server.domain.project.dto.response.*;
@@ -56,4 +57,7 @@ public interface ProjectService {
 
     // 프로젝트 체크리스트 삭제
     void checklistDeleted(Long projectId, Long checkListId);
+
+    // 프로젝트 영구삭제
+    ProjectHardDeleteResponse hardDeleteProject(Long loginUserId, @Valid ProjectHardDeleteRequest request);
 }
