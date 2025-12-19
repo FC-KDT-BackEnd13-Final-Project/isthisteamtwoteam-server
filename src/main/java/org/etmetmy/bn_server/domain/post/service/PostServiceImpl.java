@@ -116,9 +116,24 @@ public class PostServiceImpl implements PostService {
         // 필터에 따라 게시글 조회 (전체 리스트)
         List<Post> posts = getPostsByFilter(projectId, filter);
 
+        List<Long> postIds = posts.stream()
+                .map(Post::getPostId)
+                .toList();
+
+        // 3. Request 일괄 조회 (N+1 문제 방지)
+        List<Request> requests = requestRepository.findByPostPostIdIn(postIds);
+
+        // 4. Post ID를 키로 하는 Request Map 생성
+        Map<Long, Request> requestMap = requests.stream()
+                .collect(Collectors.toMap(
+                        r -> r.getPost().getPostId(),
+                        r -> r,
+                        (existing, replacement) -> existing // 중복 시 첫 번째 값 유지
+                ));
+
         // Post를 PostListResponse로 변환
         List<PostListResponse> postListResponses = posts.stream()
-                .map(PostListResponse::from)
+                .map(post -> PostListResponse.from(post, requestMap.get(post.getPostId())))
                 .toList();
 
         // 프로젝트의 모든 파일 조회 (project_id로 직접 조회)
