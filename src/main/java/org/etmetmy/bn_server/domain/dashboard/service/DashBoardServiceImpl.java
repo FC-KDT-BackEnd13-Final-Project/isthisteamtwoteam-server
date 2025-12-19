@@ -140,24 +140,36 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public ApprovalRequestListResponse getDeveloperStatusDashboard(Long loginUserId) {
+    public DashBoardResponse getDeveloperStatusDashboard(Long loginUserId) {
         // 유저 검증
-        User user = userRepository.findById(loginUserId)
+        userRepository.findById(loginUserId)
                 .orElseThrow(UserNotFoundException::new);
 
         // 개발자가 참여 중인 프로젝트 ID 목록 조회
-        List<Long> projects = projectMemberRepository.findProjectIdsByUserId(user.getId());
+        List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
 
         // 빈 리스트 처리 (참여 중인 프로젝트가 없는 경우)
-        if (projects.isEmpty()) {
-            return ApprovalRequestListResponse.Converter.of(List.of());
+        if (myProjectIds.isEmpty()) {
+            return DashBoardResponse.Converter.of(List.of(), List.of(), List.of(), List.of());
         }
 
-        // Request가 있는 Post 조회 (참여 중인 프로젝트만)
-        List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequestByProjectIds(projects);
-        List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
+        // STATUS_PENDING(요청대기) 상태이면서 참여 중인 프로젝트의 Post 목록
+        List<Post> pendingPosts = postRepository.findPostsWithRequestStatusByProjectIds(RequestStatus.STATUS_PENDING, myProjectIds);
+        List<DashBoardStatusResponseDTO> pendingList = DashBoardStatusResponseDTO.Converter.toPostDTOList(pendingPosts, RequestStatus.STATUS_PENDING);
 
-        // Converter에서 단계별 필터링 및 응답 생성
-        return ApprovalRequestListResponse.Converter.of(allPosts);
+        // STATUS_REJECTED(반려) 상태이면서 참여 중인 프로젝트의 Post 목록
+        List<Post> rejectedPosts = postRepository.findPostsWithRequestStatusByProjectIds(RequestStatus.STATUS_REJECTED, myProjectIds);
+        List<DashBoardStatusResponseDTO> rejectedList = DashBoardStatusResponseDTO.Converter.toPostDTOList(rejectedPosts, RequestStatus.STATUS_REJECTED);
+
+        // 참여 중인 프로젝트 중 진행 중인 Project
+        List<Project> inProgressProjects = projectRepository.findProjectsInProgressByProjectIds(myProjectIds);
+        List<DashBoardStatusResponseDTO> inProgress = DashBoardStatusResponseDTO.Converter.toProejctDTOList(inProgressProjects);
+
+        // 참여 중인 프로젝트 중 유지 보수 Project
+        List<Project> maintenanceProjects = projectRepository.findProjectsMaintenanceByProjectIds(myProjectIds);
+        List<DashBoardStatusResponseDTO> maintenances = DashBoardStatusResponseDTO.Converter.toProejctDTOList(maintenanceProjects);
+
+        // stats와 List를 포함한 wrapper 반환
+        return DashBoardResponse.Converter.of(pendingList, rejectedList, inProgress, maintenances);
     }
 }
