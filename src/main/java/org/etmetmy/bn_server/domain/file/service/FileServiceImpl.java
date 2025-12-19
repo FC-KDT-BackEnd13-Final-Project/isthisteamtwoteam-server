@@ -386,7 +386,6 @@ public class FileServiceImpl implements FileService {
         s3Client.deleteObject(deleteRequest);
     }
 
-
     // 16. 프로필 이미지 수정 - 새 이미지 업로드 후 S3 이미지 URL 저장
     @Override
     @Transactional

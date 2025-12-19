@@ -140,6 +140,7 @@ public class ProjectServiceImpl implements ProjectService {
         if (image != null && !image.isEmpty()) {
             String projectImageUrl = fileService.uploadToS3(image).getFileUrl();
             savedProject.updateProjectImage(projectImageUrl);
+            projectRepository.save(savedProject);
         }
 
         // 8. Response 반환 (모든 업데이트 완료 후)
