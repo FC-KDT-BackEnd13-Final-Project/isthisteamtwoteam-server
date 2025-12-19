@@ -32,6 +32,8 @@ public interface PostService {
     PostRestoreResponse restoreDeletedPost(Long loginUserId, PostRestoreRequest request);
 
     PostPermanentDeleteResponse deleteDeletedPost(Long loginUserId, @Valid PostPermanentDeleteRequest request);
+
+    List<PostTrashResponse> getDeletedPosts(Long loginUserId, Long projectId);
 }
 
 
