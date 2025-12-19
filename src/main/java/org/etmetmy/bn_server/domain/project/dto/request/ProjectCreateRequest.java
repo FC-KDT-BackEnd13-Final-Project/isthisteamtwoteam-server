@@ -32,7 +32,7 @@ public class ProjectCreateRequest {
     private String memo;
     private String stage;
 
-    private Boolean isDeleted;
+    //private Boolean isDeleted;
 
     //내부 converter
     public static class Converter {

@@ -19,12 +19,19 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.domain.history.entity.ChangeType;
+import org.etmetmy.bn_server.domain.history.event.HistoryFileEvent;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.*;
+import org.etmetmy.bn_server.global.util.IpAddressUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -50,6 +57,7 @@ public class FileServiceImpl implements FileService {
     private final PostRepository postRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final S3Client s3Client;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
@@ -140,6 +148,22 @@ public class FileServiceImpl implements FileService {
         file.softDelete(loginUserId);
 
         fileRepository.save(file);
+
+        // 파일 히스토리 이벤트 발행 (DELETE)
+        String clientIp = null;
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attributes != null) {
+                HttpServletRequest request = attributes.getRequest();
+                clientIp = IpAddressUtil.getClientIp(request);
+            }
+        } catch (Exception e) {
+            // RequestContext가 없는 경우 null로 저장
+        }
+
+        eventPublisher.publishEvent(
+                new HistoryFileEvent(file, ChangeType.DELETE, loginUserId, clientIp)
+        );
     }
 
     // 5. 삭제된 파일 복원
@@ -357,6 +381,18 @@ public class FileServiceImpl implements FileService {
             throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }
 
+        // IP 주소 가져오기
+        String clientIp = null;
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attributes != null) {
+                HttpServletRequest request = attributes.getRequest();
+                clientIp = IpAddressUtil.getClientIp(request);
+            }
+        } catch (Exception e) {
+            // RequestContext가 없는 경우 (비동기 등) null로 저장
+        }
+
         for (File file : tempFiles) {
             if (comment == null && projectCheckList == null) {
                 file.attachToPost(post, loginUserId);
@@ -365,6 +401,11 @@ public class FileServiceImpl implements FileService {
             } else {
                 file.attachToProjectCheckList(projectCheckList, loginUserId);
             }
+
+            // 파일 히스토리 이벤트 발행 (CREATE)
+            eventPublisher.publishEvent(
+                    new HistoryFileEvent(file, ChangeType.CREATE, loginUserId, clientIp)
+            );
         }
 
         fileRepository.saveAll(tempFiles);

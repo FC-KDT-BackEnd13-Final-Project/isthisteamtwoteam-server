@@ -9,6 +9,8 @@ import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
 import org.etmetmy.bn_server.domain.file.service.FileService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
+import org.etmetmy.bn_server.global.aop.HistoryLogger;
+import org.etmetmy.bn_server.domain.history.entity.ChangeType;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
