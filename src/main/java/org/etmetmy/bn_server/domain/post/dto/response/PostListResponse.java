@@ -43,7 +43,7 @@ public class PostListResponse {
                 .stageName(post.getStage().getStageName())
                 .createdIp(post.getCreatedIp())
                 .parentId(post.getParentPostId())
-                .approveStatus(request != null && request.getApproveStatus() != null ? request.getApproveStatus().name() : null)
+                .approveStatus(request != null && request.getApproveStatus() != null ? request.getApproveStatus().getDescription() : null)
                 .createdAt(post.getCreatedAt())
                 .build();
     }
