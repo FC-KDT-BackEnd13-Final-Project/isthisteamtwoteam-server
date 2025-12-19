@@ -20,13 +20,13 @@ public class DashBoardDeveloperController {
 
     private final DashBoardService dashBoardService;
 
-    //todo: 관리자 메인 대시보드 상태 조회 API (STATUS_PENDING인 Post 목록 및 통계)
+    //todo: 개발사 메인 대시보드 상태 조회 API (승인대기 게시글, 반려 게시글, 진행중 프로젝트, 유지보수 프로젝트 갯수 및 목록 조회)
     @Operation(summary = "개발사 대시보드 조회", description = "개발사 메인 대시보드 상태를 조회합니다 (승인 대기 중인 게시글 및 통계)")
     @GetMapping
     public CommonResponse<DashBoardResponse> getStatusDashboard(HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
         DashBoardResponse result = dashBoardService.getDeveloperStatusDashboard(loginUserId);
-        return CommonResponse.success("상태 게시글 조회 성공", result);
+        return CommonResponse.success("개발사 대시보드 상태 조회 성공", result);
     }
 }
