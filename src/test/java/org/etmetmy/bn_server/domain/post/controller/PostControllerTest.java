@@ -1,6 +1,6 @@
 package org.etmetmy.bn_server.domain.post.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.etmetmy.bn_server.BaseControllerTest;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
@@ -26,10 +26,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
 @Transactional
 @AutoConfigureMockMvc
-public class PostControllerTest {
+public class PostControllerTest extends BaseControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;

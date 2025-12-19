@@ -33,5 +33,4 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     @Query("select pm.project.id from ProjectMember pm " +
             "where pm.user.id = :userId and pm.project.isDeleted = false")
     List<Long> findProjectIdsByUserId(@Param("userId") Long userId);
-
 }

@@ -3,8 +3,7 @@ package org.etmetmy.bn_server;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-class BnServerApplicationTests {
+class BnServerApplicationTests extends BaseControllerTest {
 
     @Test
     void contextLoads() {
