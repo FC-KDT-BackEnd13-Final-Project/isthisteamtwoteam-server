@@ -14,6 +14,7 @@ import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
+import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -47,6 +48,7 @@ public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final ProjectRepository projectRepository;
     private final PostRepository postRepository;
+    private final ProjectMemberRepository projectMemberRepository;
     private final S3Client s3Client;
 
     @Value("${aws.s3.bucket-name}")
@@ -56,10 +58,18 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public List<FileTrashResponse> getDeletedFiles(Long loginUserId, Long projectId){
-        Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+
+        // 권한 검증 (관리자와 담당 개발사만 접근가능)
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        boolean hasRole = projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId);
+
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isDeveloperInProject = hasRole && user.getRole() == Role.DEVELOPER;
+
+        if (!isAdmin && !isDeveloperInProject)
+            throw new BusinessException(ErrorCode.DELETED_FILE_ACCESS_DENIED);
 
         List<File> deletedFiles = fileRepository.findByDeletedFilesByProjectId(projectId);
-        List<FileTrashResponse> responses = new ArrayList<>();
         return FileTrashResponse.Converter.from(deletedFiles);
     }
 

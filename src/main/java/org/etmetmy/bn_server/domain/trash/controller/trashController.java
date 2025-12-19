@@ -39,7 +39,7 @@ public class trashController {
     private final ProjectService projectService;
 
     //todo: 삭제된 파일 목록 조회 API
-    @Operation(summary = "삭제된 파일 복원", description = "휴지통에 있는 파일을 복원합니다")
+    @Operation(summary = "삭제된 파일 조회", description = "휴지통에 있는 파일을 조회합니다")
     @GetMapping("/users/projects/{projectId}/trash/files")
     public CommonResponse<List<FileTrashResponse>> getDeletedFiles(
             @PathVariable Long projectId,
