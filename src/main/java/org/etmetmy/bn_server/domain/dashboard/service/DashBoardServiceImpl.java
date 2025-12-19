@@ -7,6 +7,7 @@ import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -124,13 +125,71 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public ApprovalRequestListResponse getApprovalRequest(Long loginUserId) {
+    public ApprovalRequestListResponse getAdminApprovalRequest(Long loginUserId) {
         // 유저 검증
         userRepository.findById(loginUserId)
                 .orElseThrow(UserNotFoundException::new);
 
         // Request가 있는 모든 Post 조회 (상태별, 단계별 카운팅 및 리스트 생성용)
         List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequest();
+        List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
+
+        // Converter에서 단계별 필터링 및 응답 생성
+        return ApprovalRequestListResponse.Converter.of(allPosts);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DashBoardResponse getDeveloperStatusDashboard(Long loginUserId) {
+        // 유저 검증
+        userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 개발자가 참여 중인 프로젝트 ID 목록 조회
+        List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
+
+        // 빈 리스트 처리 (참여 중인 프로젝트가 없는 경우)
+        if (myProjectIds.isEmpty()) {
+            return DashBoardResponse.Converter.of(List.of(), List.of(), List.of(), List.of());
+        }
+
+        // STATUS_PENDING(요청대기) 상태이면서 참여 중인 프로젝트의 Post 목록
+        List<Post> pendingPosts = postRepository.findPostsWithRequestStatusByProjectIds(RequestStatus.STATUS_PENDING, myProjectIds);
+        List<DashBoardStatusResponseDTO> pendingList = DashBoardStatusResponseDTO.Converter.toPostDTOList(pendingPosts, RequestStatus.STATUS_PENDING);
+
+        // STATUS_REJECTED(반려) 상태이면서 참여 중인 프로젝트의 Post 목록
+        List<Post> rejectedPosts = postRepository.findPostsWithRequestStatusByProjectIds(RequestStatus.STATUS_REJECTED, myProjectIds);
+        List<DashBoardStatusResponseDTO> rejectedList = DashBoardStatusResponseDTO.Converter.toPostDTOList(rejectedPosts, RequestStatus.STATUS_REJECTED);
+
+        // 참여 중인 프로젝트 중 진행 중인 Project
+        List<Project> inProgressProjects = projectRepository.findProjectsInProgressByProjectIds(myProjectIds);
+        List<DashBoardStatusResponseDTO> inProgress = DashBoardStatusResponseDTO.Converter.toProejctDTOList(inProgressProjects);
+
+        // 참여 중인 프로젝트 중 유지 보수 Project
+        List<Project> maintenanceProjects = projectRepository.findProjectsMaintenanceByProjectIds(myProjectIds);
+        List<DashBoardStatusResponseDTO> maintenances = DashBoardStatusResponseDTO.Converter.toProejctDTOList(maintenanceProjects);
+
+        // stats와 List를 포함한 wrapper 반환
+        return DashBoardResponse.Converter.of(pendingList, rejectedList, inProgress, maintenances);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApprovalRequestListResponse getApprovalRequest(Long loginUserId) {
+        // 유저 검증
+        userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 참여 중인 프로젝트 ID 목록 조회
+        List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
+
+        // 빈 리스트 처리 (참여 중인 프로젝트가 없는 경우)
+        if (myProjectIds.isEmpty()) {
+            return ApprovalRequestListResponse.Converter.of(List.of());
+        }
+
+        // Request가 있는 Post 조회 (참여 중인 프로젝트만)
+        List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequestByProjectIds(myProjectIds);
         List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
 
         // Converter에서 단계별 필터링 및 응답 생성

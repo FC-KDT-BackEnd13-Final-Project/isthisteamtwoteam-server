@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestListResponse;
-import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.ProjectListResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.DashBoardResponse;
 import org.etmetmy.bn_server.domain.dashboard.service.DashBoardService;
@@ -52,7 +51,7 @@ public class DashBoardController {
     public CommonResponse<ApprovalRequestListResponse> getApprovalRequests(HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
-        ApprovalRequestListResponse result = dashBoardService.getApprovalRequest(loginUserId);
+        ApprovalRequestListResponse result = dashBoardService.getAdminApprovalRequest(loginUserId);
 
         return CommonResponse.success("승인 요청 알림 조회 성공", result);
     }
