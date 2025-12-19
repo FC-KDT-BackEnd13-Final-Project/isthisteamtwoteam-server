@@ -234,32 +234,6 @@ public class ProjectAdminController {
         return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
     }
 
-    //todo: 삭제된 프로젝트 복원
-    @Operation(summary = "프로젝트 복원", description = "휴지통에 있는 프로젝트를 복원합니다")
-    @PatchMapping("/trash/restore")
-    @ActivityLogger(action = "UPDATE", targetType = "Project")
-    public CommonResponse<ProjectRestoreResponse> restoreDeletedProject(
-            HttpSession session,
-            @Valid @RequestBody ProjectRestoreRequest request) {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        ProjectRestoreResponse response = projectService.restoreDeletedProject(loginUserId, request);
-
-        return CommonResponse.success("삭제된 프로젝트 복원 성공", response);
-    }
-
-    // Todo: 삭제된 프로젝트 영구삭제 (hard delete)
-    @Operation(summary = "프로젝트 영구삭제", description = "휴지통에 있는 프로젝트를 영구삭합니다")
-    @DeleteMapping("/trash")
-    public CommonResponse<ProjectHardDeleteResponse> hardDeleteProject(
-            HttpSession session,
-            @Valid @RequestBody ProjectHardDeleteRequest request)
-    {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        ProjectHardDeleteResponse response = projectService.hardDeleteProject(loginUserId, request);
-
-        return CommonResponse.success("삭제된 프로젝트 영구삭제 성공", response);
-    }
-
     // todo: 개별 프로젝트에서 바로 체크리스트 생성
     @Operation(summary = "프로젝트 체크리스트 생성 및 추가", description = "개별 프로젝트에서 새로운 체크리스트를 생성하고 프로젝트에 추가합니다")
     @PostMapping("/{projectId}/checklists/create")
@@ -270,5 +244,4 @@ public class ProjectAdminController {
         ProjectCreateCheckListResponse response = projectService.createAndAddCheckList(projectId, request);
         return CommonResponse.success("체크리스트가 생성되고 프로젝트에 추가되었습니다.", response);
     }
-
 }
