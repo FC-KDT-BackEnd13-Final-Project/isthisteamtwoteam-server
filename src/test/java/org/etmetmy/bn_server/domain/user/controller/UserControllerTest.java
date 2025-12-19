@@ -1,6 +1,5 @@
 package org.etmetmy.bn_server.domain.user.controller;
 
-import org.etmetmy.bn_server.BaseControllerTest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
@@ -28,7 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Transactional
 @AutoConfigureMockMvc
-public class UserControllerTest extends BaseControllerTest {
+public class UserControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;

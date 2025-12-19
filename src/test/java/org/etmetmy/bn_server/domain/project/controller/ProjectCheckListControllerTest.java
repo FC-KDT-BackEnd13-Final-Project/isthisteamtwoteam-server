@@ -1,6 +1,5 @@
 package org.etmetmy.bn_server.domain.project.controller;
 
-import org.etmetmy.bn_server.BaseControllerTest;
 import org.etmetmy.bn_server.domain.checkList.entity.CheckList;
 import org.etmetmy.bn_server.domain.checkList.repository.CheckListRepository;
 import org.etmetmy.bn_server.domain.company.entity.Company;
@@ -30,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @Transactional
 @AutoConfigureMockMvc
-public class ProjectCheckListControllerTest extends BaseControllerTest {
+public class ProjectCheckListControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
