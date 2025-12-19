@@ -16,6 +16,7 @@ import org.etmetmy.bn_server.domain.post.dto.request.PostPermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.PostPermanentDeleteResponse;
 import org.etmetmy.bn_server.domain.post.dto.response.PostRestoreResponse;
+import org.etmetmy.bn_server.domain.post.dto.response.PostTrashResponse;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectHardDeleteRequest;
 import org.etmetmy.bn_server.domain.project.dto.request.ProjectRestoreRequest;
@@ -77,6 +78,19 @@ public class trashController {
         FilePermanentDeleteResponse response = fileService.hardDeleteFiles(loginUserId, request);
 
         return CommonResponse.success("삭제된 파일 영구삭제 성공", response);
+    }
+
+    //todo: 삭제된 게시글 목록 조회 API
+    @Operation(summary = "삭제된 게시글 조회", description = "휴지통에 있는 게시글을 조회합니다")
+    @GetMapping("/users/projects/{projectId}/trash/posts")
+    public CommonResponse<List<PostTrashResponse>> getDeletedPosts(
+            @PathVariable Long projectId,
+            HttpSession session)
+    {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        List<PostTrashResponse> response = postService.getDeletedPosts(loginUserId, projectId);
+
+        return CommonResponse.success("삭제된 게시글 조회 성공", response);
     }
 
     //todo: 삭제된 게시글 복원 API

@@ -134,4 +134,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "AND p.project.id IN :projectIds " +
             "ORDER BY p.createdAt DESC")
     List<Post> findAllPostsWithRequestByProjectIds(@Param("projectIds") List<Long> projectIds);
+
+    /**
+     * 특정 프로젝트의 삭제된 게시글 조회 (휴지통 기능)
+     */
+    @Query("SELECT p FROM Post p " +
+            "JOIN FETCH p.user " +
+            "JOIN FETCH p.stage " +
+            "WHERE p.project.id = :projectId " +
+            "AND p.isDeleted = true " +
+            "ORDER BY p.deletedAt DESC")
+    List<Post> findDeletedPostsByProjectId(@Param("projectId") Long projectId);
 }

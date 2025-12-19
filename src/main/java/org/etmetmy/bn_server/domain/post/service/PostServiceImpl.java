@@ -7,6 +7,7 @@ import org.etmetmy.bn_server.domain.comment.repository.CommentRepository;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.file.dto.response.FileListResponse;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
+import org.etmetmy.bn_server.domain.file.dto.response.FileTrashResponse;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.file.service.FileService;
@@ -437,6 +438,26 @@ public class PostServiceImpl implements PostService {
         postRepository.deleteAll(posts);
 
         return PostPermanentDeleteResponse.Converter.from(posts);
+    }
+
+    // 삭제된 프로젝트 조회
+    @Override
+    @Transactional
+    public List<PostTrashResponse> getDeletedPosts(Long loginUserId, Long projectId){
+
+        // 권한 검증 (관리자와 담당 개발사만 접근가능)
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        boolean hasRole = projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId);
+
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isDeveloperInProject = hasRole && user.getRole() == Role.DEVELOPER;
+
+        if (!isAdmin && !isDeveloperInProject)
+            throw new BusinessException(ErrorCode.DELETED_FILE_ACCESS_DENIED);
+
+        List<Post> deletedPosts = postRepository.findDeletedPostsByProjectId(projectId);
+        return PostTrashResponse.Converter.from(deletedPosts);
+
     }
 
     // 프로젝트–게시글 소속 검증
