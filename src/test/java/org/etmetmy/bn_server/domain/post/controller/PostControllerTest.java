@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.post.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.domain.company.repository.CompanyRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
@@ -30,6 +31,7 @@ public class PostControllerTest {
 
     @Autowired
     ObjectMapper objectMapper;
+
 
     @Autowired
     MockMvc mockMvc;
