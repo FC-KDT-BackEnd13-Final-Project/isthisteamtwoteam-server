@@ -361,11 +361,11 @@ public class FileServiceImpl implements FileService {
 
         for (File file : tempFiles) {
             if (comment == null && projectCheckList == null) {
-                file.attachToPost(post, user);
+                file.attachToPost(post, loginUserId);
             } else if (post == null && projectCheckList == null) {
-                file.attachToComment(comment, user);
+                file.attachToComment(comment, loginUserId);
             } else {
-                file.attachToProjectCheckList(projectCheckList, user);
+                file.attachToProjectCheckList(projectCheckList, loginUserId);
             }
         }
 
