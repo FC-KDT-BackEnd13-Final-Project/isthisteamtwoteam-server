@@ -9,6 +9,7 @@ import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
@@ -60,6 +61,10 @@ public class File extends BaseEntity {
     @Column(name = "uploaded_by", nullable = false)
     private Long uploadedBy;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploaded_by", insertable = false, updatable = false)
+    private User uploader;
+
     @Column(name = "is_temp")
     @lombok.Builder.Default
     private Boolean isTemp = true;
@@ -88,25 +93,25 @@ public class File extends BaseEntity {
     }
 
     // 공통 내부 처리
-    private void attach(Post post, Comment comment, ProjectCheckList projectCheckList, Long uploadedBy) {
+    private void attach(Post post, Comment comment, ProjectCheckList projectCheckList, User user) {
         this.post = post;
         this.comment = comment;
         this.projectCheckList = projectCheckList;
         this.isTemp = false;
-        this.uploadedBy = uploadedBy;
+        this.uploadedBy = user.getId();
     }
 
     // 게시글에 연결
-    public void attachToPost(Post post, Long uploadedBy) {
-        attach(post, null,null, uploadedBy);
+    public void attachToPost(Post post, User user) {
+        attach(post, null,null, user);
     }
 
     // 댓글에 연결
-    public void attachToComment(Comment comment, Long uploadedBy) {
-        attach(null, comment, null, uploadedBy);
+    public void attachToComment(Comment comment, User user) {
+        attach(null, comment, null, user);
     }
 
-    public void attachToProjectCheckList(ProjectCheckList projectCheckList, Long uploadedBy) {
-        attach(null, null, projectCheckList, uploadedBy);
+    public void attachToProjectCheckList(ProjectCheckList projectCheckList, User user) {
+        attach(null, null, projectCheckList, user);
     }
 }

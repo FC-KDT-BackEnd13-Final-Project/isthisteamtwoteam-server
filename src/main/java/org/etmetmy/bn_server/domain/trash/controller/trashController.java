@@ -10,6 +10,7 @@ import org.etmetmy.bn_server.domain.file.dto.request.FilePermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.FilePermanentDeleteResponse;
 import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
+import org.etmetmy.bn_server.domain.file.dto.response.FileTrashResponse;
 import org.etmetmy.bn_server.domain.file.service.FileService;
 import org.etmetmy.bn_server.domain.post.dto.request.PostPermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
@@ -25,6 +26,8 @@ import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Trash", description = "휴지통 페이지 관리 API")
 @RestController
 @RequiredArgsConstructor
@@ -34,6 +37,19 @@ public class trashController {
     private final FileService fileService;
     private final PostService postService;
     private final ProjectService projectService;
+
+    //todo: 삭제된 파일 목록 조회 API
+    @Operation(summary = "삭제된 파일 복원", description = "휴지통에 있는 파일을 복원합니다")
+    @GetMapping("/users/projects/{projectId}/trash/files")
+    public CommonResponse<List<FileTrashResponse>> getDeletedFiles(
+            @PathVariable Long projectId,
+            HttpSession session)
+    {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        List<FileTrashResponse> response = fileService.getDeletedFiles(loginUserId, projectId);
+
+        return CommonResponse.success("삭제된 파일 조회 성공", response);
+    }
 
     //todo: 삭제된 파일 복원 API
     @Operation(summary = "삭제된 파일 복원", description = "휴지통에 있는 파일을 복원합니다")

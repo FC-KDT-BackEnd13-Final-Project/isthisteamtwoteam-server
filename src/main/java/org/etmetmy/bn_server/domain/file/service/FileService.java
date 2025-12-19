@@ -4,10 +4,7 @@ import jakarta.validation.Valid;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FilePermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
-import org.etmetmy.bn_server.domain.file.dto.response.FilePermanentDeleteResponse;
-import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
-import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
-import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.*;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
@@ -60,5 +57,7 @@ public interface FileService {
     // 프로필 이미지 수정 - 새 이미지 업로드 후 S3 이미지 URL 저장
     String uploadProfileImage(MultipartFile image, Long userId);
 
+    // 삭제된 파일 목록 조회
+    List<FileTrashResponse> getDeletedFiles(Long loginUserId, Long projectId);
 }
 

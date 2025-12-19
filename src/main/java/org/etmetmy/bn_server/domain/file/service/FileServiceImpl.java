@@ -6,19 +6,14 @@ import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FilePermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
-import org.etmetmy.bn_server.domain.file.dto.response.FilePermanentDeleteResponse;
-import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
-import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
-import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.*;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
-import org.etmetmy.bn_server.domain.post.dto.response.PostPermanentDeleteResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
-import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -56,6 +51,17 @@ public class FileServiceImpl implements FileService {
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
+
+    // 1. 삭제된 파일 목록 조회
+    @Override
+    @Transactional
+    public List<FileTrashResponse> getDeletedFiles(Long loginUserId, Long projectId){
+        Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+
+        List<File> deletedFiles = fileRepository.findByDeletedFilesByProjectId(projectId);
+        List<FileTrashResponse> responses = new ArrayList<>();
+        return FileTrashResponse.Converter.from(deletedFiles);
+    }
 
     // 2. 임시 파일 업로드
     @Override
@@ -332,6 +338,7 @@ public class FileServiceImpl implements FileService {
         if (fileIds == null || fileIds.isEmpty()) {
             return;
         }
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
 
         List<File> tempFiles = fileRepository.findAllById(fileIds)
                 .stream()
@@ -344,11 +351,11 @@ public class FileServiceImpl implements FileService {
 
         for (File file : tempFiles) {
             if (comment == null && projectCheckList == null) {
-                file.attachToPost(post, loginUserId);
+                file.attachToPost(post, user);
             } else if (post == null && projectCheckList == null) {
-                file.attachToComment(comment, loginUserId);
+                file.attachToComment(comment, user);
             } else {
-                file.attachToProjectCheckList(projectCheckList, loginUserId);
+                file.attachToProjectCheckList(projectCheckList, user);
             }
         }
 
