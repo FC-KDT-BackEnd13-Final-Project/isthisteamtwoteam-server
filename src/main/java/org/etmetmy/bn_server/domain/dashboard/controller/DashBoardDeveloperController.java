@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestListResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.DashBoardResponse;
 import org.etmetmy.bn_server.domain.dashboard.service.DashBoardService;
 import org.etmetmy.bn_server.global.CommonResponse;
@@ -28,5 +29,16 @@ public class DashBoardDeveloperController {
 
         DashBoardResponse result = dashBoardService.getDeveloperStatusDashboard(loginUserId);
         return CommonResponse.success("개발사 대시보드 상태 조회 성공", result);
+    }
+
+    // todo: 개발사 승인대기 화면 리스트들 조회
+    @Operation(summary = "개발사 게시글 승인 요청 목록 조회", description = "승인 요청한 게시글 목록들을 조회합니다")
+    @GetMapping("/approval-requests")
+    public CommonResponse<ApprovalRequestListResponse> getApprovalRequests(HttpSession session) {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+        ApprovalRequestListResponse result = dashBoardService.getApprovalRequest(loginUserId);
+
+        return CommonResponse.success("개발사 승인 요청 알림 조회 성공", result);
     }
 }
