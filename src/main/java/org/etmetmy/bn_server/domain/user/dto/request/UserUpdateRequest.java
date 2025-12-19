@@ -15,6 +15,9 @@ public class UserUpdateRequest {
     private String email;
     private String password;
 
+    @JsonProperty("profile_img")
+    private String profileImg;
+
     @JsonProperty("phone")
     private String phone;
 

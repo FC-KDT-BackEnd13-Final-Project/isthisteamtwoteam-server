@@ -98,6 +98,21 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
             "ORDER BY p.updatedAt DESC")
     List<Project> findActiveProjectsByProjectIds(@Param("projectIds") List<Long> projectIds);
 
+    // 활동 로그용: DB에서 직접 현재 프로젝트 명칭만 조회 (1차 캐시 무시용)
+    @Query("SELECT p.projectName FROM Project p WHERE p.id = :projectId")
+    String findProjectNameById(@Param("projectId") Long projectId);
+
+    // 활동 로그용: 진행 단계 명칭 조회
+    @Query("SELECT p.stage.stageName FROM Project p WHERE p.id = :projectId")
+    String findStageNameByProjectId(@Param("projectId") Long projectId);
+
+    @Query("SELECT s.stageName FROM Stage s WHERE s.id = :stageId")
+    String findStageNameById(@Param("stageId") Long stageId);
+
+    @Query("SELECT p.stage.stageName FROM Project p WHERE p.id = :projectId")
+    String findCurrentStageNameByProjectId(@Param("projectId") Long projectId);
+
+
     Page<Project> findByProjectNameContainingIgnoreCaseAndIsDeleted(String searchKeyword, Boolean isDeleted, Pageable pageable);
 
     Page<Project> findByIsDeleted(Boolean isDeleted, Pageable pageable);

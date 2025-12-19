@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.project.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
-import org.etmetmy.bn_server.domain.user.entity.Role;
+import org.etmetmy.bn_server.domain.user.dto.response.UserSelfUpdateResponse;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.exception.custom.InvalidInputException;
@@ -36,11 +37,21 @@ import org.etmetmy.bn_server.exception.custom.UserNotFoundException;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.BusinessException;
 import org.etmetmy.bn_server.exception.custom.ProjectNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.etmetmy.bn_server.domain.activityLog.event.ActivityLogEvent;
+import org.etmetmy.bn_server.domain.activityLog.enums.ActivityAction;
+import org.etmetmy.bn_server.global.util.IpAddressUtil;
+import org.etmetmy.bn_server.web.SessionConst;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -66,11 +77,17 @@ public class ProjectServiceImpl implements ProjectService {
     private final LinkRepository linkRepository;
     private final CompanyRepository companyRepository;
     private final FileService fileService;
+    private final ObjectMapper objectMapper;
 
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
+
+    @Autowired
+    private HttpServletRequest request;
 
     @Override
     @Transactional
-    public ProjectCreateResponse createProject(ProjectCreateRequest request, Long loginUserId) {
+    public ProjectCreateResponse createProject(ProjectCreateRequest request, MultipartFile image, Long loginUserId) {
 
         // 1. Stage 조회
         Stage startStage = getStartStage(request.getStage());
@@ -80,9 +97,7 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
 
         // 3. Project 생성
-        Project project = ProjectCreateRequest.Converter
-                .toEntity(request, company, loginUserId, startStage);
-
+        Project project = ProjectCreateRequest.Converter.toEntity(request, company, loginUserId, startStage);
         Project savedProject = projectRepository.save(project);
 
         // 4. Memo
@@ -119,9 +134,16 @@ public class ProjectServiceImpl implements ProjectService {
 
             projectChecklistRepository.saveAll(projectCheckLists);
         }
+
+        // 7. 프로젝트 이미지 (선택사항)
+        if (image != null && !image.isEmpty()) {
+            String projectImageUrl = fileService.uploadToS3(image).getFileUrl();
+            savedProject.updateProjectImage(projectImageUrl);
+        }
+
+        // 8. Response 반환 (모든 업데이트 완료 후)
         return ProjectCreateResponse.Converter.from(savedProject);
     }
-
 
     @Override
     @Transactional
@@ -140,6 +162,27 @@ public class ProjectServiceImpl implements ProjectService {
         }
 
         projectMemberRepository.saveAll(projectMembers);
+
+        // 각 멤버마다 개별 로그 발행
+        String ipAddress = IpAddressUtil.getClientIp(request);
+        for (ProjectMember member : projectMembers) {
+            Map<String, Object> detail = Map.of(
+                    "action", "added",
+                    "userName", member.getUser().getName(),
+                    "role", member.getUser().getRole().name()
+            );
+
+            eventPublisher.publishEvent(new ActivityLogEvent(
+                    projectId,
+                    createdById,
+                    ActivityAction.CREATE,
+                    "ProjectMember",
+                    member.getUser().getId(),
+                    ipAddress,
+                    toJson(detail)
+            ));
+        }
+
         return projectMembers.size();
     }
 
@@ -491,19 +534,44 @@ public class ProjectServiceImpl implements ProjectService {
                 .orElseThrow(ProjectNotFoundException::new);
 
         if (Boolean.TRUE.equals(project.getIsDeleted())) {
-            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "삭제된 프로젝트의 멤버는 수정할 수 없습니다.");
+            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE,
+                    "삭제된 프로젝트의 멤버는 수정할 수 없습니다.");
         }
 
-        // 2. 사용자 존재 확인 (선택 - 필요 없으면 이 부분은 빼도 됨)
-        userRepository.findById(userId)
+        // 2. 사용자 정보 조회 (로그용 - 삭제 전에 조회!)
+        User user = userRepository.findById(userId)
                 .orElseThrow(UserNotFoundException::new);
+
+        String userName = user.getName();
+        String role = user.getRole().name();
 
         // 3. 프로젝트-멤버 매핑 삭제
         long deletedCount = projectMemberRepository.deleteByProjectIdAndUserId(projectId, userId);
 
         if (deletedCount == 0) {
-            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND, "프로젝트에 해당 멤버가 존재하지 않습니다.");
+            throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND,
+                    "프로젝트에 해당 멤버가 존재하지 않습니다.");
         }
+
+        // 4. 로그 발행
+        Long currentUserId = extractCurrentUserId();
+        String ipAddress = IpAddressUtil.getClientIp(request);
+
+        Map<String, Object> detail = Map.of(
+                "action", "removed",
+                "userName", userName,
+                "role", role
+        );
+
+        eventPublisher.publishEvent(new ActivityLogEvent(
+                projectId,
+                currentUserId,
+                ActivityAction.DELETE,
+                "ProjectMember",
+                userId,
+                ipAddress,
+                toJson(detail)
+        ));
     }
 
     //프로젝트 진행단계 수정
@@ -568,6 +636,12 @@ public class ProjectServiceImpl implements ProjectService {
     @Transactional
     public ProjectRestoreResponse restoreDeletedProject(Long loginUserId, ProjectRestoreRequest request) {
 
+        // 권한 검증
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        if (user.getRole() != Role.ADMIN) {
+            throw new BusinessException(ErrorCode.DELETED_PROJECT_ACCESS_DENIED);
+        }
+
         // 요청한 프로젝트 ID 조회
         List<Long> projectIds = request.getProjectIds();
         List<Project> projects = projectRepository.findAllById(projectIds);
@@ -625,17 +699,21 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     @Transactional
     public ProjectUpdateResponse updateProjectImage(Long projectId, MultipartFile image) {
+        if (image == null || image.isEmpty()) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE);}
 
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
+        Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
+        String oldProfileImg = project.getProjectImageUrl();
 
-        // 이미지가 있을 경우 S3에 업로드하고 URL 받기
-        if (image != null && !image.isEmpty()) {
-            // S3 업로드
-            String imageUrl = fileService.uploadToS3(image).getFileUrl();
-            // 프로젝트에 이미지 주소 저장
-            project.setProjectImageUrl(imageUrl);
-            projectRepository.save(project);
+        // 1. 새 이미지 먼저 업로드 (S3, DB)
+        String newProjectImage = fileService.uploadToS3(image).getFileUrl();
+
+        // 2. 유저에 새 이미지 연결
+        project.updateProjectImage(newProjectImage);
+
+        // 3. 기존 이미지가 있었다면 S3에서 삭제
+        if (oldProfileImg != null) {
+            fileService.removeOldImage(oldProfileImg);
         }
         return ProjectUpdateResponse.Converter.from(project);
     }
@@ -656,4 +734,59 @@ public class ProjectServiceImpl implements ProjectService {
         // 프로젝트 체크리스트 삭제 및 파일과 링크 자동 삭제
         projectChecklistRepository.delete(projectCheckList);
     }
+
+    //개별 프로젝트에서 바로 체크리스트 추가
+    @Override
+    @Transactional
+    public ProjectCreateCheckListResponse createAndAddCheckList(Long projectId,ProjectCreateCheckListRequest request) {
+
+        // 1. 프로젝트 존재 확인
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 2. 프로젝트가 삭제되지 않았는지 확인
+        if (Boolean.TRUE.equals(project.getIsDeleted())) {
+            throw new BusinessException(ErrorCode.PROJECT_CANNOT_DELETE, "삭제된 프로젝트에는 체크리스트를 추가할 수 없습니다.");
+        }
+        // 3. 새로운 CheckList 생성
+        CheckList newCheckList = ProjectCreateCheckListRequest.Converter.toEntity(request);
+        CheckList savedCheckList = checkListRepository.save(newCheckList);
+
+        // 4. ProjectCheckList 매핑 생성
+        ProjectCheckList projectCheckList =
+                ProjectCreateCheckListRequest.Converter.toProjectCheckListEntity(project, savedCheckList.getCheckListId()
+                );
+        ProjectCheckList savedProjectCheckList = projectChecklistRepository.save(projectCheckList);
+
+        // 5. Response 반환
+        return ProjectCreateCheckListResponse.Converter.from(savedProjectCheckList, savedCheckList);
+    }
+    private String toJson(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (Exception e) {
+            log.error("JSON 변환 실패", e);
+            return null;
+        }
+    }
+
+    private Long extractCurrentUserId() {
+        try {
+            HttpServletRequest currentRequest = ((ServletRequestAttributes)
+                    RequestContextHolder.getRequestAttributes()).getRequest();
+
+            var session = currentRequest.getSession(false);
+            if (session != null) {
+                Object userObj = session.getAttribute(SessionConst.LOGIN_MEMBER);
+                if (userObj instanceof User user) {
+                    return user.getId();
+                }
+                return (Long) session.getAttribute("userId");
+            }
+        } catch (Exception e) {
+            log.warn("현재 사용자 ID 추출 실패", e);
+        }
+        return null;
+    }
+
 }

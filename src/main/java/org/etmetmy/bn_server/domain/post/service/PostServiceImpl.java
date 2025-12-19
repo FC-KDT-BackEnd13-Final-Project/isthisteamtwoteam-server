@@ -139,7 +139,7 @@ public class PostServiceImpl implements PostService {
         // 필요한 엔티티 조회
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
         Project project = projectRepository.findById(projectId).orElseThrow(ProjectNotFoundException::new);
-        Stage stage = stageRepository.findById(requestDto.getStageId()).orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
+        Stage stage = stageRepository.findByStageName(requestDto.getStageName()).orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
 
         Long postNumber = generatePostNumber(projectId);
 

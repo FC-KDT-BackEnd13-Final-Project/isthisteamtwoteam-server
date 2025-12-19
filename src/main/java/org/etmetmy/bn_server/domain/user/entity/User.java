@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.company.entity.Company;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
+import java.io.Serial;
 
 @Entity
 @Table(name = "\"User\"") // PostgreSQL의 예약어 처리
@@ -15,7 +16,10 @@ import org.etmetmy.bn_server.global.entity.BaseEntity;
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder
-public class User extends BaseEntity {
+public class User extends BaseEntity implements java.io.Serializable{
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,7 +68,10 @@ public class User extends BaseEntity {
         }
     }
 
-    public void setPassword(String password) {
+    public void updatePassword(String password) {
         this.password = password;
+    }
+    public void updateProfileImage(String ImageUrl){
+        this.profileImg = ImageUrl;
     }
 }
