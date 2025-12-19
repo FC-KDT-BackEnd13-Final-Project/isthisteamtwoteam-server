@@ -8,5 +8,6 @@ public record ActivityLogEvent(
         ActivityAction action,
         String targetType,
         Long targetId,
-        String ipAddress
+        String ipAddress,
+        String detail
 ) {}

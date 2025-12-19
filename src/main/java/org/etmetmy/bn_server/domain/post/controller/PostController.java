@@ -27,6 +27,7 @@ public class PostController {
 
     // todo: 부모 게시글, 자식 게시글 작성 API
     @Operation(summary = "게시글 작성", description = "부모 게시글 또는 자식 게시글을 작성합니다")
+    @ActivityLogger(targetType = "Post", action = "CREATE")
     @PostMapping("/{projectId}/posts")
     public CommonResponse<PostCreateResponse> createPost(
             @PathVariable Long projectId,
@@ -53,6 +54,7 @@ public class PostController {
 
     // todo: 게시글 승인 API
     @Operation(summary = "게시글 승인", description = "게시글을 승인합니다")
+    @ActivityLogger(targetType = "Approval", action = "UPDATE")
     @PatchMapping("/{postId}/approval")
     public ResponseEntity<CommonResponse<Object>> approvePost(
             @PathVariable Long postId,
@@ -65,6 +67,7 @@ public class PostController {
 
     // todo: 게시글 거절 API
     @Operation(summary = "게시글 거절", description = "게시글을 거절합니다 (사유 포함)")
+    @ActivityLogger(targetType = "Approval", action = "DELETE")
     @PatchMapping("/posts/{postId}/reject")
     public ResponseEntity<CommonResponse<Object>> rejectPost(
             @PathVariable Long postId,
@@ -77,6 +80,7 @@ public class PostController {
 
     // todo: 관리자 및 개발사가 게시글 완료하기 버튼 API
     @Operation(summary = "게시글 완료", description = "게시글을 완료 상태로 변경합니다")
+    @ActivityLogger(targetType = "Post", action = "UPDATE")
     @PatchMapping("/{projectId}/posts/{postId}/completion")
     @HistoryLogger(changeType = ChangeType.UPDATE, targetType = "Post")
     public void completePost(@PathVariable Long projectId,
@@ -121,6 +125,7 @@ public class PostController {
 
     //todo: 게시글 삭제 (soft delete)
     @Operation(summary = "게시글 삭제 (soft delete)", description = "해당 게시글과 함께 댓글, 파일도 soft delete 합니다.")
+    @ActivityLogger(targetType = "Post", action = "DELETE")
     @DeleteMapping("/posts/{postId}")
     public CommonResponse<Void> softDeletePost(@PathVariable Long postId, HttpSession session)
     {
@@ -128,30 +133,5 @@ public class PostController {
 
         postService.softDeletePost(postId,userId);
         return CommonResponse.success("게시글 삭제 성공", null);
-    }
-
-    //todo: 삭제된 게시글 복원
-    @Operation(summary = "게시글 복원", description = "휴지통에 있는 게시글을 복원합니다")
-    @PatchMapping("/posts/restore")
-    public CommonResponse<PostRestoreResponse> restoreDeletedPost(
-            HttpSession session, @Valid @RequestBody PostRestoreRequest request)
-    {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        PostRestoreResponse response = postService.restoreDeletedPost(loginUserId, request);
-
-        return CommonResponse.success("삭제된 게시글 복원 성공", response);
-    }
-
-    // Todo: 삭제된 게시글 영구삭제 (hard delete)
-    @Operation(summary = "삭제된 게시글 영구삭제", description = "휴지통에 있는 게시글을 DB와 S3에서 완전히 삭제합니다")
-    @DeleteMapping("/posts/trash")
-    public CommonResponse<PostPermanentDeleteResponse> deleteDeletedPost(
-            HttpSession session,
-            @Valid @RequestBody PostPermanentDeleteRequest request)
-    {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        PostPermanentDeleteResponse response = postService.deleteDeletedPost(loginUserId, request);
-
-        return CommonResponse.success("삭제된 게시글 영구삭제 성공", response);
     }
 }

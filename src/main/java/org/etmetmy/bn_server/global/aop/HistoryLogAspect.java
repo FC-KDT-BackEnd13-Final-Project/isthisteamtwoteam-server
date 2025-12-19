@@ -48,7 +48,7 @@ public class HistoryLogAspect {
     public void historyLoggerPointcut() {
     }
 
-    // ✅ @Around 사용 - 변경 전 데이터 캡처 가능
+    // @Around 사용 - 변경 전 데이터 캡처 가능
     @Around("historyLoggerPointcut() && @annotation(historyLogger)")
     public Object saveHistoryLog(ProceedingJoinPoint joinPoint, HistoryLogger historyLogger)
             throws Throwable {

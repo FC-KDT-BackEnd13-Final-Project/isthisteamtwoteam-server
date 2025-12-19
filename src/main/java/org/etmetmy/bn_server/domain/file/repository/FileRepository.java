@@ -61,4 +61,6 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     @Query("select f from File f where f.post.postId in :postIds")
     List<File> findByPostIds(List<Long> postIds);
+
+    void deleteFileByFilePath(String filePath);
 }

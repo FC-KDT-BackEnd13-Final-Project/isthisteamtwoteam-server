@@ -80,7 +80,7 @@ public class Project extends BaseEntity {
         deletedAt = null;
     }
 
-    public void setProjectImageUrl(String imageUrl) {
+    public void updateProjectImage(String imageUrl) {
         projectImageUrl = imageUrl;
     }
 }

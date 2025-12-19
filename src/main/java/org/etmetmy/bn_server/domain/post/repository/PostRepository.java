@@ -117,4 +117,21 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "AND p.project.id IN :projectIds " +
             "ORDER BY p.createdAt DESC")
     List<Post> findPostsWithRequestStatusByProjectIds(@Param("status") RequestStatus status, @Param("projectIds") List<Long> projectIds);
+
+    @Query("SELECT p.title FROM Post p WHERE p.id = :postId")
+    String findTitleById(@Param("postId") Long postId);
+
+    /**
+     * 특정 프로젝트 목록 내에서 Request가 있는 모든 Post 조회 (개발자용 대시보드)
+     */
+    @Query("SELECT p FROM Post p " +
+            "join fetch p.user u " +
+            "join fetch p.stage s " +
+            "join fetch p.project pr " +
+            "join fetch pr.company c " +
+            "join fetch p.request r " +
+            "WHERE p.request IS NOT NULL " +
+            "AND p.project.id IN :projectIds " +
+            "ORDER BY p.createdAt DESC")
+    List<Post> findAllPostsWithRequestByProjectIds(@Param("projectIds") List<Long> projectIds);
 }

@@ -17,7 +17,7 @@ import java.util.List;
 
 public interface ProjectService {
 
-    ProjectCreateResponse createProject(ProjectCreateRequest request, Long loginUserId);
+    ProjectCreateResponse createProject(ProjectCreateRequest request, MultipartFile image, Long loginUserId);
 
     int addProjectMembers(Long projectId, List<ProjectMemberRequest> members, Long createdById);
 
@@ -60,4 +60,7 @@ public interface ProjectService {
 
     // 프로젝트 영구삭제
     ProjectHardDeleteResponse hardDeleteProject(Long loginUserId, @Valid ProjectHardDeleteRequest request);
+
+    //개별 프로젝트에 바로 체크리스트 생성
+    ProjectCreateCheckListResponse createAndAddCheckList(Long projectId, ProjectCreateCheckListRequest request);
 }
