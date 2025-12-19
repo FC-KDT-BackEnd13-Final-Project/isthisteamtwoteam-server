@@ -106,6 +106,7 @@ public class ProjectAdminController {
 
     // todo: 개별프로젝트에 체크리스트 추가
     @Operation(summary = "프로젝트 체크리스트 추가", description = "프로젝트에 체크리스트를 할당합니다")
+    @ActivityLogger(targetType = "Project", action = "UPDATE")
     @PostMapping("/{projectId}/checklists")
     public CommonResponse<List<ProjectAddCheckListResponse>> addCheckLists(@PathVariable Long projectId,
                                                                            @RequestBody ProjectAddCheckListRequest request) {
@@ -115,8 +116,9 @@ public class ProjectAdminController {
 
     // todo: 개별프로젝트에 체크리스트 삭제
     @Operation(summary = "프로젝트 체크리스트 삭제", description = "프로젝트에 체크리스트를 삭제")
+    @ActivityLogger(targetType = "Project", action = "UPDATE")
     @DeleteMapping("/{projectId}/checklists/{checkListId}")
-    public CommonResponse<Object> addCheckLists(@PathVariable Long projectId,
+    public CommonResponse<Object> deleteCheckLists(@PathVariable Long projectId,
                                                 @PathVariable Long checkListId) {
         projectService.checklistDeleted(projectId, checkListId);
         return CommonResponse.success("체크리스트를 삭제했습니다", null);
@@ -270,6 +272,7 @@ public class ProjectAdminController {
 
     // todo: 개별 프로젝트에서 바로 체크리스트 생성
     @Operation(summary = "프로젝트 체크리스트 생성 및 추가", description = "개별 프로젝트에서 새로운 체크리스트를 생성하고 프로젝트에 추가합니다")
+    @ActivityLogger(targetType = "Project", action = "UPDATE")
     @PostMapping("/{projectId}/checklists/create")
     public CommonResponse<ProjectCreateCheckListResponse> createAndAddCheckList(
             @PathVariable Long projectId,

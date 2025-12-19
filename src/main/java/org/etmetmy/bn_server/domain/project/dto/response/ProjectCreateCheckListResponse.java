@@ -17,7 +17,6 @@ public class ProjectCreateCheckListResponse {
     private String content;
     private Boolean checked;
     private Long answererId;
-
     public static class Converter {
         public static ProjectCreateCheckListResponse from(
                 ProjectCheckList projectCheckList,

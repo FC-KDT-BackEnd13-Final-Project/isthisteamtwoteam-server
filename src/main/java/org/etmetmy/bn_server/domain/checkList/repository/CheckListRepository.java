@@ -17,4 +17,8 @@ public interface CheckListRepository extends JpaRepository<CheckList, Long> {
     // 특정 조건으로 CheckList 조회
     @Query("SELECT c FROM CheckList c WHERE c.content LIKE %:keyword%")
     Page<CheckList> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    // 로그 조회용
+    @Query("SELECT c.checkListId FROM CheckList c WHERE c.checkListId = :checkListId")
+    String findCheckListNameById(@Param("checkListId") Long checkListId);
 }

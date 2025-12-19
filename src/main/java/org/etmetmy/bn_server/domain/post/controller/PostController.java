@@ -52,7 +52,7 @@ public class PostController {
 
     // todo: 게시글 승인 API
     @Operation(summary = "게시글 승인", description = "게시글을 승인합니다")
-    @ActivityLogger(targetType = "Approval", action = "UPDATE")
+    @ActivityLogger(targetType = "Post", action = "UPDATE")
     @PatchMapping("/{postId}/approval")
     public ResponseEntity<CommonResponse<Object>> approvePost(
             @PathVariable Long postId,
@@ -65,7 +65,7 @@ public class PostController {
 
     // todo: 게시글 거절 API
     @Operation(summary = "게시글 거절", description = "게시글을 거절합니다 (사유 포함)")
-    @ActivityLogger(targetType = "Approval", action = "DELETE")
+    @ActivityLogger(targetType = "Post", action = "UPDATE")
     @PatchMapping("/posts/{postId}/reject")
     public ResponseEntity<CommonResponse<Object>> rejectPost(
             @PathVariable Long postId,

@@ -3,6 +3,7 @@ package org.etmetmy.bn_server.domain.checkList.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListCreateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListUpdateRequest;
 import org.etmetmy.bn_server.domain.checkList.dto.response.CheckListResponse;
