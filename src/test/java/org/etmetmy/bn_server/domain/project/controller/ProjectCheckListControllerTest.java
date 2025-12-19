@@ -14,7 +14,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +27,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
 @Transactional
 @AutoConfigureMockMvc
 public class ProjectCheckListControllerTest {
@@ -59,7 +57,7 @@ public class ProjectCheckListControllerTest {
         // Company 생성 (Project의 필수 필드)
         company = companyRepository.save(Company.builder()
                 .companyName("테스트 회사")
-                .type(CompanyType.CLIENT)
+                .type(CompanyType.CUSTOMER)
                 .build());
 
         // Project 생성 (필수 필드 모두 채움)
@@ -203,7 +201,7 @@ public class ProjectCheckListControllerTest {
         ProjectCheckList projectCheckList1 = projectCheckListRepository.save(
                 ProjectCheckList.builder()
                         .project(project)
-                        .checkList(checkList1)
+                        .checkListId(checkList1.getCheckListId())
                         .checked(false)
                         .build()
         );
@@ -211,7 +209,7 @@ public class ProjectCheckListControllerTest {
         ProjectCheckList projectCheckList2 = projectCheckListRepository.save(
                 ProjectCheckList.builder()
                         .project(project)
-                        .checkList(checkList2)
+                        .checkListId(checkList2.getCheckListId())
                         .checked(true)
                         .build()
         );
@@ -219,7 +217,7 @@ public class ProjectCheckListControllerTest {
         ProjectCheckList projectCheckList3 = projectCheckListRepository.save(
                 ProjectCheckList.builder()
                         .project(project)
-                        .checkList(checkList3)
+                        .checkListId(checkList3.getCheckListId())
                         .checked(false)
                         .build()
         );
@@ -287,7 +285,7 @@ public class ProjectCheckListControllerTest {
         ProjectCheckList projectCheckList = projectCheckListRepository.save(
                 ProjectCheckList.builder()
                         .project(project)
-                        .checkList(checkList1)
+                        .checkListId(checkList1.getCheckListId())
                         .checked(false)
                         .build()
         );
