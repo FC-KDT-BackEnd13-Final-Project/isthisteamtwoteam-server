@@ -15,6 +15,13 @@ import java.util.List;
 
 public interface FileRepository extends JpaRepository<File, Long> {
 
+    // 단일 프로젝트 ID로 삭제된 파일 조회 (업로드한 사람의 정보까지)
+    @Query("SELECT f FROM File f " +
+            "JOIN FETCH f.uploader " +
+            "WHERE f.project.id = :projectId " +
+            "AND f.isDeleted = true")
+    List<File> findByDeletedFilesByProjectId(@Param("projectId") Long projectId);
+
     // 단일 프로젝트 ID로 삭제되지 않은 파일 조회
     @Query("SELECT f FROM File f " +
             "JOIN FETCH f.post p " +
@@ -61,6 +68,4 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     @Query("select f from File f where f.post.postId in :postIds")
     List<File> findByPostIds(List<Long> postIds);
-
-    void deleteFileByFilePath(String filePath);
 }

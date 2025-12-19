@@ -6,13 +6,9 @@ import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FilePermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
-import org.etmetmy.bn_server.domain.file.dto.response.FilePermanentDeleteResponse;
-import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
-import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
-import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.*;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
-import org.etmetmy.bn_server.domain.post.dto.response.PostPermanentDeleteResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
@@ -52,10 +48,30 @@ public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final ProjectRepository projectRepository;
     private final PostRepository postRepository;
+    private final ProjectMemberRepository projectMemberRepository;
     private final S3Client s3Client;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
+
+    // 1. 삭제된 파일 목록 조회
+    @Override
+    @Transactional
+    public List<FileTrashResponse> getDeletedFiles(Long loginUserId, Long projectId){
+
+        // 권한 검증 (관리자와 담당 개발사만 접근가능)
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        boolean hasRole = projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId);
+
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isDeveloperInProject = hasRole && user.getRole() == Role.DEVELOPER;
+
+        if (!isAdmin && !isDeveloperInProject)
+            throw new BusinessException(ErrorCode.DELETED_FILE_ACCESS_DENIED);
+
+        List<File> deletedFiles = fileRepository.findByDeletedFilesByProjectId(projectId);
+        return FileTrashResponse.Converter.from(deletedFiles);
+    }
 
     // 2. 임시 파일 업로드
     @Override
@@ -330,8 +346,7 @@ public class FileServiceImpl implements FileService {
     // 14. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post/Comment에 저장
     private void saveFilesInternal(Post post, Comment comment, ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId) {
         if (fileIds == null || fileIds.isEmpty()) {
-            return;
-        }
+            return;}
 
         List<File> tempFiles = fileRepository.findAllById(fileIds)
                 .stream()
@@ -370,7 +385,6 @@ public class FileServiceImpl implements FileService {
                 .build();
         s3Client.deleteObject(deleteRequest);
     }
-
 
     // 16. 프로필 이미지 수정 - 새 이미지 업로드 후 S3 이미지 URL 저장
     @Override
