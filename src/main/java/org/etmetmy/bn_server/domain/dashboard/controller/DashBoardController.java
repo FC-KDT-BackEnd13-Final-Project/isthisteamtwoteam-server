@@ -5,7 +5,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestListResponse;
-import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.ProjectListResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.DashBoardResponse;
 import org.etmetmy.bn_server.domain.dashboard.service.DashBoardService;
