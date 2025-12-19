@@ -87,6 +87,9 @@ public enum ErrorCode {
     //memo 에러
     MEMO_NOT_FOUND(404,"M001","존재하지 않는 메모입니다."),
 
+    // 링크 에러
+    LINK_NOT_FOUND(404,"L001","존재하지 않는 링크입니다."),
+
     //회사 에러
     COMPANY_NOT_FOUND(404,"CMP001", "회사 정보가 존재하지 않습니다.");
 

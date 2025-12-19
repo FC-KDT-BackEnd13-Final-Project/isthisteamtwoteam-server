@@ -30,10 +30,18 @@ import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
 import org.etmetmy.bn_server.domain.post.repository.StageRepository;
+import org.etmetmy.bn_server.domain.history.entity.ChangeType;
+import org.etmetmy.bn_server.domain.history.event.HistoryFileEvent;
+import org.etmetmy.bn_server.domain.history.event.HistoryLinkEvent;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.*;
+import org.etmetmy.bn_server.global.util.IpAddressUtil;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.Map;
@@ -59,6 +67,8 @@ public class PostServiceImpl implements PostService {
     private final FileService fileService;
 
     private final CommentRepository commentRepository;
+
+    private final ApplicationEventPublisher eventPublisher;
 
     // 1. 게시글 상세 조회 (GET)
     public PostDetailResponse getPostDetail(Long postId) {
@@ -220,9 +230,26 @@ public class PostServiceImpl implements PostService {
                 }
             }
 
-            // Soft Delete 적용
+            // IP 주소 가져오기
+            String clientIp = null;
+            try {
+                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                if (attributes != null) {
+                    HttpServletRequest request = attributes.getRequest();
+                    clientIp = IpAddressUtil.getClientIp(request);
+                }
+            } catch (Exception e) {
+                // RequestContext가 없는 경우 null로 저장
+            }
+
+            // Soft Delete 적용 + 히스토리 이벤트 발행
             for (File file : filesToDelete) {
                 file.softDelete(loginUserId);
+
+                // 파일 히스토리 이벤트 발행 (DELETE)
+                eventPublisher.publishEvent(
+                        new HistoryFileEvent(file, ChangeType.DELETE, loginUserId, clientIp)
+                );
             }
         }
 
@@ -233,8 +260,28 @@ public class PostServiceImpl implements PostService {
 
         // 7. 링크 업데이트 (링크 URL이 제공된 경우)
         if (requestDto.getLinkUrls() != null) {
-            // 기존 링크 조회 및 삭제
+            // 기존 링크 조회
             List<Link> existingLinks = linkRepository.findByPost(post);
+
+            // IP 주소 가져오기
+            String clientIp = null;
+            try {
+                ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+                if (attributes != null) {
+                    HttpServletRequest request = attributes.getRequest();
+                    clientIp = IpAddressUtil.getClientIp(request);
+                }
+            } catch (Exception e) {
+                // RequestContext가 없는 경우 null로 저장
+            }
+
+            // 기존 링크 삭제 + 히스토리 이벤트 발행
+            for (Link link : existingLinks) {
+                // 링크 히스토리 이벤트 발행 (DELETE)
+                eventPublisher.publishEvent(
+                        new HistoryLinkEvent(link, ChangeType.DELETE, loginUserId, clientIp)
+                );
+            }
             linkRepository.deleteAll(existingLinks);
 
             // 새 링크 저장
