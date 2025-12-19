@@ -323,23 +323,18 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public void completePost(Long projectId, Long postId, Long loginUserId) {
-        User user = userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
 
-        // ADMIN과 DEVELOPER 권한 확인 (관리자와 개발사 처리 가능)
-        if (user.getRole() != Role.ADMIN && user.getRole() != Role.DEVELOPER) {
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        boolean hasRole = projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId);
+
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isDeveloperInProject = hasRole && user.getRole() == Role.DEVELOPER;
+
+        // 권한 검증 (관리자와 담당 개발사만 접근가능)
+        if (!isAdmin && !isDeveloperInProject)
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
-        }
 
-        // ADMIN이 아닌 경우에만 프로젝트 멤버 검증
-        if (user.getRole() != Role.ADMIN) {
-            if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId)) {
-                throw new BusinessException(ErrorCode.PROJECT_AND_USER_NOT_FOUND);
-            }
-        }
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(BoardNotFoundException::new);
+        Post post = postRepository.findById(postId).orElseThrow(BoardNotFoundException::new);
 
         // 게시글이 해당 프로젝트에 속하는지 검증
         if (!post.getProject().getId().equals(projectId)) {

@@ -56,26 +56,26 @@ public class PostController {
     @Operation(summary = "게시글 승인", description = "게시글을 승인합니다")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     @PatchMapping("/{postId}/approval")
-    public ResponseEntity<CommonResponse<Object>> approvePost(
+    public CommonResponse<Void> approvePost(
             @PathVariable Long postId,
             @RequestBody @Valid PostApprovalRequest request
     ) {
 
         postService.approvePost(postId, request.getApproverId());
-        return ResponseEntity.ok(CommonResponse.success("게시글 승인 완료"));
+        return CommonResponse.success("게시글 승인 완료", null);
     }
 
     // todo: 게시글 거절 API
     @Operation(summary = "게시글 거절", description = "게시글을 거절합니다 (사유 포함)")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     @PatchMapping("/posts/{postId}/reject")
-    public ResponseEntity<CommonResponse<Object>> rejectPost(
+    public CommonResponse<Void> rejectPost(
             @PathVariable Long postId,
             @RequestBody @Valid PostApprovalRequest request
     ) {
 
         postService.rejectPost(postId, request.getApproverId(), request.getRejectReason());
-        return ResponseEntity.ok(CommonResponse.success("게시글 거절 완료"));
+        return CommonResponse.success("게시글 거절 완료", null);
     }
 
     // todo: 관리자 및 개발사가 게시글 완료하기 버튼 API
@@ -83,12 +83,13 @@ public class PostController {
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     @PatchMapping("/{projectId}/posts/{postId}/completion")
     @HistoryLogger(changeType = ChangeType.UPDATE, targetType = "Post")
-    public void completePost(@PathVariable Long projectId,
-                             @PathVariable Long postId,
+    public CommonResponse<Void> completePost(@PathVariable Long postId,
+                             @PathVariable Long projectId,
                              HttpSession session) {
 
         Long loginUserId = SessionUtil.getLoginUserId(session);
         postService.completePost(projectId, postId, loginUserId);
+        return CommonResponse.success("게시글 완료 성공", null);
     }
 
 
