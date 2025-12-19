@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
 import org.etmetmy.bn_server.domain.checkList.dto.request.CheckListFileLinkCreateRequest;
 import org.etmetmy.bn_server.domain.checkList.service.CheckListService;
 import org.etmetmy.bn_server.domain.link.service.LinkService;
@@ -23,6 +24,7 @@ public class CheckListCustomerController {
 
     // todo : 체크리스트 체크 기능
     @Operation(summary = "체크리스트 체크 기능", description = "체크를 누를때마다 true, false 전환")
+    @ActivityLogger(targetType = "CheckList", action = "UPDATE")
     @PatchMapping("/{checkListId}/checked")
     public CommonResponse<Object> updateChecked(
             @PathVariable Long projectId,
@@ -38,6 +40,7 @@ public class CheckListCustomerController {
 
     // todo : 체크리스트 답변 내용 업데이트
     @Operation(summary = "체크리스트 답변 내용 업데이트", description = "답변 내용 업데이트")
+    @ActivityLogger(targetType = "CheckList", action = "UPDATE")
     @PatchMapping("/{checkListId}/content")
     public CommonResponse<Object> updateContent(
             @PathVariable Long projectId,
