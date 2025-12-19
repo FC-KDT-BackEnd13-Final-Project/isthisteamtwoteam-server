@@ -18,7 +18,7 @@ import java.util.List;
 public class ProjectCreateRequest {
     private String projectName;
 
-    @JsonIgnore //swagger에서 입력 무시용
+    @JsonIgnore //swagger 에서 입력 무시용
     private String projectImageUrl; // URL만 저장(파일 업로드 후)
 
     private String startDate;
@@ -32,7 +32,7 @@ public class ProjectCreateRequest {
     private String memo;
     private String stage;
 
-    private Boolean isDeleted;
+    //private Boolean isDeleted;
 
     //내부 converter
     public static class Converter {

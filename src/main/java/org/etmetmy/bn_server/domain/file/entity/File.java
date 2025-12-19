@@ -9,6 +9,7 @@ import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
@@ -59,6 +60,10 @@ public class File extends BaseEntity {
 
     @Column(name = "uploaded_by", nullable = false)
     private Long uploadedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploaded_by", insertable = false, updatable = false)
+    private User uploader;
 
     @Column(name = "is_temp")
     @lombok.Builder.Default

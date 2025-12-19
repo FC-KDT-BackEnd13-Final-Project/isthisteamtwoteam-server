@@ -6,10 +6,12 @@ import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.activityLog.aop.ActivityLogger;
+import org.etmetmy.bn_server.domain.history.entity.ChangeType;
 import org.etmetmy.bn_server.domain.post.dto.request.*;
 import org.etmetmy.bn_server.domain.post.dto.response.*;
 import org.etmetmy.bn_server.domain.post.service.PostService;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.global.aop.HistoryLogger;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
@@ -80,6 +82,7 @@ public class PostController {
     @Operation(summary = "게시글 완료", description = "게시글을 완료 상태로 변경합니다")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     @PatchMapping("/{projectId}/posts/{postId}/completion")
+    @HistoryLogger(changeType = ChangeType.UPDATE, targetType = "Post")
     public void completePost(@PathVariable Long projectId,
                              @PathVariable Long postId,
                              HttpSession session) {
@@ -107,6 +110,7 @@ public class PostController {
     // todo: 게시글 수정 API
     @Operation(summary = "게시글 수정", description = "게시글을 수정합니다")
     @PatchMapping("/posts/{postId}")
+    @HistoryLogger(changeType = ChangeType.UPDATE)
     @ActivityLogger(targetType = "Post", action = "UPDATE")
     public CommonResponse<PostCreateResponse> updatePost(
             @PathVariable Long postId,
@@ -129,30 +133,5 @@ public class PostController {
 
         postService.softDeletePost(postId,userId);
         return CommonResponse.success("게시글 삭제 성공", null);
-    }
-
-    //todo: 삭제된 게시글 복원
-    @Operation(summary = "게시글 복원", description = "휴지통에 있는 게시글을 복원합니다")
-    @PatchMapping("/posts/restore")
-    public CommonResponse<PostRestoreResponse> restoreDeletedPost(
-            HttpSession session, @Valid @RequestBody PostRestoreRequest request)
-    {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        PostRestoreResponse response = postService.restoreDeletedPost(loginUserId, request);
-
-        return CommonResponse.success("삭제된 게시글 복원 성공", response);
-    }
-
-    // Todo: 삭제된 게시글 영구삭제 (hard delete)
-    @Operation(summary = "삭제된 게시글 영구삭제", description = "휴지통에 있는 게시글을 DB와 S3에서 완전히 삭제합니다")
-    @DeleteMapping("/posts/trash")
-    public CommonResponse<PostPermanentDeleteResponse> deleteDeletedPost(
-            HttpSession session,
-            @Valid @RequestBody PostPermanentDeleteRequest request)
-    {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        PostPermanentDeleteResponse response = postService.deleteDeletedPost(loginUserId, request);
-
-        return CommonResponse.success("삭제된 게시글 영구삭제 성공", response);
     }
 }

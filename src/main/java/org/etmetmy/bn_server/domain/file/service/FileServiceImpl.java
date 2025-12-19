@@ -6,13 +6,9 @@ import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.dto.request.FileCreateRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FilePermanentDeleteRequest;
 import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
-import org.etmetmy.bn_server.domain.file.dto.response.FilePermanentDeleteResponse;
-import org.etmetmy.bn_server.domain.file.dto.response.FileRestoreResponse;
-import org.etmetmy.bn_server.domain.file.dto.response.S3UploadResult;
-import org.etmetmy.bn_server.domain.file.dto.response.TempFileListDTO;
+import org.etmetmy.bn_server.domain.file.dto.response.*;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
-import org.etmetmy.bn_server.domain.post.dto.response.PostPermanentDeleteResponse;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
@@ -23,12 +19,19 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
+import org.etmetmy.bn_server.domain.history.entity.ChangeType;
+import org.etmetmy.bn_server.domain.history.event.HistoryFileEvent;
 import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.*;
+import org.etmetmy.bn_server.global.util.IpAddressUtil;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import jakarta.servlet.http.HttpServletRequest;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
@@ -52,10 +55,31 @@ public class FileServiceImpl implements FileService {
     private final FileRepository fileRepository;
     private final ProjectRepository projectRepository;
     private final PostRepository postRepository;
+    private final ProjectMemberRepository projectMemberRepository;
     private final S3Client s3Client;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${aws.s3.bucket-name}")
     private String bucketName;
+
+    // 1. 삭제된 파일 목록 조회
+    @Override
+    @Transactional
+    public List<FileTrashResponse> getDeletedFiles(Long loginUserId, Long projectId){
+
+        // 권한 검증 (관리자와 담당 개발사만 접근가능)
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        boolean hasRole = projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId);
+
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isDeveloperInProject = hasRole && user.getRole() == Role.DEVELOPER;
+
+        if (!isAdmin && !isDeveloperInProject)
+            throw new BusinessException(ErrorCode.DELETED_FILE_ACCESS_DENIED);
+
+        List<File> deletedFiles = fileRepository.findByDeletedFilesByProjectId(projectId);
+        return FileTrashResponse.Converter.from(deletedFiles);
+    }
 
     // 2. 임시 파일 업로드
     @Override
@@ -124,6 +148,22 @@ public class FileServiceImpl implements FileService {
         file.softDelete(loginUserId);
 
         fileRepository.save(file);
+
+        // 파일 히스토리 이벤트 발행 (DELETE)
+        String clientIp = null;
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attributes != null) {
+                HttpServletRequest request = attributes.getRequest();
+                clientIp = IpAddressUtil.getClientIp(request);
+            }
+        } catch (Exception e) {
+            // RequestContext가 없는 경우 null로 저장
+        }
+
+        eventPublisher.publishEvent(
+                new HistoryFileEvent(file, ChangeType.DELETE, loginUserId, clientIp)
+        );
     }
 
     // 5. 삭제된 파일 복원
@@ -330,8 +370,7 @@ public class FileServiceImpl implements FileService {
     // 14. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post/Comment에 저장
     private void saveFilesInternal(Post post, Comment comment, ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId) {
         if (fileIds == null || fileIds.isEmpty()) {
-            return;
-        }
+            return;}
 
         List<File> tempFiles = fileRepository.findAllById(fileIds)
                 .stream()
@@ -342,6 +381,18 @@ public class FileServiceImpl implements FileService {
             throw new BusinessException(ErrorCode.FILE_NOT_FOUND);
         }
 
+        // IP 주소 가져오기
+        String clientIp = null;
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attributes != null) {
+                HttpServletRequest request = attributes.getRequest();
+                clientIp = IpAddressUtil.getClientIp(request);
+            }
+        } catch (Exception e) {
+            // RequestContext가 없는 경우 (비동기 등) null로 저장
+        }
+
         for (File file : tempFiles) {
             if (comment == null && projectCheckList == null) {
                 file.attachToPost(post, loginUserId);
@@ -350,15 +401,20 @@ public class FileServiceImpl implements FileService {
             } else {
                 file.attachToProjectCheckList(projectCheckList, loginUserId);
             }
+
+            // 파일 히스토리 이벤트 발행 (CREATE)
+            eventPublisher.publishEvent(
+                    new HistoryFileEvent(file, ChangeType.CREATE, loginUserId, clientIp)
+            );
         }
 
         fileRepository.saveAll(tempFiles);
     }
 
-    // 15. 프로필 이미지 수정 - 기존 이미지 삭제 (S3 + DB)
+    // 15. 이미지 url로 기존 이미지 삭제 (S3 + DB)
     @Override
     @Transactional
-    public void removeOldProfileImage(String oldImageUrl){
+    public void removeOldImage(String oldImageUrl){
 
         // S3 key 추출
         String key = getKeyFromFileUrls(oldImageUrl);
@@ -371,8 +427,9 @@ public class FileServiceImpl implements FileService {
         s3Client.deleteObject(deleteRequest);
     }
 
-
-    //16. 프로필 이미지 수정 - 새 이미지 업로드 후 S3 이미지 URL 저장
+    // 16. 프로필 이미지 수정 - 새 이미지 업로드 후 S3 이미지 URL 저장
+    @Override
+    @Transactional
     public String uploadProfileImage(MultipartFile image, Long userId){
         S3UploadResult uploadResult = uploadToS3(image);
 

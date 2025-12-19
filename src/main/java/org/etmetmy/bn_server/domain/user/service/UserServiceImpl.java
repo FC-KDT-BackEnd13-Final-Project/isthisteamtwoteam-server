@@ -95,7 +95,7 @@ public class UserServiceImpl implements UserService{
 
         // 3. 기존 이미지가 있었다면 S3에서 삭제
         if (oldProfileImg != null) {
-            fileService.removeOldProfileImage(oldProfileImg);
+            fileService.removeOldImage(oldProfileImg);
         }
         return UserSelfUpdateResponse.Converter.from(user);
     }

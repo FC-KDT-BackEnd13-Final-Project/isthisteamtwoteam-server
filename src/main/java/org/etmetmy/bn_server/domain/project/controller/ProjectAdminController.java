@@ -40,26 +40,18 @@ public class ProjectAdminController {
     // todo: 프로젝트 생성
     @Operation(summary = "프로젝트 생성", description = "새로운 프로젝트를 생성합니다")
     @ActivityLogger(action = "CREATE", targetType = "Project")
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<ProjectCreateResponse> createProject(
             HttpSession session,
-            @RequestBody @Valid ProjectCreateRequest request
-    ) {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        ProjectCreateResponse response = projectService.createProject(request, loginUserId);
-        return CommonResponse.success("프로젝트가 생성되었습니다.", response);
-    }
-
-    // todo : 프로젝트 이미지 업로드
-    @PostMapping(value = "/{projectId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public CommonResponse<ProjectUpdateResponse> uploadImage(
-            @PathVariable Long projectId,
+            @RequestPart("request") @Valid ProjectCreateRequest request,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
-        ProjectUpdateResponse response = projectService.updateProjectImage(projectId, image);
-        return CommonResponse.success("프로젝트 이미지 업로드 성공", response);
-    }
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        ProjectCreateResponse response =
+                projectService.createProject(request, image, loginUserId);
 
+        return CommonResponse.success("프로젝트가 생성되었습니다.", response);
+    }
 
     // todo: 프로젝트 전체 조회 (페이지네이션, 검색, 삭제여부)
     @Operation(summary = "프로젝트 전체 조회(페이징, 검색, 삭제여부)", description = "모든 프로젝트 목록을 조회합니다")
@@ -147,9 +139,9 @@ public class ProjectAdminController {
 
     // todo: 프로젝트 이미지 수정
     @Operation(summary = "프로젝트 이미지 수정", description = "프로젝트의 이미지를 수정합니다")
+
+    @PatchMapping(value = "/{projectId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ActivityLogger(action = "UPDATE", targetType = "Project")
-    @PatchMapping(value = "/{projectId}/image",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public CommonResponse<ProjectUpdateResponse> updateProjectImage(
             @PathVariable Long projectId,
             @RequestPart("image") MultipartFile image
@@ -244,32 +236,6 @@ public class ProjectAdminController {
         return CommonResponse.success("프로젝트 설정 사원 조회 성공", responses);
     }
 
-    //todo: 삭제된 프로젝트 복원
-    @Operation(summary = "프로젝트 복원", description = "휴지통에 있는 프로젝트를 복원합니다")
-    @PatchMapping("/trash/restore")
-    @ActivityLogger(action = "UPDATE", targetType = "Project")
-    public CommonResponse<ProjectRestoreResponse> restoreDeletedProject(
-            HttpSession session,
-            @Valid @RequestBody ProjectRestoreRequest request) {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        ProjectRestoreResponse response = projectService.restoreDeletedProject(loginUserId, request);
-
-        return CommonResponse.success("삭제된 프로젝트 복원 성공", response);
-    }
-
-    // Todo: 삭제된 프로젝트 영구삭제 (hard delete)
-    @Operation(summary = "프로젝트 영구삭제", description = "휴지통에 있는 프로젝트를 영구삭합니다")
-    @DeleteMapping("/trash")
-    public CommonResponse<ProjectHardDeleteResponse> hardDeleteProject(
-            HttpSession session,
-            @Valid @RequestBody ProjectHardDeleteRequest request)
-    {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-        ProjectHardDeleteResponse response = projectService.hardDeleteProject(loginUserId, request);
-
-        return CommonResponse.success("삭제된 프로젝트 영구삭제 성공", response);
-    }
-
     // todo: 개별 프로젝트에서 바로 체크리스트 생성
     @Operation(summary = "프로젝트 체크리스트 생성 및 추가", description = "개별 프로젝트에서 새로운 체크리스트를 생성하고 프로젝트에 추가합니다")
     @ActivityLogger(targetType = "Project", action = "UPDATE")
@@ -281,5 +247,4 @@ public class ProjectAdminController {
         ProjectCreateCheckListResponse response = projectService.createAndAddCheckList(projectId, request);
         return CommonResponse.success("체크리스트가 생성되고 프로젝트에 추가되었습니다.", response);
     }
-
 }
