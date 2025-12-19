@@ -21,4 +21,8 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
 
     @Query("SELECT r FROM Request r WHERE r.post.postId = :postId")
     Request findByPostId(@Param("postId") Long postId);
+
+    // 여러 Post ID로 Request 일괄 조회 (모든 상태 포함, N+1 문제 방지)
+    @Query("SELECT r FROM Request r WHERE r.post.postId IN :postIds")
+    List<Request> findByPostPostIdIn(@Param("postIds") List<Long> postIds);
 }
