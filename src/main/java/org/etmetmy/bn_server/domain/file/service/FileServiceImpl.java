@@ -346,9 +346,7 @@ public class FileServiceImpl implements FileService {
     // 14. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post/Comment에 저장
     private void saveFilesInternal(Post post, Comment comment, ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId) {
         if (fileIds == null || fileIds.isEmpty()) {
-            return;
-        }
-        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+            return;}
 
         List<File> tempFiles = fileRepository.findAllById(fileIds)
                 .stream()
