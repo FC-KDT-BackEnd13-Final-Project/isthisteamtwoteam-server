@@ -7,6 +7,7 @@ import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.etmetmy.bn_server.domain.project.entity.ProjectMember;
 import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -131,6 +132,29 @@ public class DashBoardServiceImpl implements DashBoardService {
 
         // Request가 있는 모든 Post 조회 (상태별, 단계별 카운팅 및 리스트 생성용)
         List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequest();
+        List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
+
+        // Converter에서 단계별 필터링 및 응답 생성
+        return ApprovalRequestListResponse.Converter.of(allPosts);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApprovalRequestListResponse getDeveloperStatusDashboard(Long loginUserId) {
+        // 유저 검증
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 개발자가 참여 중인 프로젝트 ID 목록 조회
+        List<Long> projects = projectMemberRepository.findProjectIdsByUserId(user.getId());
+
+        // 빈 리스트 처리 (참여 중인 프로젝트가 없는 경우)
+        if (projects.isEmpty()) {
+            return ApprovalRequestListResponse.Converter.of(List.of());
+        }
+
+        // Request가 있는 Post 조회 (참여 중인 프로젝트만)
+        List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequestByProjectIds(projects);
         List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
 
         // Converter에서 단계별 필터링 및 응답 생성

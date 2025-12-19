@@ -20,4 +20,6 @@ public interface DashBoardService {
     DashBoardResponse getCustomerStatusDashboard(Long loginUserId);
 
     ApprovalRequestListResponse getApprovalRequest(Long loginUserId);
+
+    ApprovalRequestListResponse getDeveloperStatusDashboard(Long loginUserId);
 }
