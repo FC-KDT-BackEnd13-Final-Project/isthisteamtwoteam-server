@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
 
 import java.time.LocalDateTime;
@@ -30,14 +31,18 @@ public class ApprovalRequestResponse {
     // 회사 관련
     private String companyName;             // 회사 이름
 
+    // 승인 여부
+    private String approveStatus;
+
     public static class Converter {
-        public static ApprovalRequestResponse from(Post post) {
+        public static ApprovalRequestResponse from(Post post, Request request) {
             return ApprovalRequestResponse.builder()
                     .postId(post.getPostId())
                     .postTitle(post.getTitle())
                     .projectName(post.getProject().getProjectName())
                     .companyName(post.getProject().getCompany().getCompanyName())
                     .postStageName(post.getStage().getStageName())
+                    .approveStatus(request != null && request.getApproveStatus() != null ? request.getApproveStatus().getDescription() : null)
                     .createdAt(post.getCreatedAt())
                     .requestStatus(post.getRequest().getApproveStatus())
                     .build();
@@ -45,7 +50,7 @@ public class ApprovalRequestResponse {
 
         public static List<ApprovalRequestResponse> from(List<Post> posts) {
             return posts.stream()
-                    .map(Converter::from)
+                    .map(post -> from(post, post.getRequest()))
                     .collect(Collectors.toList());
         }
     }
