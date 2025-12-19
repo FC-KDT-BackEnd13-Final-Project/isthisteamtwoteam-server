@@ -42,6 +42,7 @@ public class DashBoardStatusResponseDTO {
                     .postStageName(post.getStage().getStageName())
                     .requestStatus(requestStatus)
                     .createdAt(post.getCreatedAt())
+                    .projectId(post.getProject().getId())
                     .projectName(post.getProject().getProjectName())
                     .companyName(post.getProject().getCompany().getCompanyName())
                     .build();
