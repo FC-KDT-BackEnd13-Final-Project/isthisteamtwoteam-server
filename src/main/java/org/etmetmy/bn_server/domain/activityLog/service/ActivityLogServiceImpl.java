@@ -33,8 +33,12 @@ public class ActivityLogServiceImpl implements ActivityLogService {
     @Transactional
     public void saveLog(ActivityLogCreateRequest request) {
         try {
-            User user = userRepository.findById(request.userId()).orElse(null);
-            Project project = projectRepository.findById(request.projectId()).orElse(null);
+            User user = (request.userId() != null)
+                    ? userRepository.findById(request.userId()).orElse(null) : null;
+
+            // 방어 로직: projectId가 null이면 조회를 건너뜀
+            Project project = (request.projectId() != null)
+                    ? projectRepository.findById(request.projectId()).orElse(null) : null;
 
             String description = descriptionGenerator.generate(
                     request.action(),
