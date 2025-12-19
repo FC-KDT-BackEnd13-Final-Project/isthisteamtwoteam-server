@@ -122,7 +122,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     String findTitleById(@Param("postId") Long postId);
 
     /**
-     * 특정 프로젝트 목록 내에서 Request가 있는 모든 Post 조회 (개발자용 대시보드)
+     * 특정 프로젝트 목록 내에서 Request가 있는 모든 Post 조회 (개발자, 고색사용 대시보드)
      */
     @Query("SELECT p FROM Post p " +
             "join fetch p.user u " +

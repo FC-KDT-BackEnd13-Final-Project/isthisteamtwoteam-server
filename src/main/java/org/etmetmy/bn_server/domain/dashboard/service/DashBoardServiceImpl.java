@@ -125,7 +125,7 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     @Override
     @Transactional(readOnly = true)
-    public ApprovalRequestListResponse getApprovalRequest(Long loginUserId) {
+    public ApprovalRequestListResponse getAdminApprovalRequest(Long loginUserId) {
         // 유저 검증
         userRepository.findById(loginUserId)
                 .orElseThrow(UserNotFoundException::new);
@@ -171,5 +171,28 @@ public class DashBoardServiceImpl implements DashBoardService {
 
         // stats와 List를 포함한 wrapper 반환
         return DashBoardResponse.Converter.of(pendingList, rejectedList, inProgress, maintenances);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApprovalRequestListResponse getApprovalRequest(Long loginUserId) {
+        // 유저 검증
+        userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 참여 중인 프로젝트 ID 목록 조회
+        List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
+
+        // 빈 리스트 처리 (참여 중인 프로젝트가 없는 경우)
+        if (myProjectIds.isEmpty()) {
+            return ApprovalRequestListResponse.Converter.of(List.of());
+        }
+
+        // Request가 있는 Post 조회 (참여 중인 프로젝트만)
+        List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequestByProjectIds(myProjectIds);
+        List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
+
+        // Converter에서 단계별 필터링 및 응답 생성
+        return ApprovalRequestListResponse.Converter.of(allPosts);
     }
 }

@@ -51,7 +51,7 @@ public class DashBoardController {
     public CommonResponse<ApprovalRequestListResponse> getApprovalRequests(HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
-        ApprovalRequestListResponse result = dashBoardService.getApprovalRequest(loginUserId);
+        ApprovalRequestListResponse result = dashBoardService.getAdminApprovalRequest(loginUserId);
 
         return CommonResponse.success("승인 요청 알림 조회 성공", result);
     }
