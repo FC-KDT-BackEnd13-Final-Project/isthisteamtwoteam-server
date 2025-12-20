@@ -14,7 +14,6 @@ import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.aop.HistoryLogger;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Post", description = "게시글 관리 API")
@@ -55,13 +54,13 @@ public class PostController {
     // todo: 게시글 승인 API
     @Operation(summary = "게시글 승인", description = "게시글을 승인합니다")
     @ActivityLogger(targetType = "Post", action = "UPDATE")
-    @PatchMapping("/{postId}/approval")
+    @PatchMapping("/posts/{postId}/approval")
     public CommonResponse<Void> approvePost(
             @PathVariable Long postId,
-            @RequestBody @Valid PostApprovalRequest request
+            HttpSession session
     ) {
-
-        postService.approvePost(postId, request.getApproverId());
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        postService.approvePost(postId, loginUserId);
         return CommonResponse.success("게시글 승인 완료", null);
     }
 
@@ -71,10 +70,11 @@ public class PostController {
     @PatchMapping("/posts/{postId}/reject")
     public CommonResponse<Void> rejectPost(
             @PathVariable Long postId,
-            @RequestBody @Valid PostApprovalRequest request
+            @RequestBody @Valid PostApprovalRequest request,
+            HttpSession session
     ) {
-
-        postService.rejectPost(postId, request.getApproverId(), request.getRejectReason());
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        postService.rejectPost(postId, loginUserId, request.getRejectReason());
         return CommonResponse.success("게시글 거절 완료", null);
     }
 

@@ -41,8 +41,8 @@ public class Request extends BaseEntity {
     @Column(name = "reject_reason", length = 255)
     private String rejectReason;
 
-    public void updateStatus(Long replyUserId, RequestStatus status, String rejectReason) {
-        this.replitUserId = replyUserId;
+    public void updateStatus(RequestStatus status, Long loginUserId, String rejectReason) {
+        this.replitUserId = loginUserId;
         this.approveStatus = status;
         this.rejectReason = rejectReason;
         this.replyTime = LocalDateTime.now();
