@@ -42,15 +42,26 @@ public class trashController {
     private final PostService postService;
     private final ProjectService projectService;
 
-    //todo: 삭제된 파일 목록 조회 API
-    @Operation(summary = "삭제된 파일 조회", description = "휴지통에 있는 파일을 조회합니다")
+    //todo: 삭제된 파일 목록 조회 API (검색 + 페이지네이션 지원)
+    @Operation(summary = "삭제된 파일 조회", description = "휴지통에 있는 파일을 조회합니다 (검색 + 페이지네이션 지원)")
     @GetMapping("/users/projects/{projectId}/trash/files")
-    public CommonResponse<List<FileTrashResponse>> getDeletedFiles(
+    public CommonResponse<PageResponse<FileTrashResponse>> getDeletedFiles(
             @PathVariable Long projectId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             HttpSession session)
     {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-        List<FileTrashResponse> response = fileService.getDeletedFiles(loginUserId, projectId);
+
+        // PageRequest 생성
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        // 검색 + 페이지네이션 조회
+        Page<FileTrashResponse> deletedFilesPage = fileService.getDeletedFilesWithSearch(loginUserId, projectId, keyword, pageRequest);
+
+        // PageResponse로 변환
+        PageResponse<FileTrashResponse> response = PageResponse.of(deletedFilesPage);
 
         return CommonResponse.success("삭제된 파일 조회 성공", response);
     }
@@ -94,11 +105,6 @@ public class trashController {
             HttpSession session)
     {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-
-        // 페이지 크기 제한 (최대 100개)
-        if (size > 100) {
-            size = 100;
-        }
 
         // PageRequest 생성
         PageRequest pageRequest = PageRequest.of(page, size);
