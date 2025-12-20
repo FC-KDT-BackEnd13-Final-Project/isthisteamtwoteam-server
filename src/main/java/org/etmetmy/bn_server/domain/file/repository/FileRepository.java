@@ -4,6 +4,8 @@ import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -68,4 +70,27 @@ public interface FileRepository extends JpaRepository<File, Long> {
 
     @Query("select f from File f where f.post.postId in :postIds")
     List<File> findByPostIds(List<Long> postIds);
+
+    /**
+     * 삭제된 파일 검색 + 페이지네이션 조회 (휴지통 기능)
+     */
+    @Query(value = "SELECT f FROM File f " +
+            "JOIN FETCH f.uploader u " +
+            "WHERE f.project.id = :projectId " +
+            "AND f.isDeleted = true " +
+            "AND (:keyword IS NULL OR :keyword = '' OR " +
+            "f.originalFileTitle LIKE %:keyword% OR " +
+            "u.name LIKE %:keyword%) " +
+            "ORDER BY f.deletedAt DESC",
+            countQuery = "SELECT COUNT(f) FROM File f " +
+            "JOIN f.uploader u " +
+            "WHERE f.project.id = :projectId " +
+            "AND f.isDeleted = true " +
+            "AND (:keyword IS NULL OR :keyword = '' OR " +
+            "f.originalFileTitle LIKE %:keyword% OR " +
+            "u.name LIKE %:keyword%)")
+    Page<File> findDeletedFilesByProjectIdWithSearch(
+            @Param("projectId") Long projectId,
+            @Param("keyword") String keyword,
+            Pageable pageable);
 }

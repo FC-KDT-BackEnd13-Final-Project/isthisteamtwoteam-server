@@ -7,6 +7,7 @@ import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
 import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
 import org.etmetmy.bn_server.domain.post.dto.response.*;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectRestoreResponse;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -34,6 +35,12 @@ public interface PostService {
     PostPermanentDeleteResponse deleteDeletedPost(Long loginUserId, @Valid PostPermanentDeleteRequest request);
 
     List<PostTrashResponse> getDeletedPosts(Long loginUserId, Long projectId);
+
+    org.springframework.data.domain.Page<PostTrashResponse> getDeletedPostsWithSearch(
+            Long loginUserId,
+            Long projectId,
+            String keyword,
+            Pageable pageable);
 }
 
 

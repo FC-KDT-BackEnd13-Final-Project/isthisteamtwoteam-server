@@ -4,12 +4,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestListResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.DashBoardResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.ProjectListResponse;
 import org.etmetmy.bn_server.domain.dashboard.service.DashBoardService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,5 +47,15 @@ public class DashBoardCustomerController {
         return CommonResponse.success("프로젝트 목록 조회 성공", response);
     }
 
+    // todo: 고객사 승인대기 화면 리스트들 조회
+    @Operation(summary = "고객사 게시글 승인 요청 목록 조회", description = "승인 요청한 게시글 목록들을 조회합니다")
+    @GetMapping("/projects/{projectId}/approval-requests")
+    public CommonResponse<ApprovalRequestListResponse> getApprovalRequests(
+            @PathVariable Long projectId, HttpSession session) {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
 
+        ApprovalRequestListResponse result = dashBoardService.getApprovalRequest(projectId, loginUserId);
+
+        return CommonResponse.success("고객사 승인 요청 알림 조회 성공", result);
+    }
 }

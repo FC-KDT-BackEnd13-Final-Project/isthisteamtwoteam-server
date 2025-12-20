@@ -9,6 +9,7 @@ import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.user.entity.User;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -59,5 +60,12 @@ public interface FileService {
 
     // 삭제된 파일 목록 조회
     List<FileTrashResponse> getDeletedFiles(Long loginUserId, Long projectId);
+
+    // 삭제된 파일 검색 + 페이지네이션 조회
+    org.springframework.data.domain.Page<FileTrashResponse> getDeletedFilesWithSearch(
+            Long loginUserId,
+            Long projectId,
+            String keyword,
+            Pageable pageable);
 }
 

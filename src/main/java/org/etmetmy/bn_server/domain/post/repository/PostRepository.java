@@ -145,4 +145,28 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "AND p.isDeleted = true " +
             "ORDER BY p.deletedAt DESC")
     List<Post> findDeletedPostsByProjectId(@Param("projectId") Long projectId);
+
+    /**
+     * 삭제된 게시글 검색 + 페이지네이션 조회 (휴지통 기능)
+     */
+    @Query(value = "SELECT p FROM Post p " +
+            "JOIN FETCH p.user u " +
+            "JOIN FETCH p.stage s " +
+            "WHERE p.project.id = :projectId " +
+            "AND p.isDeleted = true " +
+            "AND (:keyword IS NULL OR :keyword = '' OR " +
+            "p.title LIKE %:keyword% OR " +
+            "u.name LIKE %:keyword%) " +
+            "ORDER BY p.deletedAt DESC",
+            countQuery = "SELECT COUNT(p) FROM Post p " +
+            "JOIN p.user u " +
+            "WHERE p.project.id = :projectId " +
+            "AND p.isDeleted = true " +
+            "AND (:keyword IS NULL OR :keyword = '' OR " +
+            "p.title LIKE %:keyword% OR " +
+            "u.name LIKE %:keyword%)")
+    Page<Post> findDeletedPostsByProjectIdWithSearch(
+            @Param("projectId") Long projectId,
+            @Param("keyword") String keyword,
+            Pageable pageable);
 }
