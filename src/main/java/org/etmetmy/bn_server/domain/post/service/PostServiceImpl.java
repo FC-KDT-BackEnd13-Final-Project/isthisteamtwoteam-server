@@ -38,6 +38,8 @@ import org.etmetmy.bn_server.exception.code.ErrorCode;
 import org.etmetmy.bn_server.exception.custom.*;
 import org.etmetmy.bn_server.global.util.IpAddressUtil;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -468,6 +470,36 @@ public class PostServiceImpl implements PostService {
         List<Post> deletedPosts = postRepository.findDeletedPostsByProjectId(projectId);
         return PostTrashResponse.Converter.from(deletedPosts);
 
+    }
+
+    // 삭제된 게시글 검색 + 페이지네이션 조회
+    @Override
+    @Transactional(readOnly = true)
+    public Page<PostTrashResponse> getDeletedPostsWithSearch(
+            Long loginUserId,
+            Long projectId,
+            String keyword,
+            Pageable pageable) {
+
+        // 권한 검증 (관리자와 담당 개발사만 접근가능)
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+        boolean hasRole = projectMemberRepository.existsByProjectIdAndUserId(projectId, loginUserId);
+
+        boolean isAdmin = user.getRole() == Role.ADMIN;
+        boolean isDeveloperInProject = hasRole && user.getRole() == Role.DEVELOPER;
+
+        if (!isAdmin && !isDeveloperInProject)
+            throw new BusinessException(ErrorCode.DELETED_FILE_ACCESS_DENIED);
+
+        // 프로젝트 존재 확인
+        projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 검색 + 페이지네이션 조회
+        Page<Post> deletedPostsPage = postRepository.findDeletedPostsByProjectIdWithSearch(projectId, keyword, pageable);
+
+        // Entity -> DTO 변환
+        return deletedPostsPage.map(PostTrashResponse.Converter::from);
     }
 
     // 프로젝트–게시글 소속 검증
