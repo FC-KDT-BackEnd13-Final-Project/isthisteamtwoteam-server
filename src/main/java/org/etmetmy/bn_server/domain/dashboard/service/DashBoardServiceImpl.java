@@ -187,4 +187,19 @@ public class DashBoardServiceImpl implements DashBoardService {
         // Converter에서 단계별 필터링 및 응답 생성
         return ApprovalRequestListResponse.Converter.of(allPosts);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ApprovalRequestListResponse getAdminApprovalRequest(Long loginUserId) {
+        // 유저 검증
+        userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // Request가 있는 모든 Post 조회 (상태별, 단계별 카운팅 및 리스트 생성용)
+        List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequest();
+        List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
+
+        // Converter에서 단계별 필터링 및 응답 생성
+        return ApprovalRequestListResponse.Converter.of(allPosts);
+    }
 }
