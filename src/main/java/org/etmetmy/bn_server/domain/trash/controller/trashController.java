@@ -24,7 +24,10 @@ import org.etmetmy.bn_server.domain.project.dto.response.ProjectHardDeleteRespon
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectRestoreResponse;
 import org.etmetmy.bn_server.domain.project.service.ProjectService;
 import org.etmetmy.bn_server.global.CommonResponse;
+import org.etmetmy.bn_server.global.page.PageRequest;
+import org.etmetmy.bn_server.global.page.PageResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -80,15 +83,31 @@ public class trashController {
         return CommonResponse.success("삭제된 파일 영구삭제 성공", response);
     }
 
-    //todo: 삭제된 게시글 목록 조회 API
-    @Operation(summary = "삭제된 게시글 조회", description = "휴지통에 있는 게시글을 조회합니다")
+    //todo: 삭제된 게시글 목록 조회 API (검색 + 페이지네이션 지원)
+    @Operation(summary = "삭제된 게시글 조회", description = "휴지통에 있는 게시글을 조회합니다 (검색 + 페이지네이션 지원)")
     @GetMapping("/users/projects/{projectId}/trash/posts")
-    public CommonResponse<List<PostTrashResponse>> getDeletedPosts(
+    public CommonResponse<org.etmetmy.bn_server.global.page.PageResponse<PostTrashResponse>> getDeletedPosts(
             @PathVariable Long projectId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             HttpSession session)
     {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-        List<PostTrashResponse> response = postService.getDeletedPosts(loginUserId, projectId);
+
+        // 페이지 크기 제한 (최대 100개)
+        if (size > 100) {
+            size = 100;
+        }
+
+        // PageRequest 생성
+        PageRequest pageRequest = PageRequest.of(page, size);
+
+        // 검색 + 페이지네이션 조회
+        Page<PostTrashResponse> deletedPostsPage = postService.getDeletedPostsWithSearch(loginUserId, projectId, keyword, pageRequest);
+
+        // PageResponse로 변환
+        PageResponse<PostTrashResponse> response = PageResponse.of(deletedPostsPage);
 
         return CommonResponse.success("삭제된 게시글 조회 성공", response);
     }
