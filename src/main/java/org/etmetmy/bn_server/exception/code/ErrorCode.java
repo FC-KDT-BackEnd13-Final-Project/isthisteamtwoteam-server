@@ -27,6 +27,7 @@ public enum ErrorCode {
     BOARD_INVALID_FILTER(400,"B005", "유효하지 않은 게시글 필터입니다."),
     POST_PROJECT_MISMATCH(400, "P014", "게시글이 해당 프로젝트에 속하지 않습니다."),
     DELETED_BOARD_ACCESS_DENIED(403,"D006","삭제된 게시글에 접근 권한이 없습니다."),
+    REQUEST_PERMISSION_DENIED(403, "R003", "요청 승인/거절 권한이 없습니다."),
 
     // 댓글 관련 에러
     BOARD_COMMENT_NOT_FOUND(404, "C001", "댓글을 찾을 수 없습니다."),

@@ -87,7 +87,13 @@ public class PostServiceImpl implements PostService {
 
     // 2. 게시글 승인
     @Transactional
-    public void approvePost(Long postId, Long approvingUserId) {
+    public void approvePost(Long postId, Long loginUserId) {
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+
+        // 권한 검증 (고객사만 승인/거절 가능)
+        if (user.getRole() != Role.CUSTOMER)
+            throw new BusinessException(ErrorCode.REQUEST_PERMISSION_DENIED);
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
@@ -95,12 +101,19 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
         // 2. Request 상태를 '승인'으로 업데이트
-        currentRequest.updateStatus(approvingUserId, RequestStatus.STATUS_APPROVED, null);
+        currentRequest.updateStatus(RequestStatus.STATUS_APPROVED, loginUserId, null);
+        requestRepository.save(currentRequest);
     }
 
     // 3. 게시글 거절
     @Transactional
-    public void rejectPost(Long postId, Long rejectingUserId, String rejectReason) {
+    public void rejectPost(Long postId, Long loginUserId, String rejectReason) {
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
+
+        // 권한 검증 (고객사만 승인/거절 가능)
+        if (user.getRole() != Role.CUSTOMER)
+            throw new BusinessException(ErrorCode.REQUEST_PERMISSION_DENIED);
+
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
@@ -108,7 +121,8 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
         // 2. Request 상태를 '거절'로 업데이트
-        currentRequest.updateStatus(rejectingUserId, RequestStatus.STATUS_REJECTED, rejectReason);
+        currentRequest.updateStatus(RequestStatus.STATUS_REJECTED, loginUserId, rejectReason);
+        requestRepository.save(currentRequest);
     }
 
     @Override
