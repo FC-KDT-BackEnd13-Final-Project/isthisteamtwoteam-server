@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.project.entity.Project;
+import org.etmetmy.bn_server.domain.user.entity.Role;
+import org.etmetmy.bn_server.domain.user.entity.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -45,6 +47,22 @@ public class ProjectListResponse {
     private boolean hasPermission;
 
     public static class Converter {
+        public static List<ProjectListResponse> from(List<Project> projects, List<Long> myProjectIds, User user) {
+            return projects.stream()
+                    .map(project -> ProjectListResponse.builder()
+                            .projectId(project.getId())
+                            .projectImageUrl(project.getProjectImageUrl())
+                            .projectName(project.getProjectName())
+                            .companyName(project.getCompany().getCompanyName())
+                            .stage(project.getStage().getStageName())
+                            .startDate(project.getStartDate())
+                            .endDate(project.getEndDate())
+                            .updateAt(project.getUpdatedAt())
+                            .hasPermission(user.getRole() == Role.ADMIN || myProjectIds.contains(project.getId()))
+                            .build()
+                    ).toList();
+        }
+
         public static List<ProjectListResponse> from(List<Project> projects, List<Long> myProjectIds) {
             return projects.stream()
                     .map(project -> ProjectListResponse.builder()
