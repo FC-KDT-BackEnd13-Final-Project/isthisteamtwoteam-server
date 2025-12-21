@@ -45,7 +45,7 @@ public class DashBoardServiceImpl implements DashBoardService {
         // 권한이 있는 모든 프로젝트 조회
         List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
 
-        return ProjectListResponse.Converter.from(allProjects, myProjectIds);
+        return ProjectListResponse.Converter.from(allProjects, myProjectIds, user);
     }
 
     // 고객용 프로젝트 목록 조회 (고객이 속한 프로젝트만)
@@ -170,8 +170,8 @@ public class DashBoardServiceImpl implements DashBoardService {
                 .orElseThrow(UserNotFoundException::new);
 
         // 프로젝트 존재 여부 및 접근 권한 확인 (ADMIN은 모든 프로젝트 접근 가능)
-        if(user.getRole() != Role.ADMIN) {
-            if(!projectMemberRepository.existsByProjectIdAndUserId(projectId, user.getId())) {
+        if (user.getRole() != Role.ADMIN) {
+            if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, user.getId())) {
                 throw new BusinessException(ErrorCode.PROJECT_AND_USER_NOT_FOUND);
             }
         }
