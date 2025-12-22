@@ -7,6 +7,7 @@ import org.etmetmy.bn_server.domain.file.dto.request.FileRestoreRequest;
 import org.etmetmy.bn_server.domain.file.dto.response.*;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.springframework.data.domain.Pageable;
@@ -45,6 +46,9 @@ public interface FileService {
 
     // S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 ProjectCheckList에 저장
     void saveFiles(ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId);
+
+    // S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 request에 저장
+    void saveFiles(Request request, List<Long> fileIds, Long loginUserId);
 
     // 삭제된 파일 복원
     public FileRestoreResponse restoreDeletedFiles(Long loginUserId, @Valid FileRestoreRequest request);

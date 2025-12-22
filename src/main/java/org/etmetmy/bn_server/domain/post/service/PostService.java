@@ -1,10 +1,7 @@
 package org.etmetmy.bn_server.domain.post.service;
 
 import jakarta.validation.Valid;
-import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostPermanentDeleteRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.*;
 import org.etmetmy.bn_server.domain.post.dto.response.*;
 import org.etmetmy.bn_server.domain.project.dto.response.ProjectRestoreResponse;
 import org.springframework.data.domain.Pageable;
@@ -16,7 +13,7 @@ public interface PostService {
 
     void approvePost(Long postId, Long loginUserId);
 
-    void rejectPost(Long postId, Long loginUserId, String rejectReason);
+    void rejectPost(Long postId, Long loginUserId, @Valid PostApprovalRequest reject);
 
     PostListByStageResponse getPostListByProjectIdAndFilter(Long projectId, String filter);
 
