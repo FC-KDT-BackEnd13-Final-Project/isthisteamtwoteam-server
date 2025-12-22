@@ -18,7 +18,9 @@ public class CommentResponse {
     private final String userName; // 댓글 작성자 이름
     private final String content;
     private final LocalDateTime createdAt;
+    private final LocalDateTime updatedAt;
     private final String ip;
+    private final Boolean canEdit; //수정권한
 
     private final List<FileInfoDTO> files;
     private final List<LinkInfoDTO> links;
@@ -29,7 +31,8 @@ public class CommentResponse {
                 Comment comment,
                 List<FileInfoDTO> files,
                 List<LinkInfoDTO> links,
-                List<CommentResponse> replies ) {
+                List<CommentResponse> replies,
+                Long loginUserId) {
 
             return CommentResponse.builder()
                 .commentId(comment.getCommentId())
@@ -39,6 +42,8 @@ public class CommentResponse {
                 .content(comment.getContent())
                 .ip(comment.getIp())
                 .createdAt(comment.getCreatedAt())
+                .updatedAt(comment.getUpdatedAt())
+                .canEdit(comment.getUser().getId().equals(loginUserId)) // 권한 검증 로직
                 .files(files)
                 .links(links)
                 .replies(replies)

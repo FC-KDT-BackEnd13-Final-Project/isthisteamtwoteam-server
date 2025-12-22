@@ -82,16 +82,15 @@ public class CommentServiceImpl implements CommentService {
         List<Link> links = linkRepository.findLinksByCommentId(savedComment.getCommentId());
 
         return CommentResponse.Converter.from(
-                savedComment, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links), List.of());
+                savedComment, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links), List.of(), userId);
     }
 
     // 게시글 ID에 해당하는 모든 댓글 목록을 계층 구조로 조회
     @Transactional(readOnly = true)
-    public CommentListResponse getCommentsByPostId(Long postId) {
+    public CommentListResponse getCommentsByPostId(Long postId, Long loginUserId) {
 
         // 1. Post 존재 여부 확인 (외래 키 검증)
-        Post post = postRepository.findById(postId)
-                .orElseThrow(BoardNotFoundException::new);
+        Post post = postRepository.findById(postId).orElseThrow(BoardNotFoundException::new);
 
         // 2. 게시글의 모든 댓글 한 번에 조회
         List<Comment> comments = commentRepository.findAllByPostId(postId);
@@ -123,14 +122,10 @@ public class CommentServiceImpl implements CommentService {
                                 comment -> comment.getParent().getCommentId()));
 
         // 5. 최상위 댓글만 트리 구성
-        List<CommentResponse> responses =
-                comments.stream()
-                        .filter(comment -> comment.getParent() == null)
-                        .map(comment ->
-                                buildCommentTree(
-                                        comment, childrenMap, fileMap, linkMap)
-                        )
-                        .toList();
+        List<CommentResponse> responses = comments.stream()
+                .filter(comment -> comment.getParent() == null)
+                .map(comment -> buildCommentTree(comment, childrenMap, fileMap, linkMap, loginUserId)) // ID 추가 전달
+                .toList();
 
         return CommentListResponse.Converter.from(post, comments, responses);
     }
@@ -140,23 +135,21 @@ public class CommentServiceImpl implements CommentService {
             Comment comment,
             Map<Long, List<Comment>> childrenMap,
             Map<Long, List<FileInfoDTO>> fileMap,
-            Map<Long, List<LinkInfoDTO>> linkMap
+            Map<Long, List<LinkInfoDTO>> linkMap,
+            Long loginUserId
     ) {
         // 하위 댓글 재귀 처리 (메모리)
-        List<CommentResponse> replies =
-                childrenMap
-                        .getOrDefault(comment.getCommentId(), List.of())
-                        .stream()
-                        .map(child ->
-                                buildCommentTree(child, childrenMap, fileMap, linkMap)
-                        )
-                        .toList();
+        List<CommentResponse> replies = childrenMap.getOrDefault(comment.getCommentId(), List.of())
+                .stream()
+                .map(child -> buildCommentTree(child, childrenMap, fileMap, linkMap, loginUserId)) // 재귀 전파
+                .toList();
 
         return CommentResponse.Converter.from(
                 comment,
                 fileMap.getOrDefault(comment.getCommentId(), List.of()),
                 linkMap.getOrDefault(comment.getCommentId(), List.of()),
-                replies
+                replies,
+                loginUserId
         );
     }
 
@@ -213,7 +206,7 @@ public class CommentServiceImpl implements CommentService {
         List<Link> links = linkRepository.findLinksByCommentId(comment.getCommentId());
 
         return CommentResponse.Converter.from(
-                comment, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links), List.of());
+                comment, FileInfoDTO.Converter.from(files), LinkInfoDTO.Converter.from(links), List.of(),userId);
     }
 
     // 댓글 삭제 (soft delete)

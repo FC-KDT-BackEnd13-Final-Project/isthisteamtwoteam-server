@@ -71,7 +71,7 @@ public class PostServiceImpl implements PostService {
     private final ApplicationEventPublisher eventPublisher;
 
     // 1. 게시글 상세 조회 (GET)
-    public PostDetailResponse getPostDetail(Long postId) {
+    public PostDetailResponse getPostDetail(Long postId, Long loginUserId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
@@ -81,7 +81,7 @@ public class PostServiceImpl implements PostService {
         Request request = requestRepository.findByPostId(postId);
 
         // DTO 변환 (파일, 링크, 댓글 포함)
-        return PostDetailResponse.Converter.fromEntity(post, post.getUser(), comments, request);
+        return PostDetailResponse.Converter.fromEntity(post, post.getUser(), comments, request, loginUserId);
     }
 
     // 2. 게시글 승인
@@ -96,12 +96,14 @@ public class PostServiceImpl implements PostService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
+
         Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(post.getPostId(), RequestStatus.STATUS_PENDING)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
         // 2. Request 상태를 '승인'으로 업데이트
-        currentRequest.updateStatus(RequestStatus.STATUS_APPROVED, loginUserId, null);
+        currentRequest.updateStatus(RequestStatus.STATUS_APPROVED, loginUserId, user, null);
         requestRepository.save(currentRequest);
+
     }
 
     // 3. 게시글 거절
@@ -112,6 +114,7 @@ public class PostServiceImpl implements PostService {
         // 권한 검증 (고객사만 승인/거절 가능)
         if (user.getRole() != Role.CUSTOMER)
             throw new BusinessException(ErrorCode.REQUEST_PERMISSION_DENIED);
+
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
@@ -126,7 +129,7 @@ public class PostServiceImpl implements PostService {
         fileService.saveFiles(currentRequest, reject.getFileIds(), loginUserId);
 
         // 4. Request 상태를 '거절'로 업데이트
-        currentRequest.updateStatus(RequestStatus.STATUS_REJECTED, loginUserId, reject.getRejectReason());
+        currentRequest.updateStatus(RequestStatus.STATUS_REJECTED, loginUserId, user, reject.getRejectReason());
         requestRepository.save(currentRequest);
     }
 
