@@ -19,6 +19,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "join fetch p.user u " +
             "join fetch p.stage s " +
             "where p.project.id = :projectId " +
+            "and p.isDeleted = false " +
             "order by p.postNumber desc")
     List<Post> findAllByProjectId(@Param("projectId") Long projectId);
 
@@ -28,6 +29,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "join fetch p.stage s " +
             "where p.project.id = :projectId " +
             "and p.isCompleted = true " +
+            "and p.isDeleted = false " +
             "order by p.postNumber desc")
     List<Post> findCompletedByProjectId(@Param("projectId") Long projectId);
 
@@ -37,6 +39,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             "join fetch p.stage s " +
             "where p.project.id = :projectId " +
             "and p.isCompleted = false " +
+            "and p.isDeleted = false " +
             "order by p.postNumber desc")
     List<Post> findUncompletedByProjectId(@Param("projectId") Long projectId);
 
