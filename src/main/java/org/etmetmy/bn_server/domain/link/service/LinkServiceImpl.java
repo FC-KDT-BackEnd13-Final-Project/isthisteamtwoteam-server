@@ -9,6 +9,7 @@ import org.etmetmy.bn_server.domain.link.dto.LinkCreateRequest;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.global.util.IpAddressUtil;
@@ -30,22 +31,28 @@ public class LinkServiceImpl implements LinkService {
     // 1. 링크 URL 리스트를 받아서 Link 엔티티로 변환하고 게시글에 한 번에 저장
     @Transactional
     public void saveLinks(Post post, List<String> linkUrls, Long uploadedBy) {
-        saveLinksInternal(post, null, null, linkUrls, uploadedBy);
+        saveLinksInternal(post, null, null, null, linkUrls, uploadedBy);
     }
 
     // 2. 링크 URL 리스트를 받아서 Link 엔티티로 변환하고 댓글에 한 번에 저장
     @Transactional
     public void saveLinks(Comment comment, List<String> linkUrls, Long uploadedBy) {
-        saveLinksInternal(null, comment, null, linkUrls, uploadedBy);
+        saveLinksInternal(null, comment, null, null, linkUrls, uploadedBy);
     }
 
     @Override
     public void saveLinks(ProjectCheckList projectCheckList, List<String> linkUrls, Long uploadedBy) {
-        saveLinksInternal(null, null, projectCheckList, linkUrls, uploadedBy);
+        saveLinksInternal(null, null, projectCheckList, null, linkUrls, uploadedBy);
     }
 
+    @Override
+    public void saveLinks(Request request, List<String> linkUrls, Long uploadedBy) {
+        saveLinksInternal(null, null, null, request, linkUrls, uploadedBy);
+    }
+
+
     // 링크 URL 리스트를 받아서 Link 엔티티로 변환하고 게시글/댓글에 한 번에 저장
-    private void saveLinksInternal(Post post, Comment comment, ProjectCheckList projectCheckList, List<String> linkUrls, Long uploadedBy) {
+    private void saveLinksInternal(Post post, Comment comment, ProjectCheckList projectCheckList, Request reqeust, List<String> linkUrls, Long uploadedBy) {
         if (linkUrls == null || linkUrls.isEmpty()) {
             return;
         }
@@ -63,12 +70,15 @@ public class LinkServiceImpl implements LinkService {
         }
 
         List<Link> newLinks;
-        if (comment == null && projectCheckList == null) {
+        if (comment == null && projectCheckList == null && reqeust == null) {
             newLinks = LinkCreateRequest.Converter.toEntity(post, linkUrls, uploadedBy);
-        } else if(post == null && projectCheckList == null) {
+        } else if (post == null && projectCheckList == null && reqeust == null) {
             newLinks = LinkCreateRequest.Converter.toEntity(comment, linkUrls, uploadedBy);
-        }else{
+
+        } else if (post == null && reqeust == null && comment == null) {
             newLinks = LinkCreateRequest.Converter.toEntity(projectCheckList, linkUrls, uploadedBy);
+        } else {
+            newLinks = LinkCreateRequest.Converter.toEntity(reqeust, linkUrls, uploadedBy);
         }
         List<Link> savedLinks = linkRepository.saveAll(newLinks);
 

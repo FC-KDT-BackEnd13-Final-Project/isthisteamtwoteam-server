@@ -74,7 +74,7 @@ public class PostController {
             HttpSession session
     ) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
-        postService.rejectPost(postId, loginUserId, request.getRejectReason());
+        postService.rejectPost(postId, loginUserId, request);
         return CommonResponse.success("게시글 거절 완료", null);
     }
 

@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.project.entity.Project;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.user.entity.User;
@@ -42,6 +43,10 @@ public class File extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_check_list_id")
     private ProjectCheckList projectCheckList;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id")
+    private Request request;
 
     @Column(name = "s3_file_title", nullable = false, length = 255)
     private String s3FileTitle; // UUID_파일명
@@ -93,25 +98,32 @@ public class File extends BaseEntity {
     }
 
     // 공통 내부 처리
-    private void attach(Post post, Comment comment, ProjectCheckList projectCheckList, Long uploadedBy) {
+    private void attach(Post post, Comment comment, ProjectCheckList projectCheckList, Request request, Long uploadedBy) {
         this.post = post;
         this.comment = comment;
         this.projectCheckList = projectCheckList;
+        this.request = request;
         this.isTemp = false;
         this.uploadedBy = uploadedBy;
     }
 
     // 게시글에 연결
     public void attachToPost(Post post, Long uploadedBy) {
-        attach(post, null,null, uploadedBy);
+        attach(post, null, null, null, uploadedBy);
     }
 
     // 댓글에 연결
     public void attachToComment(Comment comment, Long uploadedBy) {
-        attach(null, comment, null, uploadedBy);
+        attach(null, comment, null, null, uploadedBy);
     }
 
     public void attachToProjectCheckList(ProjectCheckList projectCheckList, Long uploadedBy) {
-        attach(null, null, projectCheckList, uploadedBy);
+        attach(null, null, projectCheckList, null, uploadedBy);
     }
+
+    public void attachToRequest(Request request, Long uploadedBy) {
+        attach(null, null, null, request, uploadedBy);
+    }
+
+
 }

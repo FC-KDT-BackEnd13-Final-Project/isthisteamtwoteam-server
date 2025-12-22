@@ -10,6 +10,7 @@ import org.etmetmy.bn_server.domain.file.dto.response.*;
 import org.etmetmy.bn_server.domain.file.entity.File;
 import org.etmetmy.bn_server.domain.file.repository.FileRepository;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.post.repository.PostRepository;
 import org.etmetmy.bn_server.domain.post.service.PostServiceImpl;
 import org.etmetmy.bn_server.domain.project.entity.Project;
@@ -67,7 +68,7 @@ public class FileServiceImpl implements FileService {
     // 1. 삭제된 파일 목록 조회
     @Override
     @Transactional
-    public List<FileTrashResponse> getDeletedFiles(Long loginUserId, Long projectId){
+    public List<FileTrashResponse> getDeletedFiles(Long loginUserId, Long projectId) {
 
         // 권한 검증 (관리자와 담당 개발사만 접근가능)
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
@@ -201,7 +202,7 @@ public class FileServiceImpl implements FileService {
     // 5. 삭제된 파일 복원
     @Override
     @Transactional
-    public FileRestoreResponse restoreDeletedFiles(Long loginUserId, @Valid FileRestoreRequest request){
+    public FileRestoreResponse restoreDeletedFiles(Long loginUserId, @Valid FileRestoreRequest request) {
 
         // 1. 권한 검증 (관리자만)
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
@@ -382,27 +383,35 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public void saveFiles(Post post, List<Long> fileIds, Long loginUserId) {
-        saveFilesInternal(post, null, null, fileIds, loginUserId);
+        saveFilesInternal(post, null, null, null,fileIds, loginUserId);
     }
 
     // 12. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
     @Override
     @Transactional
     public void saveFiles(Comment comment, List<Long> fileIds, Long loginUserId) {
-        saveFilesInternal(null, comment, null, fileIds, loginUserId);
+        saveFilesInternal(null, comment, null,null, fileIds, loginUserId);
     }
 
-    // 13. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post에 저장
+    // 13. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 ProjectCheckList에 저장
     @Override
     @Transactional
     public void saveFiles(ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId) {
-        saveFilesInternal(null, null, projectCheckList, fileIds, loginUserId);
+        saveFilesInternal(null, null, projectCheckList, null,fileIds, loginUserId);
+    }
+
+    // 14. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 request에 저장
+    @Override
+    public void saveFiles(Request request, List<Long> fileIds, Long loginUserId) {
+        saveFilesInternal(null, null, null, request, fileIds, loginUserId);
+
     }
 
     // 14. S3 업로드 결과로 받은 파일 정보를 기반으로 File 엔티티를 생성하여 Post/Comment에 저장
-    private void saveFilesInternal(Post post, Comment comment, ProjectCheckList projectCheckList, List<Long> fileIds, Long loginUserId) {
+    private void saveFilesInternal(Post post, Comment comment, ProjectCheckList projectCheckList, Request rejectRequest, List<Long> fileIds, Long loginUserId) {
         if (fileIds == null || fileIds.isEmpty()) {
-            return;}
+            return;
+        }
 
         List<File> tempFiles = fileRepository.findAllById(fileIds)
                 .stream()
@@ -426,12 +435,14 @@ public class FileServiceImpl implements FileService {
         }
 
         for (File file : tempFiles) {
-            if (comment == null && projectCheckList == null) {
+            if (comment == null && projectCheckList == null && rejectRequest == null) {
                 file.attachToPost(post, loginUserId);
-            } else if (post == null && projectCheckList == null) {
+            } else if (post == null && projectCheckList == null && rejectRequest == null) {
                 file.attachToComment(comment, loginUserId);
-            } else {
+            } else if (post == null && comment == null && rejectRequest == null) {
                 file.attachToProjectCheckList(projectCheckList, loginUserId);
+            } else {
+                file.attachToRequest(rejectRequest, loginUserId);
             }
 
             // 파일 히스토리 이벤트 발행 (CREATE)
@@ -446,7 +457,7 @@ public class FileServiceImpl implements FileService {
     // 15. 이미지 url로 기존 이미지 삭제 (S3 + DB)
     @Override
     @Transactional
-    public void removeOldImage(String oldImageUrl){
+    public void removeOldImage(String oldImageUrl) {
 
         // S3 key 추출
         String key = getKeyFromFileUrls(oldImageUrl);
@@ -462,7 +473,7 @@ public class FileServiceImpl implements FileService {
     // 16. 프로필 이미지 수정 - 새 이미지 업로드 후 S3 이미지 URL 저장
     @Override
     @Transactional
-    public String uploadProfileImage(MultipartFile image, Long userId){
+    public String uploadProfileImage(MultipartFile image, Long userId) {
         S3UploadResult uploadResult = uploadToS3(image);
 
         return uploadResult.getFileUrl();

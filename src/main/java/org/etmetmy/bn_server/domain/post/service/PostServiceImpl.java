@@ -15,10 +15,7 @@ import org.etmetmy.bn_server.domain.link.dto.LinkInfoDTO;
 import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.link.repository.LinkRepository;
 import org.etmetmy.bn_server.domain.link.service.LinkService;
-import org.etmetmy.bn_server.domain.post.dto.request.PostCreateRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostPermanentDeleteRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostRestoreRequest;
-import org.etmetmy.bn_server.domain.post.dto.request.PostUpdateRequest;
+import org.etmetmy.bn_server.domain.post.dto.request.*;
 import org.etmetmy.bn_server.domain.post.dto.response.*;
 import org.etmetmy.bn_server.domain.post.entity.*;
 import org.etmetmy.bn_server.domain.post.repository.PostNumberCounterRepository;
@@ -109,7 +106,7 @@ public class PostServiceImpl implements PostService {
 
     // 3. 게시글 거절
     @Transactional
-    public void rejectPost(Long postId, Long loginUserId, String rejectReason) {
+    public void rejectPost(Long postId, Long loginUserId, PostApprovalRequest reject) {
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
 
         // 권한 검증 (고객사만 승인/거절 가능)
@@ -122,8 +119,14 @@ public class PostServiceImpl implements PostService {
         Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(post.getPostId(), RequestStatus.STATUS_PENDING)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
-        // 2. Request 상태를 '거절'로 업데이트
-        currentRequest.updateStatus(RequestStatus.STATUS_REJECTED, loginUserId, rejectReason);
+        // 2. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 request와 연동
+        linkService.saveLinks(currentRequest, reject.getLinkUrls(), loginUserId);
+
+        // 3. 임시 파일 연결: 프론트에서 전달받은 fileIds를 기준으로 DB 에서 임시 파일(isTemp=true)을 조회
+        fileService.saveFiles(currentRequest, reject.getFileIds(), loginUserId);
+
+        // 4. Request 상태를 '거절'로 업데이트
+        currentRequest.updateStatus(RequestStatus.STATUS_REJECTED, loginUserId, reject.getRejectReason());
         requestRepository.save(currentRequest);
     }
 
@@ -187,7 +190,8 @@ public class PostServiceImpl implements PostService {
 
         Post parent = null;
         if (requestDto.getParentId() != null) {
-            parent = postRepository.findById(requestDto.getParentId()).orElseThrow(BoardNotFoundException::new);}
+            parent = postRepository.findById(requestDto.getParentId()).orElseThrow(BoardNotFoundException::new);
+        }
 
         // 1. 게시글 저장: DTO를 엔티티로 변환 후 DB에 저장, ID 발급
         Post post = PostCreateRequest.Converter.toEntity(project, user, stage, postNumber, parent, requestDto);
@@ -222,7 +226,7 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(BoardNotFoundException::new);
 
         // 2. 작성자 권한 검증 (작성자만 수정 가능)
-        if(!post.getUser().getId().equals(loginUserId)){
+        if (!post.getUser().getId().equals(loginUserId)) {
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
 
@@ -364,15 +368,15 @@ public class PostServiceImpl implements PostService {
     // 게시글 삭제 (soft delete)
     @Override
     @Transactional
-    public void softDeletePost(Long postId, Long userId){
+    public void softDeletePost(Long postId, Long userId) {
 
         // 1. 엔티티 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.BOARD_POST_NOT_FOUND));
-        List<Comment>  comments = commentRepository.findAllByPostId(post.getPostId());
+        List<Comment> comments = commentRepository.findAllByPostId(post.getPostId());
 
         // 2. 작성자 권한 검증 (작성자만 삭제 가능)
-        if(!post.getUser().getId().equals(userId)){
+        if (!post.getUser().getId().equals(userId)) {
             throw new BusinessException(ErrorCode.BOARD_PERMISSION_DENIED);
         }
 
@@ -394,7 +398,7 @@ public class PostServiceImpl implements PostService {
     // 게시글 복원
     @Override
     @Transactional
-    public PostRestoreResponse restoreDeletedPost(Long loginUserId, PostRestoreRequest request){
+    public PostRestoreResponse restoreDeletedPost(Long loginUserId, PostRestoreRequest request) {
 
         // 1. 권한 검증 (관리자만)
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
@@ -439,7 +443,7 @@ public class PostServiceImpl implements PostService {
     // 게시글 영구삭제 (hard delete)
     @Override
     @Transactional
-    public PostPermanentDeleteResponse deleteDeletedPost(Long loginUserId, @Valid PostPermanentDeleteRequest request){
+    public PostPermanentDeleteResponse deleteDeletedPost(Long loginUserId, @Valid PostPermanentDeleteRequest request) {
 
         // 1. 삭제 요청한 게시글 ID 목록 조회
         List<Long> postIds = request.getPostIds();
@@ -453,7 +457,8 @@ public class PostServiceImpl implements PostService {
         // 3. 삭제 여부 체크
         posts.forEach(post -> {
             if (!post.getIsDeleted()) {
-                throw new BusinessException(ErrorCode.BOARD_NOT_DELETED);}
+                throw new BusinessException(ErrorCode.BOARD_NOT_DELETED);
+            }
         });
 
         // 4. S3 파일 삭제
@@ -469,7 +474,7 @@ public class PostServiceImpl implements PostService {
     // 삭제된 프로젝트 조회
     @Override
     @Transactional
-    public List<PostTrashResponse> getDeletedPosts(Long loginUserId, Long projectId){
+    public List<PostTrashResponse> getDeletedPosts(Long loginUserId, Long projectId) {
 
         // 권한 검증 (관리자와 담당 개발사만 접근가능)
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);

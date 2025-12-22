@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.etmetmy.bn_server.domain.comment.entity.Comment;
 import org.etmetmy.bn_server.domain.post.entity.Post;
+import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
@@ -36,6 +37,10 @@ public class Link extends BaseEntity { //다른 패키지에서 접근
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_check_list_id")
     private ProjectCheckList projectCheckList;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_id")
+    private Request request;
 
     @Column(name = "link_url", nullable = false, length = 500)
     private String linkUrl;
