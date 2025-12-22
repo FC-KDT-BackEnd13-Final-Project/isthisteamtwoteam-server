@@ -40,7 +40,7 @@ public class Request extends BaseEntity {
 
     @Column(name = "approve_status", length = 255)
     private RequestStatus approveStatus;
-ㅎ
+
     @Column(name = "reply_time")
     private LocalDateTime replyTime;
 
