@@ -119,7 +119,7 @@ public class PostServiceImpl implements PostService {
         Request currentRequest = requestRepository.findByPostPostIdAndApproveStatus(post.getPostId(), RequestStatus.STATUS_PENDING)
                 .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
-        // 2. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 게시글과 연동
+        // 2. 링크 저장: 전달받은 링크 URL 리스트를 Link 엔티티로 변환 후 request와 연동
         linkService.saveLinks(currentRequest, reject.getLinkUrls(), loginUserId);
 
         // 3. 임시 파일 연결: 프론트에서 전달받은 fileIds를 기준으로 DB 에서 임시 파일(isTemp=true)을 조회
