@@ -9,7 +9,7 @@ import org.etmetmy.bn_server.domain.comment.dto.response.CommentResponse;
 public interface CommentService {
     CommentResponse createComment(Long postId, CommentCreateRequest request, String clientIp, Long userId);
 
-    CommentListResponse getCommentsByPostId(Long postId);
+    CommentListResponse getCommentsByPostId(Long postId, Long loginUserId);
 
     CommentResponse updateComment(Long commentId, @Valid CommentUpdateRequest request, String clientIp, Long userId);
 

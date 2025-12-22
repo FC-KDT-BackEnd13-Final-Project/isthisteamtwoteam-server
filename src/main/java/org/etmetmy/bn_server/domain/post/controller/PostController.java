@@ -44,9 +44,11 @@ public class PostController {
     @Operation(summary = "게시글 상세 조회", description = "게시글의 상세 정보를 조회합니다")
     @GetMapping("/posts/{postId}")
     public CommonResponse<PostDetailResponse> getPostDetail(
-            @PathVariable Long postId
+            @PathVariable Long postId,
+            HttpSession session
     ) {
-        PostDetailResponse response = postService.getPostDetail(postId);
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+        PostDetailResponse response = postService.getPostDetail(postId, loginUserId);
         return CommonResponse.success("게시글 조회 성공", response);
 
     }
