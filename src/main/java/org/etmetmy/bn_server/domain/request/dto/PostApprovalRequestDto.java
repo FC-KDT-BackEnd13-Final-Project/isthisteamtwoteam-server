@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
+import org.etmetmy.bn_server.domain.link.entity.Link;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 
 import java.time.LocalDateTime;
@@ -43,7 +44,7 @@ public class PostApprovalRequestDto {
     private String stageName;
 
     private List<String> links;
-    private final List<FileInfoDTO> files;
+    private List<FileInfoDTO> files;
 
 
     public static class Converter {
@@ -61,6 +62,15 @@ public class PostApprovalRequestDto {
                             .rejectionReason(post.getRequest() != null ? post.getRequest().getRejectReason() : null)
                             .stageId(post.getStage() != null ? post.getStage().getId() : null)
                             .stageName(post.getStage() != null ? post.getStage().getStageName() : null)
+                            // 거절된 request에 대한 파일, 링크
+                            .files(post.getRequest() != null && post.getRequest().getFiles() != null
+                                    ? FileInfoDTO.Converter.from(post.getRequest().getFiles().stream().toList())
+                                    : List.of())
+                            .links(post.getRequest() != null && post.getRequest().getLinks() != null
+                                    ? post.getRequest().getLinks().stream()
+                                            .map(Link::getLinkUrl)
+                                            .toList()
+                                    : List.of())
                             .build()
                     )
                     .toList();
