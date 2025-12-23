@@ -25,15 +25,15 @@ public class CheckListCustomerController {
     // todo : 체크리스트 체크 기능
     @Operation(summary = "체크리스트 체크 기능", description = "체크를 누를때마다 true, false 전환")
     @ActivityLogger(targetType = "CheckList", action = "UPDATE")
-    @PatchMapping("/{checkListId}/checked")
+    @PatchMapping("/{projectCheckListId}/checked")
     public CommonResponse<Object> updateChecked(
             @PathVariable Long projectId,
-            @PathVariable Long checkListId,
+            @PathVariable Long projectCheckListId,
             HttpSession session
     ) {
         Long userId = SessionUtil.getLoginUserId(session);
 
-        checkListService.updateChecked(projectId, checkListId, userId);
+        checkListService.updateChecked(projectCheckListId, userId);
 
         return CommonResponse.success("성공했습니다", null);
     }
@@ -41,45 +41,43 @@ public class CheckListCustomerController {
     // todo : 체크리스트 답변 내용 업데이트
     @Operation(summary = "체크리스트 답변 내용 업데이트", description = "답변 내용 업데이트")
     @ActivityLogger(targetType = "CheckList", action = "UPDATE")
-    @PatchMapping("/{checkListId}/content")
+    @PatchMapping("/{projectCheckListId}/content")
     public CommonResponse<Object> updateContent(
             @PathVariable Long projectId,
-            @PathVariable Long checkListId,
+            @PathVariable Long projectCheckListId,
             @RequestBody ProjectCheckListReasonRequest reason
     ) {
-        checkListService.updateContent(projectId, checkListId, reason);
+        checkListService.updateContent(projectCheckListId, reason);
 
         return CommonResponse.success("성공했습니다", null);
     }
 
     // todo : 체크리스트에 파일 추가
     @Operation(summary = "체크리스트 파일 추가", description = "체크리스트 파일 추가")
-    @PostMapping("/{checkListId}/file")
+    @PostMapping("/{projectCheckListId}/file")
     public CommonResponse<Object> createFile(
-            @PathVariable Long projectId,
-            @PathVariable Long checkListId,
+            @PathVariable Long projectCheckListId,
             @RequestBody CheckListFileLinkCreateRequest fileCreateRequest,
             HttpSession session
     ) {
         Long userId = SessionUtil.getLoginUserId(session);
 
-        checkListService.saveFile(userId, projectId, checkListId, fileCreateRequest);
+        checkListService.saveFile(userId, projectCheckListId, fileCreateRequest);
 
         return CommonResponse.success("성공했습니다", null);
     }
 
     // todo : 체크리스트에 링크 추가
     @Operation(summary = "체크리스트 링크 추가", description = "체크리스트 링크 추가")
-    @PostMapping("/{checkListId}/link")
+    @PostMapping("/{projectCheckListId}/link")
     public CommonResponse<Object> createLink(
-            @PathVariable Long projectId,
-            @PathVariable Long checkListId,
+            @PathVariable Long projectCheckListId,
             @RequestBody CheckListFileLinkCreateRequest linkCreateRequest,
             HttpSession session
     ) {
         Long userId = SessionUtil.getLoginUserId(session);
 
-        checkListService.saveLink(userId, projectId, checkListId, linkCreateRequest);
+        checkListService.saveLink(userId, projectCheckListId, linkCreateRequest);
 
         return CommonResponse.success("성공했습니다", null);
     }

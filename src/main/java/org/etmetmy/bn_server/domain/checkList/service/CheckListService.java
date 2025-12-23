@@ -20,13 +20,13 @@ public interface CheckListService {
 
     Page<CheckListResponse> searchCheckLists(String keyword, PageRequest pageRequest);
 
-    void updateChecked(Long projectId, Long checkListId, Long userId);
+    void updateChecked(Long projectCheckListId, Long userId);
 
-    void updateContent(Long projectId, Long checkListId, ProjectCheckListReasonRequest reason);
+    void updateContent(Long projectCheckListId, ProjectCheckListReasonRequest reason);
 
-    void saveLink(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest linkCreateRequest);
+    void saveLink(Long userId, Long projectCheckListId, CheckListFileLinkCreateRequest linkCreateRequest);
 
-    void saveFile(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest fileCreateRequest);
+    void saveFile(Long userId, Long projectCheckListId, CheckListFileLinkCreateRequest fileCreateRequest);
 
     void deletefile(Long userId, Long fileId);
 }
