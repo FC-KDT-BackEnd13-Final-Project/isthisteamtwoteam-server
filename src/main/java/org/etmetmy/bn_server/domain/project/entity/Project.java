@@ -83,4 +83,8 @@ public class Project extends BaseEntity {
     public void updateProjectImage(String imageUrl) {
         projectImageUrl = imageUrl;
     }
+
+    public void updateProjectCompany(Company company) {
+        this.company = company;
+    }
 }
