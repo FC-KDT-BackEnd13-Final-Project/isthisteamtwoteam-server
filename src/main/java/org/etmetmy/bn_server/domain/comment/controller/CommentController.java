@@ -70,9 +70,13 @@ public class CommentController {
     //todo: 댓글 목록 조회 기능 (주 댓글 + 대댓글 계층 구조)
     @Operation(summary = "댓글 목록 조회", description = "게시글의 댓글 목록을 계층 구조로 조회합니다")
     @GetMapping("{postId}/comments")
-    public CommonResponse<CommentListResponse> getComments(@PathVariable Long postId)
+    public CommonResponse<CommentListResponse> getComments(@PathVariable Long postId, HttpServletRequest servletRequest)
     {
-        CommentListResponse response = commentService.getCommentsByPostId(postId);
+        //세션에서 현재 로그인한 유저의 ID 추출
+        HttpSession session = servletRequest.getSession(false);
+        Long userId = (session != null) ? SessionUtil.getLoginUserId(session) : null;
+
+        CommentListResponse response = commentService.getCommentsByPostId(postId, userId);
         return CommonResponse.success("댓글 목록 조회 성공", response);
     }
 

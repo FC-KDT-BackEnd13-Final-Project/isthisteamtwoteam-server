@@ -71,7 +71,7 @@ public class PostServiceImpl implements PostService {
     private final ApplicationEventPublisher eventPublisher;
 
     // 1. 게시글 상세 조회 (GET)
-    public PostDetailResponse getPostDetail(Long postId) {
+    public PostDetailResponse getPostDetail(Long postId, Long loginUserId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
 
@@ -81,7 +81,7 @@ public class PostServiceImpl implements PostService {
         Request request = requestRepository.findByPostId(postId);
 
         // DTO 변환 (파일, 링크, 댓글 포함)
-        return PostDetailResponse.Converter.fromEntity(post, post.getUser(), comments, request);
+        return PostDetailResponse.Converter.fromEntity(post, post.getUser(), comments, request, loginUserId);
     }
 
     // 2. 게시글 승인

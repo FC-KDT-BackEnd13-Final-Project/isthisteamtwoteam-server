@@ -26,6 +26,15 @@ public abstract class BaseEntity {
     @Column(name = "updated_at")
     protected LocalDateTime updatedAt;
 
+    @Column(name = "created_by", updatable = false)
+    private Long createdBy;
+
+    @Column(name = "updated_by")
+    private Long updatedBy;
+
+    @Column(name = "user_ip", updatable = false)
+    private String userIp;
+
     // --- 자동 시간 설정 ---
     @PrePersist
     protected void onCreate() {
@@ -35,5 +44,15 @@ public abstract class BaseEntity {
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void setAuditInfo(Long userId, String ip) {
+        this.createdBy = userId;
+        this.updatedBy = userId;
+        this.userIp = ip;
+    }
+
+    public void setUpdateInfo(Long userId) {
+        this.updatedBy = userId;
     }
 }
