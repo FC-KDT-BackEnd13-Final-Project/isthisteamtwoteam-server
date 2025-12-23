@@ -1,6 +1,5 @@
 package org.etmetmy.bn_server.domain.dashboard.service;
 
-import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestListResponse;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.ProjectListResponse;
 import java.util.List;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.DashBoardResponse;
@@ -19,8 +18,4 @@ public interface DashBoardService {
     DashBoardResponse getCustomerStatusDashboard(Long loginUserId);
 
     DashBoardResponse getDeveloperStatusDashboard(Long loginUserId);
-
-    ApprovalRequestListResponse getApprovalRequest(Long projectId, Long loginUserId);
-
-    ApprovalRequestListResponse getAdminApprovalRequest(Long loginUserId);
 }

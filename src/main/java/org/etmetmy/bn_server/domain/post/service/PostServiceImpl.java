@@ -100,7 +100,7 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.REQUEST_PENDING_NOT_FOUND));
 
         // 2. Request 상태를 '승인'으로 업데이트
-        currentRequest.updateStatus(RequestStatus.STATUS_APPROVED, loginUserId, null);
+        currentRequest.updateStatus(RequestStatus.STATUS_APPROVED, user, null);
         requestRepository.save(currentRequest);
     }
 
@@ -126,7 +126,7 @@ public class PostServiceImpl implements PostService {
         fileService.saveFiles(currentRequest, reject.getFileIds(), loginUserId);
 
         // 4. Request 상태를 '거절'로 업데이트
-        currentRequest.updateStatus(RequestStatus.STATUS_REJECTED, loginUserId, reject.getRejectReason());
+        currentRequest.updateStatus(RequestStatus.STATUS_REJECTED, user, reject.getRejectReason());
         requestRepository.save(currentRequest);
     }
 
@@ -198,7 +198,7 @@ public class PostServiceImpl implements PostService {
         Post savedPost = postRepository.save(post);
 
         // 2. 승인요청이 있는 경우에만 Request 엔티티 생성 (초기 상태: PENDING)
-        Request request = PostCreateRequest.Converter.toRequestEntity(requestDto, savedPost, loginUserId);
+        Request request = PostCreateRequest.Converter.toRequestEntity(requestDto, savedPost, user);
         if (request != null) {
             requestRepository.save(request);
         }
@@ -224,6 +224,7 @@ public class PostServiceImpl implements PostService {
         // 1. 게시글 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(BoardNotFoundException::new);
+        User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
 
         // 2. 작성자 권한 검증 (작성자만 수정 가능)
         if (!post.getUser().getId().equals(loginUserId)) {
@@ -319,7 +320,7 @@ public class PostServiceImpl implements PostService {
                 // 승인요청을 원하는 경우
                 if (existingRequest == null) {
                     // 기존 승인요청이 없으면 새로 생성
-                    Request newRequest = PostUpdateRequest.Converter.toRequestEntity(requestDto, post, loginUserId);
+                    Request newRequest = PostUpdateRequest.Converter.toRequestEntity(requestDto, post, user);
                     requestRepository.save(Objects.requireNonNull(newRequest));
                 }
                 // 이미 PENDING 상태의 승인요청이 있으면 그대로 유지

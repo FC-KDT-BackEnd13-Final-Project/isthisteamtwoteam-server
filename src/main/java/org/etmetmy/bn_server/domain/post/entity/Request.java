@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
+import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.global.entity.BaseEntity;
 
 import java.time.LocalDateTime;
@@ -26,11 +27,9 @@ public class Request extends BaseEntity {
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    @Column(name = "request_user_id")
-    private Long requestUserId;
-
-    @Column(name = "replit_user_id")
-    private Long replitUserId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "request_user_id")
+    private User responder;
 
     @Column(name = "approve_status", length = 255)
     private RequestStatus approveStatus;
@@ -41,8 +40,8 @@ public class Request extends BaseEntity {
     @Column(name = "reject_reason", length = 255)
     private String rejectReason;
 
-    public void updateStatus(RequestStatus status, Long loginUserId, String rejectReason) {
-        this.replitUserId = loginUserId;
+    public void updateStatus(RequestStatus status, User responder, String rejectReason) {
+        this.responder = responder;
         this.approveStatus = status;
         this.rejectReason = rejectReason;
         this.replyTime = LocalDateTime.now();
