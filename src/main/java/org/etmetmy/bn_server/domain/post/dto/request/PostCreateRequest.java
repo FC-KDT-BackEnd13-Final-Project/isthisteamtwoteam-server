@@ -65,7 +65,7 @@ public class PostCreateRequest {
          * @return Request 엔티티 또는 null (승인요청이 없는 경우)
          */
         public static Request toRequestEntity(
-                PostCreateRequest requestDto, Post post, Long requestUserId) {
+                PostCreateRequest requestDto, Post post, User user) {
 
             if (!Boolean.TRUE.equals(requestDto.getRequestApproval())) {
                 return null;
@@ -73,7 +73,7 @@ public class PostCreateRequest {
 
             return Request.builder()
                     .post(post)
-                    .requestUserId(requestUserId)
+                    .responder(user)
                     .approveStatus(RequestStatus.STATUS_PENDING)
                     .build();
         }

@@ -10,6 +10,7 @@ import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
 import org.etmetmy.bn_server.domain.post.entity.Stage;
+import org.etmetmy.bn_server.domain.user.entity.User;
 
 import java.util.List;
 
@@ -64,7 +65,7 @@ public class PostUpdateRequest {
         }
 
         public static Request toRequestEntity(
-                PostUpdateRequest requestDto, Post post, Long requestUserId) {
+                PostUpdateRequest requestDto, Post post, User user) {
 
             if (!Boolean.TRUE.equals(requestDto.getRequestApproval())) {
                 return null;
@@ -72,7 +73,7 @@ public class PostUpdateRequest {
 
             return Request.builder()
                     .post(post)
-                    .requestUserId(requestUserId)
+                    .responder(user)
                     .approveStatus(RequestStatus.STATUS_PENDING)
                     .build();
         }

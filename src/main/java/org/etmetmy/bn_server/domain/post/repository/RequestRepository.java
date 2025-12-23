@@ -25,4 +25,13 @@ public interface RequestRepository extends JpaRepository<Request, Long> {
     // 여러 Post ID로 Request 일괄 조회 (모든 상태 포함, N+1 문제 방지)
     @Query("SELECT r FROM Request r WHERE r.post.postId IN :postIds")
     List<Request> findByPostPostIdIn(@Param("postIds") List<Long> postIds);
+
+    @Query("""
+    SELECT r.approveStatus, COUNT(r)
+    FROM Request r
+    JOIN r.post p
+    WHERE p.project.id IN :projectIds
+    GROUP BY r.approveStatus
+    """)
+    List<Object[]> countByStatus(@Param("projectIds") List<Long> projectIds);
 }

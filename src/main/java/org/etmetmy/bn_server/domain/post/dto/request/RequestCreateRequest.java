@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
+import org.etmetmy.bn_server.domain.user.entity.User;
 
 @Getter
 @NoArgsConstructor
@@ -14,10 +15,10 @@ import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
 public class RequestCreateRequest {
 
     public static class Converter{
-        public static Request toEntity(Post post,Long loginUserId){
+        public static Request toEntity(Post post, User user){
             return Request.builder()
                     .post(post)
-                    .requestUserId(loginUserId)
+                    .responder(user)
                     .approveStatus(RequestStatus.STATUS_PENDING)
                     .build();
         }
