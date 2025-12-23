@@ -80,9 +80,9 @@ public class CheckListServiceImpl implements CheckListService {
     }
 
     @Override
-    public void updateChecked(Long projectId, Long checkListId, Long userId) {
-        ProjectCheckList projectCheckList = projectCheckListRepository.findByProject_IdAndCheckListId(projectId, checkListId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+    public void updateChecked(Long projectCheckListId, Long userId) {
+        ProjectCheckList projectCheckList = projectCheckListRepository.findById(projectCheckListId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_CHECKLIST_NOT_FOUND));
 
         User user = userRepository.findById(userId)
                         .orElseThrow((UserNotFoundException::new));
@@ -92,9 +92,9 @@ public class CheckListServiceImpl implements CheckListService {
     }
 
     @Override
-    public void updateContent(Long projectId, Long checkListId, ProjectCheckListReasonRequest reason) {
-        ProjectCheckList projectCheckList = projectCheckListRepository.findByProject_IdAndCheckListId(projectId, checkListId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+    public void updateContent(Long projectCheckListId, ProjectCheckListReasonRequest reason) {
+        ProjectCheckList projectCheckList = projectCheckListRepository.findById(projectCheckListId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_CHECKLIST_NOT_FOUND));
 
         projectCheckList.updateReason(reason.getReason());
         projectCheckListRepository.save(projectCheckList);
@@ -102,9 +102,9 @@ public class CheckListServiceImpl implements CheckListService {
     }
 
     @Override
-    public void saveLink(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest linkCreateRequest) {
-        ProjectCheckList projectCheckList = projectCheckListRepository.findByProject_IdAndCheckListId(projectId, checkListId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+    public void saveLink(Long userId, Long projectCheckListId, CheckListFileLinkCreateRequest linkCreateRequest) {
+        ProjectCheckList projectCheckList = projectCheckListRepository.findById(projectCheckListId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_CHECKLIST_NOT_FOUND));
 
         User user = userRepository.findById(userId)
                 .orElseThrow((UserNotFoundException::new));
@@ -113,9 +113,9 @@ public class CheckListServiceImpl implements CheckListService {
     }
 
     @Override
-    public void saveFile(Long userId, Long projectId, Long checkListId, CheckListFileLinkCreateRequest fileCreateRequest) {
-        ProjectCheckList projectCheckList = projectCheckListRepository.findByProject_IdAndCheckListId(projectId, checkListId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+    public void saveFile(Long userId, Long projectCheckListId, CheckListFileLinkCreateRequest fileCreateRequest) {
+        ProjectCheckList projectCheckList = projectCheckListRepository.findById(projectCheckListId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.PROJECT_CHECKLIST_NOT_FOUND));
 
         User user = userRepository.findById(userId)
                 .orElseThrow((UserNotFoundException::new));
