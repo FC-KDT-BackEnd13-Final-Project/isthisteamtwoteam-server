@@ -83,29 +83,6 @@ public class ProjectAdminController {
         return CommonResponse.success("프로젝트 멤버 조회 성공", responses);
     }
 
-    // todo: 개별 프로젝트 멤버 추가
-    @Operation(summary = "프로젝트 멤버 추가", description = "프로젝트에 새로운 멤버를 추가합니다")
-    @PostMapping("/{projectId}/members")
-    public CommonResponse<Integer> addProjectMembers(
-            HttpSession session,
-            @PathVariable Long projectId,
-            @RequestBody List<ProjectMemberRequest> requests
-    ) {
-        Long currentUserId = (Long) session.getAttribute("userId");
-        int addedCount = projectService.addProjectMembers(projectId, requests, currentUserId);
-        return CommonResponse.success("프로젝트 멤버 추가 성공", addedCount);
-    }
-
-    // todo: 개별프로젝트에 체크리스트 추가
-    @Operation(summary = "프로젝트 체크리스트 추가", description = "프로젝트에 체크리스트를 할당합니다")
-    @ActivityLogger(targetType = "Project", action = "UPDATE")
-    @PostMapping("/{projectId}/checklists")
-    public CommonResponse<List<ProjectAddCheckListResponse>> addCheckLists(@PathVariable Long projectId,
-                                                                           @RequestBody ProjectAddCheckListRequest request) {
-        return CommonResponse.success("체크리스트를 할당했습니다", projectService.checklistAdd(projectId, request));
-
-    }
-
     // todo: 개별프로젝트에 체크리스트 삭제
     @Operation(summary = "프로젝트 체크리스트 삭제", description = "프로젝트에 체크리스트를 삭제")
     @ActivityLogger(targetType = "Project", action = "UPDATE")
@@ -125,18 +102,6 @@ public class ProjectAdminController {
         return CommonResponse.success("프로젝트 체크리스트를 불러왔습니다.", projectService.getCheckLists(projectId));
     }
 
-    // todo: 개별 프로젝트 제목 수정
-    @Operation(summary = "프로젝트 제목 수정", description = "프로젝트의 제목을 수정합니다")
-    @ActivityLogger(action = "UPDATE", targetType = "Project")
-    @PatchMapping("/{projectId}/projectName")
-    public CommonResponse<ProjectUpdateResponse> updateProjectName(
-            @PathVariable Long projectId,
-            @RequestBody ProjectNameUpdateRequest request
-    ) {
-        ProjectUpdateResponse response = projectService.updateProjectName(projectId, request);
-        return CommonResponse.success("프로젝트 제목 수정 성공", response);
-    }
-
     // todo: 프로젝트 이미지 수정
     @Operation(summary = "프로젝트 이미지 수정", description = "프로젝트의 이미지를 수정합니다")
 
@@ -148,18 +113,6 @@ public class ProjectAdminController {
     ) {
         ProjectUpdateResponse response = projectService.updateProjectImage(projectId, image);
         return CommonResponse.success("프로젝트 이미지 수정 성공", response);
-    }
-
-    // todo: 개별 프로젝트 날짜 수정
-    @Operation(summary = "프로젝트 날짜 수정", description = "프로젝트의 시작일 및 종료일을 수정합니다")
-    @ActivityLogger(action = "UPDATE", targetType = "Project")
-    @PatchMapping("/{projectId}/date")
-    public CommonResponse<ProjectUpdateResponse> updateProjectDate(
-            @PathVariable Long projectId,
-            @RequestBody ProjectDateUpdateRequest request
-    ) {
-        ProjectUpdateResponse response = projectService.updateProjectDate(projectId, request);
-        return CommonResponse.success("프로젝트 날짜 수정 성공", response);
     }
 
     // todo: 개별 프로젝트 soft 삭제 (휴지통으로 이동)
@@ -182,28 +135,6 @@ public class ProjectAdminController {
         return CommonResponse.success("프로젝트 멤버 삭제 성공", projectId);
     }
 
-    // todo: 프로젝트 진행단계 수정
-    @Operation(summary = "프로젝트 진행단계 수정", description = "프로젝트의 진행단계를 수정합니다")
-    @PatchMapping("/{projectId}/stage")
-    @ActivityLogger(action = "UPDATE", targetType = "Project")
-    public CommonResponse<ProjectStageUpdateResponse> updateProjectStage(
-            HttpSession session,
-            @PathVariable Long projectId,
-            @RequestBody ProjectStageUpdateRequest request
-    ) {
-        Long currentUserId = (Long) session.getAttribute("userId");
-        if (currentUserId == null) {
-            Object loginMember = session.getAttribute(SessionConst.LOGIN_MEMBER);
-            if (loginMember instanceof User user) {
-                currentUserId = user.getId();
-            }
-        }
-
-        ProjectStageUpdateResponse response =
-                projectService.updateProjectStage(projectId, request, currentUserId);
-
-        return CommonResponse.success("프로젝트 진행단계 수정 성공", response);
-    }
 
     // todo: 개별 프로젝트 조회
     @Operation(summary = "프로젝트 상세 조회", description = "특정 프로젝트의 상세 정보를 조회합니다")
@@ -246,5 +177,17 @@ public class ProjectAdminController {
     ) {
         ProjectCreateCheckListResponse response = projectService.createAndAddCheckList(projectId, request);
         return CommonResponse.success("체크리스트가 생성되고 프로젝트에 추가되었습니다.", response);
+    }
+
+    // todo: 프로젝트 수정 (이미지 제외 - 이미지는 별도 PATCH 엔드포인트 사용)
+    @Operation(summary = "프로젝트 수정", description = "프로젝트를 수정합니다 (이미지 제외)")
+    @ActivityLogger(targetType = "Project", action = "UPDATE")
+    @PutMapping("/{projectId}")
+    public CommonResponse<ProjectUpdateResponse> updateProject(
+            @PathVariable Long projectId,
+            @RequestBody @Valid ProjectUpdateRequest request
+    ) {
+        ProjectUpdateResponse response = projectService.updateProject(projectId, request);
+        return CommonResponse.success("프로젝트 수정 성공", response);
     }
 }

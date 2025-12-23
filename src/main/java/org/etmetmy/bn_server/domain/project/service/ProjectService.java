@@ -19,8 +19,6 @@ public interface ProjectService {
 
     ProjectCreateResponse createProject(ProjectCreateRequest request, MultipartFile image, Long loginUserId);
 
-    int addProjectMembers(Long projectId, List<ProjectMemberRequest> members, Long createdById);
-
     List<ProjectResponse> getAllProjects();
     List<ProjectCustomerResponse> getAllProjects(Long loginUserId);
     List<ProjectMemberResponse> getProjectMembers(Long projectId);
@@ -29,13 +27,6 @@ public interface ProjectService {
     Page<ProjectResponse> getProjects(Pageable pageable, String searchKeyword, Boolean isDeleted);
 
     ProjectResponse getProjectById(Long projectId);
-    List<ProjectAddCheckListResponse> checklistAdd(Long projectId, ProjectAddCheckListRequest request);
-
-    // 프로젝트 제목 수정
-    ProjectUpdateResponse updateProjectName(Long projectId, ProjectNameUpdateRequest request);
-
-    // 프로젝트 날짜 수정
-    ProjectUpdateResponse updateProjectDate(Long projectId, ProjectDateUpdateRequest request);
 
     //프로젝트 삭제(흊지통이동)
     ProjectTrashResponse deleteProject(Long projectId);
@@ -46,7 +37,6 @@ public interface ProjectService {
     List<ProjectCheckListAllResponse> getCheckLists(Long projectId);
 
     // 프로젝트 진행단계 수정
-    ProjectStageUpdateResponse updateProjectStage(Long projectId, ProjectStageUpdateRequest request, Long currentUserId);
     ProjectDetailResponse getProjectDetail(Long userId, Long projectId);
 
     // 삭제된 프로젝트 복원
@@ -63,4 +53,7 @@ public interface ProjectService {
 
     //개별 프로젝트에 바로 체크리스트 생성
     ProjectCreateCheckListResponse createAndAddCheckList(Long projectId, ProjectCreateCheckListRequest request);
+
+    // 프로젝트 전체 수정 (이미지 제외)
+    ProjectUpdateResponse updateProject(Long projectId, ProjectUpdateRequest request);
 }

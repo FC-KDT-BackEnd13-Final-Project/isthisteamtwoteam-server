@@ -29,7 +29,6 @@ import org.etmetmy.bn_server.domain.project.repository.ProjectMemberRepository;
 import org.etmetmy.bn_server.domain.project.entity.ProjectCheckList;
 import org.etmetmy.bn_server.domain.project.repository.ProjectCheckListRepository;
 import org.etmetmy.bn_server.domain.project.repository.ProjectRepository;
-import org.etmetmy.bn_server.domain.user.dto.response.UserSelfUpdateResponse;
 import org.etmetmy.bn_server.domain.user.entity.Role;
 import org.etmetmy.bn_server.domain.user.entity.User;
 import org.etmetmy.bn_server.domain.user.repository.UserRepository;
@@ -145,47 +144,6 @@ public class ProjectServiceImpl implements ProjectService {
 
         // 8. Response 반환 (모든 업데이트 완료 후)
         return ProjectCreateResponse.Converter.from(savedProject);
-    }
-
-    @Override
-    @Transactional
-    public int addProjectMembers(Long projectId, List<ProjectMemberRequest> members, Long createdById) {
-        if (members == null || members.isEmpty()) {
-            return 0;
-        }
-
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-
-        List<ProjectMember> projectMembers = createProjectMembers(members, project, createdById);
-
-        if (projectMembers.isEmpty()) {
-            return 0;
-        }
-
-        projectMemberRepository.saveAll(projectMembers);
-
-        // 각 멤버마다 개별 로그 발행
-        String ipAddress = IpAddressUtil.getClientIp(request);
-        for (ProjectMember member : projectMembers) {
-            Map<String, Object> detail = Map.of(
-                    "action", "added",
-                    "userName", member.getUser().getName(),
-                    "role", member.getUser().getRole().name()
-            );
-
-            eventPublisher.publishEvent(new ActivityLogEvent(
-                    projectId,
-                    createdById,
-                    ActivityAction.CREATE,
-                    "ProjectMember",
-                    member.getUser().getId(),
-                    ipAddress,
-                    toJson(detail)
-            ));
-        }
-
-        return projectMembers.size();
     }
 
     @Override
@@ -376,31 +334,6 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public List<ProjectAddCheckListResponse> checklistAdd(Long projectId, ProjectAddCheckListRequest request) {
-
-        // project 조회
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-
-        // CheckList 조회 및 Map 생성
-        Map<Long, CheckList> checkListMap = request.getChecklistIds().stream()
-                .map(checkListId -> checkListRepository.findById(checkListId)
-                        .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND)))
-                .collect(Collectors.toMap(CheckList::getCheckListId, checkList -> checkList));
-
-        // 여러 checklistId에 대해 ProjectChecklist 엔티티 생성
-        List<ProjectCheckList> projectCheckLists = request.getChecklistIds().stream()
-                .map(checkListId -> ProjectAddCheckListRequest.Converter.toEntity(project, checkListId))
-                .toList();
-
-        // 일괄 저장
-        List<ProjectCheckList> savedCheckLists = projectChecklistRepository.saveAll(projectCheckLists);
-
-        // Response 변환 후 반환
-        return ProjectAddCheckListResponse.Converter.from(savedCheckLists, checkListMap);
-    }
-
-    @Override
     public List<ProjectCheckListAllResponse> getCheckLists(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(ProjectNotFoundException::new);
@@ -429,68 +362,6 @@ public class ProjectServiceImpl implements ProjectService {
                     return ProjectCheckListAllResponse.Converter.from(projectCheckList, checkList, fileDTOs, linkDTOs);
                 })
                 .toList();
-    }
-
-    //프로젝트 제목수정
-    @Transactional
-    @Override
-    public ProjectUpdateResponse updateProjectName(Long projectId, ProjectNameUpdateRequest request) {
-        if (projectId == null) {
-            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
-        }
-
-        String newProjectName = request.getProjectName();
-        if (newProjectName == null || newProjectName.isBlank()) {
-            throw new InvalidInputException("프로젝트 제목은 비워둘 수 없습니다.");
-        }
-
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-
-        int updated = projectRepository.updateProjectName(project.getId(), newProjectName);
-        if (updated == 0) {
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 제목 수정에 실패했습니다.");
-        }
-
-        Project updatedProject = projectRepository.findById(projectId)
-                .orElseThrow((ProjectNotFoundException::new));
-
-        return ProjectUpdateResponse.Converter.from(updatedProject);
-    }
-
-    //프로젝트 날짜 수정
-    @Transactional
-    @Override
-    public ProjectUpdateResponse updateProjectDate(Long projectId, ProjectDateUpdateRequest request) {
-        if (projectId == null) {
-            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
-        }
-
-        if (request.getStartDate() == null || request.getEndDate() == null) {
-            throw new InvalidInputException("시작일과 종료일은 모두 필수입니다.");
-        }
-
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-
-        try {
-            LocalDate startDate = parseDate(request.getStartDate());
-            LocalDate endDate = parseDate(request.getEndDate());
-
-            if (endDate.isBefore(startDate)) {
-                throw new InvalidInputException("종료일은 시작일보다 이를 수 없습니다.");
-            }
-
-            int updated = projectRepository.updateProjectDates(project.getId(), startDate, endDate);
-            if (updated == 0) {
-                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 날짜 수정에 실패했습니다.");
-            }
-
-            return ProjectUpdateResponse.Converter.from(project);
-
-        } catch (DateTimeParseException e) {
-            throw new InvalidInputException("날짜 형식이 올바르지 않습니다. (예: 2024-01-01 또는 2025-11-23T14:00:00Z)");
-        }
     }
 
     //날짜 형식 변경
@@ -574,50 +445,6 @@ public class ProjectServiceImpl implements ProjectService {
                 ipAddress,
                 toJson(detail)
         ));
-    }
-
-    //프로젝트 진행단계 수정
-    @Transactional
-    @Override
-    public ProjectStageUpdateResponse updateProjectStage(Long projectId,
-                                                         ProjectStageUpdateRequest request,
-                                                         Long currentUserId) {
-        // 1. 입력값 검증
-        if (projectId == null) {
-            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
-        }
-        if (request == null || request.getStageId() == null) {
-            throw new InvalidInputException("진행단계 ID는 필수입니다.");
-        }
-
-        Long stageId = request.getStageId();
-
-        // 2. 프로젝트 존재 확인
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-
-        // 3. Stage 존재 확인
-        Stage stage = projectStageRepository.findById(stageId)
-                .orElseThrow(() ->
-                        new BusinessException(ErrorCode.STAGE_NOT_FOUND, "해당 진행단계를 찾을 수 없습니다."));
-
-        // 4. 현재 사용자 조회 (존재 시 updatedBy 노출)
-        Long updatedBy = null;
-        if (currentUserId != null) {
-            userRepository.findById(currentUserId)
-                    .orElseThrow(UserNotFoundException::new);
-            updatedBy = currentUserId;
-        }
-
-        // 5. Project 의 stage FK 업데이트
-        int updated = projectRepository.updateProjectStage(projectId, stage.getId());
-        if (updated == 0) {
-            throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR,
-                    "프로젝트 진행단계 수정에 실패했습니다.");
-        }
-
-        // 6. 응답 반환 (ADMIN 이면 ID, 아니면 null)
-        return ProjectStageUpdateResponse.Converter.of(stageId, updatedBy);
     }
 
     @Override
@@ -763,6 +590,149 @@ public class ProjectServiceImpl implements ProjectService {
         // 5. Response 반환
         return ProjectCreateCheckListResponse.Converter.from(savedProjectCheckList, savedCheckList);
     }
+
+    // 프로젝트 전체 수정 (이미지 제외)
+    @Override
+    @Transactional
+    public ProjectUpdateResponse updateProject(Long projectId, ProjectUpdateRequest request) {
+        // 1. 입력값 검증
+        if (projectId == null) {
+            throw new InvalidInputException("프로젝트 ID가 필요합니다.");
+        }
+
+        // 2. 프로젝트 조회
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        // 3. 프로젝트 이름 수정
+        if (request.getProjectName() != null && !request.getProjectName().isBlank()) {
+            int updated = projectRepository.updateProjectName(projectId, request.getProjectName());
+            if (updated == 0) {
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 제목 수정에 실패했습니다.");
+            }
+        }
+
+        // 4. 날짜 수정
+        if (request.getStartDate() != null || request.getEndDate() != null) {
+            String startDateStr = request.getStartDate();
+            String endDateStr = request.getEndDate();
+
+            // 둘 다 제공되어야 함
+            if (startDateStr == null || endDateStr == null) {
+                throw new InvalidInputException("시작일과 종료일은 모두 제공되어야 합니다.");
+            }
+
+            try {
+                LocalDate startDate = parseDate(startDateStr);
+                LocalDate endDate = parseDate(endDateStr);
+
+                if (endDate.isBefore(startDate)) {
+                    throw new InvalidInputException("종료일은 시작일보다 이를 수 없습니다.");
+                }
+
+                int updated = projectRepository.updateProjectDates(projectId, startDate, endDate);
+                if (updated == 0) {
+                    throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR, "프로젝트 날짜 수정에 실패했습니다.");
+                }
+            } catch (DateTimeParseException e) {
+                throw new InvalidInputException("날짜 형식이 올바르지 않습니다. (예: 2024-01-01)");
+            }
+        }
+
+        // 5. 진행단계 수정
+        if (request.getStageName() != null) {
+            // Stage 존재 확인
+            Stage stage = projectStageRepository.findByStageName(request.getStageName())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
+
+            int updated = projectRepository.updateProjectStage(projectId, stage.getId());
+            if (updated == 0) {
+                throw new BusinessException(ErrorCode.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        // 6. 회사 수정
+        if (request.getCompanyId() != null) {
+            Company company = companyRepository.findById(request.getCompanyId())
+                    .orElseThrow(() -> new BusinessException(ErrorCode.COMPANY_NOT_FOUND));
+            project.updateProjectCompany(company);
+        }
+
+        // 8. 메모 수정 또는 생성
+        if (request.getMemoContent() != null) {
+            Optional<Memo> existingMemo = memoRepository.findByProjectId(projectId, MemoType.MAIN);
+
+            if (existingMemo.isPresent()) {
+                // 기존 메모 업데이트
+                existingMemo.get().updateContent(request.getMemoContent());
+            } else {
+                // 새 메모 생성
+                Memo newMemo = Memo.builder()
+                        .project(project)
+                        .content(request.getMemoContent())
+                        .memoType(MemoType.MAIN)
+                        .build();
+                memoRepository.save(newMemo);
+            }
+        }
+
+        // 9. 프로젝트 멤버 수정 (전체 교체)
+        if (request.getMembers() != null) {
+            // 기존 멤버 삭제
+            List<ProjectMember> existingMembers = projectMemberRepository.findByProjectId(projectId);
+            if (!existingMembers.isEmpty()) {
+                projectMemberRepository.deleteAll(existingMembers);
+            }
+
+            // 새 멤버 추가
+            if (!request.getMembers().isEmpty()) {
+                List<ProjectMemberRequest> memberRequests = request.getMembers().stream()
+                        .map(ProjectMemberRequest::new)
+                        .toList();
+
+                Long currentUserId = extractCurrentUserId();
+                List<ProjectMember> newMembers = createProjectMembers(
+                        memberRequests,
+                        project,
+                        currentUserId != null ? currentUserId : project.getCreatedBy()
+                );
+
+                if (!newMembers.isEmpty()) {
+                    projectMemberRepository.saveAll(newMembers);
+                }
+            }
+        }
+
+        // 10. 체크리스트 수정 (전체 교체)
+        if (request.getSelectedChecklistIds() != null) {
+            // 기존 체크리스트 삭제
+            List<ProjectCheckList> existingChecklists = projectChecklistRepository.findByProject(project);
+            if (!existingChecklists.isEmpty()) {
+                projectChecklistRepository.deleteAll(existingChecklists);
+            }
+
+            // 새 체크리스트 추가
+            if (!request.getSelectedChecklistIds().isEmpty()) {
+                List<ProjectCheckList> newChecklists = request.getSelectedChecklistIds().stream()
+                        .map(id -> {
+                            checkListRepository.findById(id.longValue())
+                                    .orElseThrow(() -> new BusinessException(ErrorCode.CHECKLIST_NOT_FOUND));
+                            return ProjectAddCheckListRequest.Converter
+                                    .toEntity(project, id.longValue());
+                        })
+                        .toList();
+
+                projectChecklistRepository.saveAll(newChecklists);
+            }
+        }
+
+        // 11. 업데이트된 프로젝트 조회 및 반환
+        Project updatedProject = projectRepository.findById(projectId)
+                .orElseThrow(ProjectNotFoundException::new);
+
+        return ProjectUpdateResponse.Converter.from(updatedProject);
+    }
+
     private String toJson(Object obj) {
         try {
             return objectMapper.writeValueAsString(obj);
