@@ -161,45 +161,4 @@ public class DashBoardServiceImpl implements DashBoardService {
         // stats와 List를 포함한 wrapper 반환
         return DashBoardResponse.Converter.of(pendingList, rejectedList, inProgress, maintenances);
     }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ApprovalRequestListResponse getApprovalRequest(Long projectId, Long loginUserId) {
-        // 유저 검증
-        User user = userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
-
-        // 프로젝트 존재 여부 및 접근 권한 확인 (ADMIN은 모든 프로젝트 접근 가능)
-        if (user.getRole() != Role.ADMIN) {
-            if (!projectMemberRepository.existsByProjectIdAndUserId(projectId, user.getId())) {
-                throw new BusinessException(ErrorCode.PROJECT_AND_USER_NOT_FOUND);
-            }
-        }
-
-        // 프로젝트 존재 여부 확인
-        projectRepository.findById(projectId)
-                .orElseThrow(ProjectNotFoundException::new);
-
-        // 특정 프로젝트의 Request가 있는 Post 조회
-        List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequestByProjectIds(List.of(projectId));
-        List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
-
-        // Converter에서 단계별 필터링 및 응답 생성
-        return ApprovalRequestListResponse.Converter.of(allPosts);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public ApprovalRequestListResponse getAdminApprovalRequest(Long loginUserId) {
-        // 유저 검증
-        userRepository.findById(loginUserId)
-                .orElseThrow(UserNotFoundException::new);
-
-        // Request가 있는 모든 Post 조회 (상태별, 단계별 카운팅 및 리스트 생성용)
-        List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequest();
-        List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
-
-        // Converter에서 단계별 필터링 및 응답 생성
-        return ApprovalRequestListResponse.Converter.of(allPosts);
-    }
 }

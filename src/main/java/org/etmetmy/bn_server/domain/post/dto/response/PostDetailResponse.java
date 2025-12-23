@@ -86,7 +86,7 @@ public class PostDetailResponse {
                     .approveStatus(request != null && request.getApproveStatus() != null
                             ? request.getApproveStatus().getDescription()
                             : null)
-                    .approverName(request != null && request.getApprover() != null ? request.getApprover().getName() : null)
+                    .approverName(request != null && request.getResponder() != null ? request.getResponder().getName() : null)
                     .approvedAt(request != null ? request.getUpdatedAt() : null)
                     .rejectionReason(request != null ? request.getRejectReason() : null)
                     .comments(commentCreateResponse)

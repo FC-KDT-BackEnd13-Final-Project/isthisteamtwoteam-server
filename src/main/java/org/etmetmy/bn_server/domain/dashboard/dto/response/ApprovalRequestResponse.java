@@ -1,6 +1,7 @@
 package org.etmetmy.bn_server.domain.dashboard.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,20 +19,21 @@ import java.util.stream.Collectors;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApprovalRequestResponse {
 
-    // 게시글 관련
-    private Long postId;                    // 게시글 id
-    private String postTitle;               // 게시글 제목
-    private LocalDateTime createdAt;        // 게시글 생성일자
-    private RequestStatus requestStatus;    // 게시글 요청상태
-    private String postStageName;           // 게시글 진행단계
+    @JsonProperty("post_id")
+    private Long postId;
 
-    // 프로젝트 관련
-    private String projectName;             // 프로젝트 이름
+    @JsonProperty("post_title")
+    private String postTitle;
 
-    // 회사 관련
-    private String companyName;             // 회사 이름
+    @JsonProperty("")
+    private LocalDateTime createdAt;
+    private RequestStatus requestStatus;
+    private String postStageName;
 
-    // 승인 여부
+    private String projectName;
+
+    private String companyName;
+
     private String approveStatus;
 
     public static class Converter {

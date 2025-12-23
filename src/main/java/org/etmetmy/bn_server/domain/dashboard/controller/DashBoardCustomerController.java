@@ -46,16 +46,4 @@ public class DashBoardCustomerController {
 
         return CommonResponse.success("프로젝트 목록 조회 성공", response);
     }
-
-    // todo: 고객사 승인대기 화면 리스트들 조회
-    @Operation(summary = "고객사 게시글 승인 요청 목록 조회", description = "승인 요청한 게시글 목록들을 조회합니다")
-    @GetMapping("/projects/{projectId}/approval-requests")
-    public CommonResponse<ApprovalRequestListResponse> getApprovalRequests(
-            @PathVariable Long projectId, HttpSession session) {
-        Long loginUserId = SessionUtil.getLoginUserId(session);
-
-        ApprovalRequestListResponse result = dashBoardService.getApprovalRequest(projectId, loginUserId);
-
-        return CommonResponse.success("고객사 승인 요청 알림 조회 성공", result);
-    }
 }
