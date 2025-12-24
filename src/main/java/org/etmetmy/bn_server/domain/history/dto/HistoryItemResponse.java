@@ -1,5 +1,6 @@
 package org.etmetmy.bn_server.domain.history.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -7,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.etmetmy.bn_server.domain.history.entity.ChangeType;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Getter
 @Builder
@@ -17,10 +20,14 @@ public class HistoryItemResponse {
     private String title;                  // "홍길동님이 2025-12-18 15:30에 게시글을 수정했습니다"
     private String targetType;             // POST, COMMENT, FILE, LINK
     private ChangeType changeType;         // CREATE, UPDATE, DELETE
-    private LocalDateTime changedAt;       // 변경 시간
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime changedAt;       // 변경 시간 (분까지만 표시)
+
     private String changedByUserName;      // 변경한 사람 이름
     private String changeIp;               // 변경 IP
     private Object details;                // 상세 정보 (before/after 데이터 등)
+    private List<ChangeContent> changeContents; // 변경된 내용만 간략히 표시
 
     /**
      * 제목 생성 헬퍼 메서드
@@ -28,7 +35,8 @@ public class HistoryItemResponse {
      */
     public static String createTitle(String userName, LocalDateTime changedAt, String targetType, ChangeType changeType) {
         String action = getActionText(targetType, changeType);
-        String timeStr = changedAt.toString().replace("T", " ");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String timeStr = changedAt.format(formatter);
         return String.format("%s님이 %s에 %s", userName, timeStr, action);
     }
 
