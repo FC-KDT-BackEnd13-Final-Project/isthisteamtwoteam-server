@@ -6,7 +6,9 @@ import org.etmetmy.bn_server.domain.request.dto.ApprovalNotiResponse;
 
 public interface RequestService {
 
-    ApprovalNotiResponse getApprovalRequest(Long projectId, Long loginUserId);
+    ApprovalRequestListResponse getApprovalRequest(Long projectId, Long loginUserId);
+
+    ApprovalRequestListResponse getMyApprovalRequest(Long loginUserId);
 
     ApprovalRequestListResponse getAdminApprovalRequest(Long loginUserId);
 }
