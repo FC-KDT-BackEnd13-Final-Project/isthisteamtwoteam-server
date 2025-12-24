@@ -38,7 +38,7 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     @Transactional(readOnly = true)
-    public ApprovalNotiResponse getApprovalRequest(Long projectId, Long loginUserId) {
+    public ApprovalRequestListResponse getApprovalRequest(Long projectId, Long loginUserId) {
 
         // 유저 검증
         User user = userRepository.findById(loginUserId).orElseThrow(UserNotFoundException::new);
@@ -52,17 +52,28 @@ public class RequestServiceImpl implements RequestService {
 
         // 특정 프로젝트의 Request가 있는 Post 조회
         List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequestByProjectIds(List.of(projectId));
-        List<PostApprovalRequestDto> allPosts = PostApprovalRequestDto.Converter.from(allPostsWithRequest);
+        List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
 
-        // 1. 상태별 count (DB)
-        List<Object[]> statusCounts = requestRepository.countByStatus(List.of(projectId));
-        SummaryDTO summary = SummaryDTO.Converter.from(statusCounts);
+        // Converter 에서 상태별, 단계별 카운팅 및 응답 생성
+        return ApprovalRequestListResponse.Converter.of(allPosts);
+    }
 
-        // 2. Stage별 카테고리 나누기
-        List<CategoryDTO> categories = CategoryDTO.Converter.fromAll(allPosts);
+    @Override
+    @Transactional(readOnly = true)
+    public ApprovalRequestListResponse getMyApprovalRequest(Long loginUserId) {
+        // 유저 검증
+        userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
 
-        // 3. 응답 생성
-        return ApprovalNotiResponse.Converter.of(summary, categories);
+        // 사용자가 속한 프로젝트 ID 목록 조회
+        List<Long> myProjectIds = projectMemberRepository.findProjectIdsByUserId(loginUserId);
+
+        // 해당 프로젝트들의 Request가 있는 Post 조회
+        List<Post> allPostsWithRequest = postRepository.findAllPostsWithRequestByProjectIds(myProjectIds);
+        List<ApprovalRequestResponse> allPosts = ApprovalRequestResponse.Converter.from(allPostsWithRequest);
+
+        // Converter 에서 상태별, 단계별 카운팅 및 응답 생성
+        return ApprovalRequestListResponse.Converter.of(allPosts);
     }
 
     @Override
