@@ -59,6 +59,9 @@ public class HistoryServiceImpl implements HistoryService {
                     historyPost.getChangeType()
             );
 
+            // 변경된 내용 추출
+            List<ChangeContent> changeContents = extractPostChanges(historyPost);
+
             allHistories.add(HistoryItemResponse.builder()
                     .title(title)
                     .targetType("POST")
@@ -67,6 +70,7 @@ public class HistoryServiceImpl implements HistoryService {
                     .changedByUserName(historyPost.getChangedByUser().getName())
                     .changeIp(historyPost.getChangeIp())
                     .details(detail)
+                    .changeContents(changeContents)
                     .build());
         }
 
@@ -84,6 +88,9 @@ public class HistoryServiceImpl implements HistoryService {
                     historyComment.getChangeType()
             );
 
+            // 변경된 내용 추출
+            List<ChangeContent> changeContents = extractCommentChanges(historyComment);
+
             allHistories.add(HistoryItemResponse.builder()
                     .title(title)
                     .targetType("COMMENT")
@@ -92,6 +99,7 @@ public class HistoryServiceImpl implements HistoryService {
                     .changedByUserName(historyComment.getChangedByUser().getName())
                     .changeIp(historyComment.getChangeIp())
                     .details(detail)
+                    .changeContents(changeContents)
                     .build());
         }
 
@@ -111,6 +119,9 @@ public class HistoryServiceImpl implements HistoryService {
                     historyFile.getChangeType()
             );
 
+            // 변경된 내용 추출
+            List<ChangeContent> changeContents = extractFileChanges(historyFile);
+
             allHistories.add(HistoryItemResponse.builder()
                     .title(title)
                     .targetType("FILE")
@@ -119,6 +130,7 @@ public class HistoryServiceImpl implements HistoryService {
                     .changedByUserName(historyFile.getChangedByUser().getName())
                     .changeIp(historyFile.getChangeIp())
                     .details(detail)
+                    .changeContents(changeContents)
                     .build());
         }
 
@@ -135,6 +147,9 @@ public class HistoryServiceImpl implements HistoryService {
                     historyLink.getChangeType()
             );
 
+            // 변경된 내용 추출
+            List<ChangeContent> changeContents = extractLinkChanges(historyLink);
+
             allHistories.add(HistoryItemResponse.builder()
                     .title(title)
                     .targetType("LINK")
@@ -143,6 +158,7 @@ public class HistoryServiceImpl implements HistoryService {
                     .changedByUserName(historyLink.getChangedByUser().getName())
                     .changeIp(historyLink.getChangeIp())
                     .details(detail)
+                    .changeContents(changeContents)
                     .build());
         }
 
@@ -155,5 +171,104 @@ public class HistoryServiceImpl implements HistoryService {
                 .totalCount(allHistories.size())
                 .histories(allHistories)
                 .build();
+    }
+
+    /**
+     * 게시글 변경 내용 추출
+     */
+    private List<ChangeContent> extractPostChanges(HistoryPost historyPost) {
+        List<ChangeContent> changes = new ArrayList<>();
+
+        if (historyPost.getChangeType() == ChangeType.DELETE) {
+            // 삭제인 경우
+            if (historyPost.getBeTitle() != null) {
+                changes.add(ChangeContent.ofDelete("title", historyPost.getBeTitle()));
+            }
+            if (historyPost.getBeContent() != null) {
+                changes.add(ChangeContent.ofDelete("content", historyPost.getBeContent()));
+            }
+        } else if (historyPost.getChangeType() == ChangeType.UPDATE) {
+            // 수정인 경우 - 변경된 필드만 추출
+            if (!equals(historyPost.getBeTitle(), historyPost.getAfTitle())) {
+                changes.add(ChangeContent.of("title", historyPost.getBeTitle(), historyPost.getAfTitle()));
+            }
+            if (!equals(historyPost.getBeContent(), historyPost.getAfContent())) {
+                changes.add(ChangeContent.of("content", historyPost.getBeContent(), historyPost.getAfContent()));
+            }
+            if (!equals(historyPost.getBeStageName(), historyPost.getAfStageName())) {
+                changes.add(ChangeContent.of("stage", historyPost.getBeStageName(), historyPost.getAfStageName()));
+            }
+            if (!equals(historyPost.getBeIsCompleted(), historyPost.getAfIsCompleted())) {
+                changes.add(ChangeContent.of("completed",
+                        historyPost.getBeIsCompleted() != null && historyPost.getBeIsCompleted() ? "완료" : "미완료",
+                        historyPost.getAfIsCompleted() != null && historyPost.getAfIsCompleted() ? "완료" : "미완료"));
+            }
+        }
+
+        return changes;
+    }
+
+    /**
+     * 댓글 변경 내용 추출
+     */
+    private List<ChangeContent> extractCommentChanges(HistoryComment historyComment) {
+        List<ChangeContent> changes = new ArrayList<>();
+
+        if (historyComment.getChangeType() == ChangeType.DELETE) {
+            // 삭제인 경우
+            if (historyComment.getBeContent() != null) {
+                changes.add(ChangeContent.ofDelete("content", historyComment.getBeContent()));
+            }
+        } else if (historyComment.getChangeType() == ChangeType.UPDATE) {
+            // 수정인 경우
+            if (!equals(historyComment.getBeContent(), historyComment.getAfContent())) {
+                changes.add(ChangeContent.of("content", historyComment.getBeContent(), historyComment.getAfContent()));
+            }
+        }
+
+        return changes;
+    }
+
+    /**
+     * 파일 변경 내용 추출 (파일은 CREATE/DELETE만 있음)
+     */
+    private List<ChangeContent> extractFileChanges(HistoryFile historyFile) {
+        List<ChangeContent> changes = new ArrayList<>();
+
+        if (historyFile.getChangeType() == ChangeType.DELETE) {
+            changes.add(ChangeContent.ofDelete("file", historyFile.getFileName()));
+        } else if (historyFile.getChangeType() == ChangeType.CREATE) {
+            changes.add(ChangeContent.ofCreate("file", historyFile.getFileName()));
+        }
+
+        return changes;
+    }
+
+    /**
+     * 링크 변경 내용 추출 (링크는 CREATE/DELETE만 있음)
+     */
+    private List<ChangeContent> extractLinkChanges(HistoryLink historyLink) {
+        List<ChangeContent> changes = new ArrayList<>();
+
+        if (historyLink.getChangeType() == ChangeType.DELETE) {
+            changes.add(ChangeContent.ofDelete("link", historyLink.getLinkUrl()));
+        } else if (historyLink.getChangeType() == ChangeType.CREATE) {
+            changes.add(ChangeContent.ofCreate("link", historyLink.getLinkUrl()));
+        }
+
+        return changes;
+    }
+
+    /**
+     * null-safe 비교 헬퍼 메서드
+     */
+    private boolean equals(Object obj1, Object obj2) {
+        if (obj1 == null && obj2 == null) {
+            return true;
+        }
+        if (obj1 == null || obj2 == null) {
+            return false;
+        }
+        return obj1.equals(obj2);
     }
 }
