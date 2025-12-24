@@ -50,7 +50,6 @@ public class UserServiceImpl implements UserService{
     private final MailSender mailSender;
 
     private static final int RESET_CODE_EXPIRES_SECONDS = 300;
-    private final FileRepository fileRepository;
 
     // 회원 정보 수정 (Update)
     @Override
@@ -188,9 +187,9 @@ public class UserServiceImpl implements UserService{
     //
     @Override
     public UserProfileImgNameResponse getProfileImgName(Long userId) {
-        UserProfileImgNameResponse profileImgAndNameByUserId = userRepository.findProfileImgAndNameByUserId(userId)
-                .orElseThrow(UserNotFoundException::new);
-        return profileImgAndNameByUserId;
+        User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
+
+        return UserProfileImgNameResponse.Converter.from(user);
     }
 
     @Override
