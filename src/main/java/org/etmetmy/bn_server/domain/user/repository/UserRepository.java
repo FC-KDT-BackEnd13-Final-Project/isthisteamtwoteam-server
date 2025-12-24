@@ -18,7 +18,6 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
-    boolean existsByEmail(String email);
     Optional<User> findByEmail(String email);
 
 
@@ -50,12 +49,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
             @Param("companyType") CompanyType companyType,
             Pageable pageable
     );
-
-    @Query("SELECT new org.etmetmy.bn_server.domain.user.dto.response.UserProfileImgNameResponse(u.profileImg, u.name) " +
-            "FROM User u " +
-            "WHERE u.id = :userId")
-    Optional<UserProfileImgNameResponse> findProfileImgAndNameByUserId(@Param("userId") Long userId);
-
 
     // 개발사 조회 (Admin 제외, role=DEVELOPER)
     @Query("SELECT u FROM User u WHERE u.role = 'DEVELOPER' ")
