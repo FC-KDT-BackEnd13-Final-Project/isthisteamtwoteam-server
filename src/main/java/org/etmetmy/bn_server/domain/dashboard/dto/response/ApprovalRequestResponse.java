@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.etmetmy.bn_server.domain.file.dto.response.FileInfoDTO;
 import org.etmetmy.bn_server.domain.post.entity.Post;
 import org.etmetmy.bn_server.domain.post.entity.Request;
 import org.etmetmy.bn_server.domain.post.entity.RequestStatus;
@@ -56,40 +57,9 @@ public class ApprovalRequestResponse {
     @JsonProperty("reject_reason")
     private String rejectReason;
 
-    private List<FileInfo> files;
+    private List<FileInfoDTO> files;
 
     private List<String> links;
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    public static class FileInfo {
-        @JsonProperty("file_id")
-        private Long fileId;
-
-        @JsonProperty("original_file_title")
-        private String originalFileTitle;
-
-        @JsonProperty("file_path")
-        private String filePath;
-
-        @JsonProperty("file_size")
-        private String fileSize;
-
-        @JsonProperty("file_type")
-        private String fileType;
-    }
-
-    @Getter
-    @Builder
-    @AllArgsConstructor
-    public static class LinkInfo {
-        @JsonProperty("link_id")
-        private Long linkId;
-
-        @JsonProperty("link_url")
-        private String linkUrl;
-    }
 
     public static class Converter {
         public static ApprovalRequestResponse from(Post post, Request request) {
@@ -112,7 +82,7 @@ public class ApprovalRequestResponse {
             String responderName = null;
             LocalDateTime replyTime = null;
             String rejectReason = null;
-            List<FileInfo> files = null;
+            List<FileInfoDTO> files = null;
             List<String> links = null;
 
             if (isProcessed) {
@@ -133,10 +103,10 @@ public class ApprovalRequestResponse {
                 if (request.getFiles() != null) {
                     files = request.getFiles().stream()
                         .filter(file -> !file.getIsDeleted())
-                        .map(file -> FileInfo.builder()
+                        .map(file -> FileInfoDTO.builder()
                             .fileId(file.getFileId())
-                            .originalFileTitle(file.getOriginalFileTitle())
-                            .filePath(file.getFilePath())
+                            .fileOriginalFileName(file.getOriginalFileTitle())
+                            .fileUrl(file.getFilePath())
                             .fileSize(file.getFileSize())
                             .fileType(file.getFileType())
                             .build())
