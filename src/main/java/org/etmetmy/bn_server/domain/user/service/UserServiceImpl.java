@@ -189,8 +189,6 @@ public class UserServiceImpl implements UserService{
     public UserProfileImgNameResponse getProfileImgName(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(UserNotFoundException::new);
 
-//        UserProfileImgNameResponse profileImgAndNameByUserId = userRepository.findProfileImgAndNameByUserId(userId)
-//                .orElseThrow(UserNotFoundException::new);
         return UserProfileImgNameResponse.Converter.from(user);
     }
 
