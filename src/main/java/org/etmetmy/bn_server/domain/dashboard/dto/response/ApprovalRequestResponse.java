@@ -58,7 +58,7 @@ public class ApprovalRequestResponse {
 
     private List<FileInfo> files;
 
-    private List<LinkInfo> links;
+    private List<String> links;
 
     @Getter
     @Builder
@@ -113,7 +113,7 @@ public class ApprovalRequestResponse {
             LocalDateTime replyTime = null;
             String rejectReason = null;
             List<FileInfo> files = null;
-            List<LinkInfo> links = null;
+            List<String> links = null;
 
             if (isProcessed) {
                 // responder 이름 안전하게 가져오기
@@ -143,14 +143,11 @@ public class ApprovalRequestResponse {
                         .collect(Collectors.toList());
                 }
 
-                // 링크 목록
+                // 링크 목록 (URL만 추출)
                 if (request.getLinks() != null) {
                     links = request.getLinks().stream()
                         .filter(link -> !link.getIsDeleted())
-                        .map(link -> LinkInfo.builder()
-                            .linkId(link.getLinkId())
-                            .linkUrl(link.getLinkUrl())
-                            .build())
+                        .map(link -> link.getLinkUrl())
                         .collect(Collectors.toList());
                 }
             }
