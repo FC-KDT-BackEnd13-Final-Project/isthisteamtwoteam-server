@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.etmetmy.bn_server.domain.dashboard.dto.response.ApprovalRequestListResponse;
-import org.etmetmy.bn_server.domain.request.dto.ApprovalNotiResponse;
 import org.etmetmy.bn_server.domain.request.service.RequestService;
 import org.etmetmy.bn_server.global.CommonResponse;
 import org.etmetmy.bn_server.global.util.SessionUtil;
@@ -26,13 +25,24 @@ public class RequestController {
     // todo: 개별 프로젝트 승인대기 화면 리스트들 조회
     @Operation(summary = "개별 프로젝트 승인 요청 목록 조회", description = "개별 프로젝트 게시글 request 항목들을 조회합니다")
     @GetMapping("/{projectId}/approval-requests")
-    public CommonResponse<ApprovalNotiResponse> getApprovalRequests(
+    public CommonResponse<ApprovalRequestListResponse> getApprovalRequests(
             @PathVariable Long projectId, HttpSession session) {
         Long loginUserId = SessionUtil.getLoginUserId(session);
 
-        ApprovalNotiResponse result = requestService.getApprovalRequest(projectId, loginUserId);
+        ApprovalRequestListResponse result = requestService.getApprovalRequest(projectId, loginUserId);
 
         return CommonResponse.success("승인 요청 알림 조회 성공", result);
+    }
+
+    // todo: 내가 속한 프로젝트들의 승인대기 화면 리스트들 조회
+    @Operation(summary = "내 프로젝트 승인 요청 목록 조회", description = "사용자가 속한 프로젝트들의 승인 대기 중인 항목들을 조회합니다")
+    @GetMapping("/my-approval-requests")
+    public CommonResponse<ApprovalRequestListResponse> getMyApprovalRequests(HttpSession session) {
+        Long loginUserId = SessionUtil.getLoginUserId(session);
+
+        ApprovalRequestListResponse result = requestService.getMyApprovalRequest(loginUserId);
+
+        return CommonResponse.success("내 프로젝트 승인 요청 알림 조회 성공", result);
     }
 
     // todo: 전체 프로젝트 승인대기 화면 리스트들 조회
