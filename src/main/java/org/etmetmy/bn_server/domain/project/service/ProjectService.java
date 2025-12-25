@@ -21,6 +21,7 @@ public interface ProjectService {
 
     List<ProjectResponse> getAllProjects();
     List<ProjectCustomerResponse> getAllProjects(Long loginUserId);
+    Page<ProjectResponse> getUserProjects(Long loginUserId, Pageable pageable);
     List<ProjectMemberResponse> getProjectMembers(Long projectId);
 
     //프로젝트 리스트 페이지네이션, 검색

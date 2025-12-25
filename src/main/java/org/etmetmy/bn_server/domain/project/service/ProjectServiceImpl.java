@@ -215,6 +215,47 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectCustomerResponse.Converter.from(projects);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProjectResponse> getUserProjects(Long loginUserId, Pageable pageable) {
+        // 1. loginUserId로 User 조회 및 검증
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(UserNotFoundException::new);
+
+        // 2. sort 파라미터 무시, page와 size만 사용 (쿼리에 ORDER BY 고정)
+        Pageable unsortedPageable = org.springframework.data.domain.PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize()
+        );
+
+        // 3. 페이지네이션을 적용하여 사용자가 참여하는 프로젝트 조회 (최신순 고정)
+        Page<Project> projectPage = projectRepository.findProjectsByUserId(user.getId(), unsortedPageable);
+
+        List<Project> projects = projectPage.getContent();
+
+        // 4. Member 정보 일괄 조회
+        List<Long> projectIds = projects.stream()
+                .map(Project::getId)
+                .collect(Collectors.toList());
+
+        if (projectIds.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // 5. 프로젝트 ID 목록을 기반으로 모든 관련 ProjectMember를 한 번에 조회
+        List<ProjectMember> allMembers = projectMemberRepository.findByProjectIdIn(projectIds);
+
+        // 6. Project ID별 ProjectMember Map 생성
+        Map<Long, List<ProjectMember>> membersByProjectId = allMembers.stream()
+                .collect(Collectors.groupingBy(pm -> pm.getProject().getId()));
+
+        // 7. Page<Project>를 Page<ProjectResponse>로 변환
+        return projectPage.map(project -> {
+            List<ProjectMember> members = membersByProjectId.getOrDefault(project.getId(), List.of());
+            return ProjectResponse.Converter.from(project, members);
+        });
+    }
+
     @Transactional(readOnly = true)
     @Override
     public List<ProjectMemberResponse> getProjectMembers(Long projectId) {
