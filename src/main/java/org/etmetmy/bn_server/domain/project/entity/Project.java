@@ -87,4 +87,8 @@ public class Project extends BaseEntity {
     public void updateProjectCompany(Company company) {
         this.company = company;
     }
+
+    public void updateProjectStage(Stage stage){
+        this.stage = stage;
+    }
 }
