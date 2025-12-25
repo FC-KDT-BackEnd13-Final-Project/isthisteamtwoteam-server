@@ -116,4 +116,17 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     Page<Project> findByProjectNameContainingIgnoreCaseAndIsDeleted(String searchKeyword, Boolean isDeleted, Pageable pageable);
 
     Page<Project> findByIsDeleted(Boolean isDeleted, Pageable pageable);
+
+    // 사용자가 참여하는 프로젝트 페이지네이션 조회 (Native Query, 최신순 고정)
+    @Query(value = "SELECT DISTINCT p.* FROM project p " +
+            "INNER JOIN projectmember pm ON p.project_id = pm.project_id " +
+            "WHERE pm.user_id = :userId " +
+            "AND (p.is_deleted IS NULL OR p.is_deleted = false) " +
+            "ORDER BY p.updated_at DESC",
+           countQuery = "SELECT COUNT(DISTINCT p.project_id) FROM project p " +
+            "INNER JOIN projectmember pm ON p.project_id = pm.project_id " +
+            "WHERE pm.user_id = :userId " +
+            "AND (p.is_deleted IS NULL OR p.is_deleted = false)",
+           nativeQuery = true)
+    Page<Project> findProjectsByUserId(@Param("userId") Long userId, Pageable pageable);
 }
