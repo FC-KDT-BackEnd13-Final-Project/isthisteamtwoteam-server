@@ -774,6 +774,7 @@ public class ProjectServiceImpl implements ProjectService {
         return ProjectUpdateResponse.Converter.from(updatedProject);
     }
 
+
     private String toJson(Object obj) {
         try {
             return objectMapper.writeValueAsString(obj);
@@ -801,5 +802,19 @@ public class ProjectServiceImpl implements ProjectService {
         }
         return null;
     }
+
+
+    @Override
+    @Transactional
+    public void updateProjectStage(Long projectId, String stageName) {
+        Stage stage = projectStageRepository.findByStageName(stageName).orElseThrow(
+                ()-> new BusinessException(ErrorCode.STAGE_NOT_FOUND));
+
+        Project project = projectRepository.findById(projectId).orElseThrow(
+                () -> new BusinessException(ErrorCode.PROJECT_NOT_FOUND));
+
+        project.updateProjectStage(stage);
+    }
+
 
 }

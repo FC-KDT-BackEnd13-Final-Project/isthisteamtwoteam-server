@@ -57,4 +57,6 @@ public interface ProjectService {
 
     // 프로젝트 전체 수정 (이미지 제외)
     ProjectUpdateResponse updateProject(Long projectId, ProjectUpdateRequest request);
+
+    void updateProjectStage(Long projectId, String stageName);
 }
